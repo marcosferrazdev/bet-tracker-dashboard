@@ -1,5 +1,4 @@
 // betContext.tsx
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   Bet,
@@ -36,11 +35,11 @@ interface BetContextType {
   unitValue: number;
   setUnitValue: (value: number) => void;
 
-  // New entities
+  // Tipsters CRUD via Supabase
   tipsters: Tipster[];
-  addTipster: (tipster: Tipster) => void;
-  updateTipster: (tipster: Tipster) => void;
-  deleteTipster: (id: string) => void;
+  addTipster: (tipster: Tipster) => Promise<void>;
+  updateTipster: (tipster: Tipster) => Promise<void>;
+  deleteTipster: (id: string) => Promise<void>;
 
   markets: Market[];
   addMarket: (market: Market) => void;
@@ -74,13 +73,12 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [unitValue, setUnitValueState] = useState<number>(10); // Default unit value
 
-  // Entities em localStorage (caso queira migrar, replicar a lógica do "bets")
+  // Carrega tipsters via Supabase
   const [tipsters, setTipsters] = useState<Tipster[]>([]);
+  // Os demais dados permanecem via localStorage ou dados fixos
   const [markets, setMarkets] = useState<Market[]>([]);
   const [bookmakers, setBookmakers] =
     useState<Bookmaker[]>(brazilianBookmakers);
-
-  // Predefinidos
   const [competitionsList] = useState<Competition[]>(competitions);
   const [teamsList] = useState<Team[]>(teams);
 
@@ -88,42 +86,56 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   // 1) Carrega as apostas do Supabase (em vez do localStorage)
   // --------------------------------------------------
   useEffect(() => {
-    const loadDataFromSupabase = async () => {
+    const loadBets = async () => {
       try {
         const { data, error } = await supabase.from("bets").select("*");
-
         if (error) {
           console.error("Erro ao buscar bets no Supabase:", error);
           toast.error("Erro ao carregar dados do Supabase!");
         } else if (data) {
-          // data já vem como array de objetos
           setBets(data as Bet[]);
         }
       } catch (err) {
-        console.error("Erro inesperado ao carregar dados:", err);
+        console.error("Erro inesperado ao carregar bets:", err);
         toast.error("Erro inesperado ao carregar dados do Supabase!");
       } finally {
         setIsLoading(false);
       }
     };
-
-    loadDataFromSupabase();
+    loadBets();
   }, []);
 
   // --------------------------------------------------
-  // 2) Carrega tipsters, markets e unitValue do localStorage (mantido como exemplo)
+  // 2) Carrega tipsters do Supabase
+  // --------------------------------------------------
+  useEffect(() => {
+    const loadTipsters = async () => {
+      try {
+        const { data, error } = await supabase.from("tipsters").select("*");
+        if (error) {
+          console.error("Erro ao buscar tipsters do Supabase:", error);
+          toast.error("Erro ao carregar tipsters do Supabase!");
+        } else if (data) {
+          setTipsters(data as Tipster[]);
+        }
+      } catch (err) {
+        console.error("Erro inesperado ao carregar tipsters:", err);
+        toast.error("Erro inesperado ao carregar tipsters do Supabase!");
+      }
+    };
+    loadTipsters();
+  }, []);
+
+  // --------------------------------------------------
+  // 3) Carrega markets e unitValue do localStorage (mantido como exemplo)
   // --------------------------------------------------
   useEffect(() => {
     try {
       const savedUnitValue = localStorage.getItem("unitValue");
-      const savedTipsters = localStorage.getItem("tipsters");
       const savedMarkets = localStorage.getItem("markets");
 
       if (savedUnitValue) {
         setUnitValueState(parseFloat(savedUnitValue));
-      }
-      if (savedTipsters) {
-        setTipsters(JSON.parse(savedTipsters));
       }
       if (savedMarkets) {
         setMarkets(JSON.parse(savedMarkets));
@@ -135,7 +147,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // --------------------------------------------------
-  // 3) Recalcula estatísticas sempre que "bets" mudar
+  // 4) Recalcula estatísticas sempre que "bets" mudar
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -150,7 +162,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [bets, isLoading]);
 
   // --------------------------------------------------
-  // 4) Salva unitValue, tipsters e markets no localStorage quando mudam
+  // 5) Salva unitValue e markets no localStorage quando mudam
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -160,68 +172,55 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (!isLoading) {
-      localStorage.setItem("tipsters", JSON.stringify(tipsters));
-    }
-  }, [tipsters, isLoading]);
-
-  useEffect(() => {
-    if (!isLoading) {
       localStorage.setItem("markets", JSON.stringify(markets));
     }
   }, [markets, isLoading]);
 
   // --------------------------------------------------
-  // 5) Funções de CRUD no Supabase
+  // 6) Funções de CRUD para Bets (já implementadas)
   // --------------------------------------------------
   const addBet = async (bet: Bet) => {
-    // Converte o objeto para o formato snake_case
     const supabaseBet = {
       id: bet.id,
       date: bet.date,
       tipster: bet.tipster,
       competition: bet.competition,
-      bet_type: bet.type, // convertendo "type" para "bet_type"
-      home_team: bet.homeTeam, // convertendo "homeTeam" para "home_team"
-      away_team: bet.awayTeam, // convertendo "awayTeam" para "away_team"
+      bet_type: bet.type,
+      home_team: bet.homeTeam,
+      away_team: bet.awayTeam,
       market: bet.market,
       bookmaker: bet.bookmaker,
       entry: bet.entry,
       odds: bet.odds,
       stake: bet.stake,
-      unit_value: bet.unitValue, // convertendo "unitValue" para "unit_value"
-      stake_units: bet.stakeUnits, // convertendo "stakeUnits" para "stake_units"
+      unit_value: bet.unitValue,
+      stake_units: bet.stakeUnits,
       commission: bet.commission,
       result: bet.result,
-      profit_currency: bet.profitCurrency, // convertendo "profitCurrency" para "profit_currency"
-      profit_units: bet.profitUnits, // convertendo "profitUnits" para "profit_units"
+      profit_currency: bet.profitCurrency,
+      profit_units: bet.profitUnits,
     };
 
     const { error } = await supabase.from("bets").insert(supabaseBet);
-
     if (error) {
       toast.error("Erro ao adicionar aposta!");
       console.error(error);
       return;
     }
-
     setBets((prev) => [...prev, bet]);
     toast.success("Aposta adicionada com sucesso!");
   };
 
   const updateBet = async (updatedBet: Bet) => {
-    // Atualiza no Supabase
     const { error } = await supabase
       .from("bets")
       .update(updatedBet)
       .eq("id", updatedBet.id);
-
     if (error) {
       toast.error("Erro ao atualizar aposta!");
       console.error(error);
       return;
     }
-
-    // Se deu certo, atualiza estado local
     setBets((prev) =>
       prev.map((bet) => (bet.id === updatedBet.id ? updatedBet : bet))
     );
@@ -229,48 +228,82 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const deleteBet = async (id: string) => {
-    // Deleta do Supabase
     const { error } = await supabase.from("bets").delete().eq("id", id);
-
     if (error) {
       toast.error("Erro ao remover aposta!");
       console.error(error);
       return;
     }
-
-    // Se deu certo, atualiza estado local
     setBets((prev) => prev.filter((bet) => bet.id !== id));
     toast.success("Aposta removida com sucesso!");
   };
 
   // --------------------------------------------------
-  // 6) Funções para "unitValue"
+  // 7) Funções para "unitValue"
   // --------------------------------------------------
   const setUnitValue = (value: number) => {
     setUnitValueState(value);
-    // localStorage é atualizado no useEffect
   };
 
   // --------------------------------------------------
-  // 7) Funções CRUD para Tipsters e Markets (em localStorage por enquanto)
+  // 8) Funções CRUD para Tipsters via Supabase
   // --------------------------------------------------
-  const addTipster = (tipster: Tipster) => {
-    setTipsters((prev) => [...prev, tipster]);
-    toast.success("Tipster adicionado com sucesso!");
+  const addTipster = async (tipster: Tipster) => {
+    try {
+      const { error } = await supabase.from("tipsters").insert(tipster);
+      if (error) {
+        toast.error("Erro ao adicionar tipster!");
+        console.error(error);
+        return;
+      }
+      setTipsters((prev) => [...prev, tipster]);
+      toast.success("Tipster adicionado com sucesso!");
+    } catch (err) {
+      console.error("Erro inesperado ao adicionar tipster:", err);
+      toast.error("Erro inesperado ao adicionar tipster!");
+    }
   };
 
-  const updateTipster = (updatedTipster: Tipster) => {
-    setTipsters((prev) =>
-      prev.map((t) => (t.id === updatedTipster.id ? updatedTipster : t))
-    );
-    toast.success("Tipster atualizado com sucesso!");
+  const updateTipster = async (updatedTipster: Tipster) => {
+    try {
+      const { error } = await supabase
+        .from("tipsters")
+        .update({ name: updatedTipster.name })
+        .eq("id", updatedTipster.id);
+      if (error) {
+        toast.error("Erro ao atualizar tipster!");
+        console.error(error);
+        return;
+      }
+      setTipsters((prev) =>
+        prev.map((t) => (t.id === updatedTipster.id ? updatedTipster : t))
+      );
+      toast.success("Tipster atualizado com sucesso!");
+    } catch (err) {
+      console.error("Erro inesperado ao atualizar tipster:", err);
+      toast.error("Erro inesperado ao atualizar tipster!");
+    }
   };
 
-  const deleteTipster = (id: string) => {
-    setTipsters((prev) => prev.filter((t) => t.id !== id));
-    toast.success("Tipster removido com sucesso!");
+  const deleteTipster = async (id: string) => {
+    try {
+      const { error } = await supabase.from("tipsters").delete().eq("id", id);
+      if (error) {
+        toast.error("Erro ao remover tipster!");
+        console.error(error);
+        return;
+      }
+      setTipsters((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Tipster removido com sucesso!");
+    } catch (err) {
+      console.error("Erro inesperado ao remover tipster:", err);
+      toast.error("Erro inesperado ao remover tipster!");
+    }
   };
 
+  // --------------------------------------------------
+  // 9) Funções CRUD para Markets (mantidas em localStorage por enquanto)
+  // --------------------------------------------------
   const addMarket = (market: Market) => {
     setMarkets((prev) => [...prev, market]);
     toast.success("Mercado adicionado com sucesso!");

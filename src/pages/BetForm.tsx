@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import { useBets } from "@/context/BetContext";
 import { Bet, BetType, BetResult } from "@/types";
 import { generateId, calculateUnits, calculateProfit } from "@/lib/bet-utils";
 import { toast } from "sonner";
+import SearchableSelect from "./SearchableSelect";
 
 const BetForm: React.FC = () => {
   const { id } = useParams();
@@ -52,18 +53,12 @@ const BetForm: React.FC = () => {
   // Form state
   const [date, setDate] = useState<Date>(new Date());
   const [tipster, setTipster] = useState("");
-  const [customTipster, setCustomTipster] = useState("");
   const [competition, setCompetition] = useState("");
-  const [customCompetition, setCustomCompetition] = useState("");
   const [type, setType] = useState<BetType>("PRÉ");
   const [homeTeam, setHomeTeam] = useState("");
-  const [customHomeTeam, setCustomHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
-  const [customAwayTeam, setCustomAwayTeam] = useState("");
   const [market, setMarket] = useState("");
-  const [customMarket, setCustomMarket] = useState("");
   const [bookmaker, setBookmaker] = useState("");
-  const [customBookmaker, setCustomBookmaker] = useState("");
   const [entry, setEntry] = useState("");
   const [odds, setOdds] = useState<number>(0);
   const [stake, setStake] = useState<number>(0);
@@ -78,11 +73,10 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Carrega dados se estiver editando
   useEffect(() => {
-    // If editing, load the bet data
     if (isEditing && id) {
       const betToEdit = bets.find((bet) => bet.id === id);
-
       if (betToEdit) {
         setDate(new Date(betToEdit.date));
         setTipster(betToEdit.tipster);
@@ -104,38 +98,8 @@ const BetForm: React.FC = () => {
     }
   }, [isEditing, id, bets, navigate]);
 
-  // Handle custom value changes
-  useEffect(() => {
-    if (tipster === "custom" && customTipster) {
-      setTipster(customTipster);
-    }
-    if (competition === "custom" && customCompetition) {
-      setCompetition(customCompetition);
-    }
-    if (homeTeam === "custom-home" && customHomeTeam) {
-      setHomeTeam(customHomeTeam);
-    }
-    if (awayTeam === "custom-away" && customAwayTeam) {
-      setAwayTeam(customAwayTeam);
-    }
-    if (market === "custom" && customMarket) {
-      setMarket(customMarket);
-    }
-    if (bookmaker === "custom-bookmaker" && customBookmaker) {
-      setBookmaker(customBookmaker);
-    }
-  }, [
-    customTipster,
-    customCompetition,
-    customHomeTeam,
-    customAwayTeam,
-    customMarket,
-    customBookmaker,
-  ]);
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
     if (!tipster) newErrors.tipster = "Tipster é obrigatório";
     if (!competition) newErrors.competition = "Competição é obrigatória";
     if (!homeTeam) newErrors.homeTeam = "Time mandante é obrigatório";
@@ -147,46 +111,41 @@ const BetForm: React.FC = () => {
     if (odds < 1) newErrors.odds = "Odd deve ser maior que 1";
     if (!stake) newErrors.stake = "Valor da aposta é obrigatório";
     if (stake <= 0) newErrors.stake = "Valor da aposta deve ser maior que 0";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
       toast.error("Por favor, corrija os erros no formulário");
       return;
     }
-
     const betData: Bet = {
       id: isEditing && id ? id : generateId(),
       date: format(date, "yyyy-MM-dd"),
       tipster,
       competition,
-      type, // permanece "type"
-      homeTeam, // permanece "homeTeam"
-      awayTeam, // permanece "awayTeam"
+      type,
+      homeTeam,
+      awayTeam,
       market,
       bookmaker,
       entry,
       odds,
       stake,
-      unitValue, // permanece "unitValue"
-      stakeUnits, // permanece "stakeUnits"
+      unitValue,
+      stakeUnits,
       commission,
       result,
       profitCurrency,
       profitUnits,
     };
-
     if (isEditing) {
       updateBet(betData);
     } else {
       addBet(betData);
     }
-
     navigate("/apostas");
   };
 
@@ -205,7 +164,6 @@ const BetForm: React.FC = () => {
           { label: isEditing ? "Editar Aposta" : "Nova Aposta" },
         ]}
       />
-
       <Card className="mb-8 animate-fade-in">
         <CardHeader>
           <CardTitle>Detalhes da Aposta</CardTitle>
@@ -226,11 +184,9 @@ const BetForm: React.FC = () => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? (
-                        format(date, "PPP", { locale: ptBR })
-                      ) : (
-                        <span>Selecione uma data</span>
-                      )}
+                      {date
+                        ? format(date, "PPP", { locale: ptBR })
+                        : "Selecione uma data"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -248,29 +204,13 @@ const BetForm: React.FC = () => {
               {/* Tipster */}
               <div className="space-y-2">
                 <Label htmlFor="tipster">Tipster</Label>
-                <Select value={tipster} onValueChange={setTipster}>
-                  <SelectTrigger
-                    className={errors.tipster ? "border-danger-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecione o tipster" />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {tipsters.map((t) => (
-                      <SelectItem key={t.id} value={t.name}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">Personalizado</SelectItem>
-                  </SelectContent>
-                </Select>
-                {tipster === "custom" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Digite o nome do tipster"
-                    value={customTipster}
-                    onChange={(e) => setCustomTipster(e.target.value)}
-                  />
-                )}
+                <SearchableSelect
+                  value={tipster}
+                  onValueChange={setTipster}
+                  options={tipsters}
+                  placeholder="Selecione o tipster"
+                  error={errors.tipster}
+                />
                 {errors.tipster && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -282,29 +222,13 @@ const BetForm: React.FC = () => {
               {/* Competition */}
               <div className="space-y-2">
                 <Label htmlFor="competition">Competição</Label>
-                <Select value={competition} onValueChange={setCompetition}>
-                  <SelectTrigger
-                    className={errors.competition ? "border-danger-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecione a competição" />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {competitions.map((comp) => (
-                      <SelectItem key={comp.id} value={comp.name}>
-                        {comp.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">Outra competição</SelectItem>
-                  </SelectContent>
-                </Select>
-                {competition === "custom" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Digite o nome da competição"
-                    value={customCompetition}
-                    onChange={(e) => setCustomCompetition(e.target.value)}
-                  />
-                )}
+                <SearchableSelect
+                  value={competition}
+                  onValueChange={setCompetition}
+                  options={competitions}
+                  placeholder="Selecione a competição"
+                  error={errors.competition}
+                />
                 {errors.competition && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -335,29 +259,13 @@ const BetForm: React.FC = () => {
               {/* Home Team */}
               <div className="space-y-2">
                 <Label htmlFor="homeTeam">Time Mandante</Label>
-                <Select value={homeTeam} onValueChange={setHomeTeam}>
-                  <SelectTrigger
-                    className={errors.homeTeam ? "border-danger-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecione o time mandante" />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {teams.map((team) => (
-                      <SelectItem key={team.id} value={team.name}>
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom-home">Outro time</SelectItem>
-                  </SelectContent>
-                </Select>
-                {homeTeam === "custom-home" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Digite o nome do time mandante"
-                    value={customHomeTeam}
-                    onChange={(e) => setCustomHomeTeam(e.target.value)}
-                  />
-                )}
+                <SearchableSelect
+                  value={homeTeam}
+                  onValueChange={setHomeTeam}
+                  options={teams}
+                  placeholder="Selecione o time mandante"
+                  error={errors.homeTeam}
+                />
                 {errors.homeTeam && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -369,29 +277,13 @@ const BetForm: React.FC = () => {
               {/* Away Team */}
               <div className="space-y-2">
                 <Label htmlFor="awayTeam">Time Visitante</Label>
-                <Select value={awayTeam} onValueChange={setAwayTeam}>
-                  <SelectTrigger
-                    className={errors.awayTeam ? "border-danger-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecione o time visitante" />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {teams.map((team) => (
-                      <SelectItem key={team.id} value={team.name}>
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom-away">Outro time</SelectItem>
-                  </SelectContent>
-                </Select>
-                {awayTeam === "custom-away" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Digite o nome do time visitante"
-                    value={customAwayTeam}
-                    onChange={(e) => setCustomAwayTeam(e.target.value)}
-                  />
-                )}
+                <SearchableSelect
+                  value={awayTeam}
+                  onValueChange={setAwayTeam}
+                  options={teams}
+                  placeholder="Selecione o time visitante"
+                  error={errors.awayTeam}
+                />
                 {errors.awayTeam && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -403,29 +295,13 @@ const BetForm: React.FC = () => {
               {/* Market */}
               <div className="space-y-2">
                 <Label htmlFor="market">Mercado</Label>
-                <Select value={market} onValueChange={setMarket}>
-                  <SelectTrigger
-                    className={errors.market ? "border-danger-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecione o mercado" />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {markets.map((m) => (
-                      <SelectItem key={m.id} value={m.name}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom">Personalizado</SelectItem>
-                  </SelectContent>
-                </Select>
-                {market === "custom" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Digite o nome do mercado"
-                    value={customMarket}
-                    onChange={(e) => setCustomMarket(e.target.value)}
-                  />
-                )}
+                <SearchableSelect
+                  value={market}
+                  onValueChange={setMarket}
+                  options={markets}
+                  placeholder="Selecione o mercado"
+                  error={errors.market}
+                />
                 {errors.market && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -437,29 +313,13 @@ const BetForm: React.FC = () => {
               {/* Bookmaker */}
               <div className="space-y-2">
                 <Label htmlFor="bookmaker">Casa de Apostas</Label>
-                <Select value={bookmaker} onValueChange={setBookmaker}>
-                  <SelectTrigger
-                    className={errors.bookmaker ? "border-danger-500" : ""}
-                  >
-                    <SelectValue placeholder="Selecione a casa de apostas" />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {bookmakers.map((bookie) => (
-                      <SelectItem key={bookie.id} value={bookie.name}>
-                        {bookie.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="custom-bookmaker">Outra casa</SelectItem>
-                  </SelectContent>
-                </Select>
-                {bookmaker === "custom-bookmaker" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Digite o nome da casa de apostas"
-                    value={customBookmaker}
-                    onChange={(e) => setCustomBookmaker(e.target.value)}
-                  />
-                )}
+                <SearchableSelect
+                  value={bookmaker}
+                  onValueChange={setBookmaker}
+                  options={bookmakers}
+                  placeholder="Selecione a casa de apostas"
+                  error={errors.bookmaker}
+                />
                 {errors.bookmaker && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />

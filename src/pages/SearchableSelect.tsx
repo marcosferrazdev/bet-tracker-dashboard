@@ -1,0 +1,66 @@
+import React, { useState, useMemo } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+
+export interface OptionItem {
+  id: string;
+  name: string;
+}
+
+interface SearchableSelectProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  options: OptionItem[];
+  placeholder?: string;
+  error?: string;
+}
+
+const SearchableSelect: React.FC<SearchableSelectProps> = ({
+  value,
+  onValueChange,
+  options,
+  placeholder = "",
+  error,
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filtra as opções com base na query de busca
+  const filteredOptions = useMemo(() => {
+    return options.filter((option) =>
+      option.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [options, searchQuery]);
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className={error ? "border-danger-500" : ""}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {/* Container para o input de busca */}
+        <div className="p-2">
+          <Input
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            // Impede que as teclas causem comportamentos inesperados no Select
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+        </div>
+        {filteredOptions.map((option) => (
+          <SelectItem key={option.id} value={option.name}>
+            {option.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+export default SearchableSelect;
