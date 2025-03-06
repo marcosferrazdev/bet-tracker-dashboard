@@ -49,3 +49,31 @@ export interface MonthlyStats {
   profitCurrency: number;
   profitUnits: number;
 }
+
+export interface Tipster {
+  id: string;
+  name: string;
+}
+
+export interface Market {
+  id: string;
+  name: string;
+}
+
+export interface Competition {
+  id: string;
+  name: string;
+  country: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  country: string;
+}
+
+export interface Bookmaker {
+  id: string;
+  name: string;
+  isLicensed: boolean;
+}

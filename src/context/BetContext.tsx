@@ -1,8 +1,11 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Bet, DashboardStats, DailyStats, MonthlyStats } from '@/types';
+import { Bet, DashboardStats, DailyStats, MonthlyStats, Tipster, Market, Competition, Team, Bookmaker } from '@/types';
 import { calculateDashboardStats, calculateDailyStats, calculateMonthlyStats, fillMissingDays } from '@/lib/bet-utils';
 import { toast } from 'sonner';
+import { brazilianBookmakers } from '@/data/bookmakers';
+import { competitions } from '@/data/competitions';
+import { teams } from '@/data/teams';
 
 interface BetContextType {
   bets: Bet[];
@@ -15,6 +18,21 @@ interface BetContextType {
   isLoading: boolean;
   unitValue: number;
   setUnitValue: (value: number) => void;
+  
+  // New entities
+  tipsters: Tipster[];
+  addTipster: (tipster: Tipster) => void;
+  updateTipster: (tipster: Tipster) => void;
+  deleteTipster: (id: string) => void;
+  
+  markets: Market[];
+  addMarket: (market: Market) => void;
+  updateMarket: (market: Market) => void;
+  deleteMarket: (id: string) => void;
+  
+  bookmakers: Bookmaker[];
+  competitions: Competition[];
+  teams: Team[];
 }
 
 const BetContext = createContext<BetContextType | undefined>(undefined);
@@ -36,13 +54,24 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unitValue, setUnitValue] = useState<number>(10); // Default unit value is R$10
+  
+  // New entities state
+  const [tipsters, setTipsters] = useState<Tipster[]>([]);
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [bookmakers, setBookmakers] = useState<Bookmaker[]>(brazilianBookmakers);
+  
+  // Use predefined data for competitions and teams
+  const [competitionsList] = useState<Competition[]>(competitions);
+  const [teamsList] = useState<Team[]>(teams);
 
   useEffect(() => {
     // Load data from localStorage
-    const loadBets = () => {
+    const loadData = () => {
       try {
         const savedBets = localStorage.getItem('bets');
         const savedUnitValue = localStorage.getItem('unitValue');
+        const savedTipsters = localStorage.getItem('tipsters');
+        const savedMarkets = localStorage.getItem('markets');
         
         if (savedBets) {
           setBets(JSON.parse(savedBets));
@@ -50,6 +79,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         if (savedUnitValue) {
           setUnitValue(parseFloat(savedUnitValue));
+        }
+        
+        if (savedTipsters) {
+          setTipsters(JSON.parse(savedTipsters));
+        }
+        
+        if (savedMarkets) {
+          setMarkets(JSON.parse(savedMarkets));
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -59,7 +96,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
     
-    loadBets();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -84,6 +121,20 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem('unitValue', unitValue.toString());
     }
   }, [unitValue, isLoading]);
+  
+  useEffect(() => {
+    // Save tipsters to localStorage when they change
+    if (!isLoading) {
+      localStorage.setItem('tipsters', JSON.stringify(tipsters));
+    }
+  }, [tipsters, isLoading]);
+  
+  useEffect(() => {
+    // Save markets to localStorage when they change
+    if (!isLoading) {
+      localStorage.setItem('markets', JSON.stringify(markets));
+    }
+  }, [markets, isLoading]);
 
   const addBet = (bet: Bet) => {
     setBets(prevBets => [...prevBets, bet]);
@@ -101,6 +152,42 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBets(prevBets => prevBets.filter(bet => bet.id !== id));
     toast.success('Aposta removida com sucesso!');
   };
+  
+  // Tipster management
+  const addTipster = (tipster: Tipster) => {
+    setTipsters(prev => [...prev, tipster]);
+    toast.success('Tipster adicionado com sucesso!');
+  };
+  
+  const updateTipster = (updatedTipster: Tipster) => {
+    setTipsters(prev => 
+      prev.map(tipster => tipster.id === updatedTipster.id ? updatedTipster : tipster)
+    );
+    toast.success('Tipster atualizado com sucesso!');
+  };
+  
+  const deleteTipster = (id: string) => {
+    setTipsters(prev => prev.filter(tipster => tipster.id !== id));
+    toast.success('Tipster removido com sucesso!');
+  };
+  
+  // Market management
+  const addMarket = (market: Market) => {
+    setMarkets(prev => [...prev, market]);
+    toast.success('Mercado adicionado com sucesso!');
+  };
+  
+  const updateMarket = (updatedMarket: Market) => {
+    setMarkets(prev => 
+      prev.map(market => market.id === updatedMarket.id ? updatedMarket : market)
+    );
+    toast.success('Mercado atualizado com sucesso!');
+  };
+  
+  const deleteMarket = (id: string) => {
+    setMarkets(prev => prev.filter(market => market.id !== id));
+    toast.success('Mercado removido com sucesso!');
+  };
 
   return (
     <BetContext.Provider value={{
@@ -113,7 +200,18 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       monthlyStats,
       isLoading,
       unitValue,
-      setUnitValue
+      setUnitValue,
+      tipsters,
+      addTipster,
+      updateTipster,
+      deleteTipster,
+      markets,
+      addMarket,
+      updateMarket,
+      deleteMarket,
+      bookmakers,
+      competitions: competitionsList,
+      teams: teamsList
     }}>
       {children}
     </BetContext.Provider>

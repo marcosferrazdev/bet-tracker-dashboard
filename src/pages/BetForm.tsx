@@ -33,7 +33,17 @@ import { toast } from 'sonner';
 const BetForm: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { bets, addBet, updateBet, unitValue } = useBets();
+  const { 
+    bets, 
+    addBet, 
+    updateBet, 
+    unitValue,
+    tipsters,
+    markets,
+    bookmakers,
+    competitions,
+    teams 
+  } = useBets();
   const isEditing = !!id;
 
   // Form state
@@ -194,12 +204,36 @@ const BetForm: React.FC = () => {
               {/* Tipster */}
               <div className="space-y-2">
                 <Label htmlFor="tipster">Tipster</Label>
-                <Input
-                  id="tipster"
-                  value={tipster}
-                  onChange={(e) => setTipster(e.target.value)}
-                  className={errors.tipster ? "border-danger-500" : ""}
-                />
+                <Select 
+                  value={tipster} 
+                  onValueChange={setTipster}
+                >
+                  <SelectTrigger className={errors.tipster ? "border-danger-500" : ""}>
+                    <SelectValue placeholder="Selecione o tipster" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tipsters.length > 0 ? (
+                      tipsters.map((t) => (
+                        <SelectItem key={t.id} value={t.name}>
+                          {t.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="custom">
+                        Cadastre tipsters em Configurações
+                      </SelectItem>
+                    )}
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+                {tipster === 'custom' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Digite o nome do tipster"
+                    value={tipster === 'custom' ? '' : tipster}
+                    onChange={(e) => setTipster(e.target.value)}
+                  />
+                )}
                 {errors.tipster && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -211,12 +245,30 @@ const BetForm: React.FC = () => {
               {/* Competition */}
               <div className="space-y-2">
                 <Label htmlFor="competition">Competição</Label>
-                <Input
-                  id="competition"
-                  value={competition}
-                  onChange={(e) => setCompetition(e.target.value)}
-                  className={errors.competition ? "border-danger-500" : ""}
-                />
+                <Select 
+                  value={competition} 
+                  onValueChange={setCompetition}
+                >
+                  <SelectTrigger className={errors.competition ? "border-danger-500" : ""}>
+                    <SelectValue placeholder="Selecione a competição" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {competitions.map((comp) => (
+                      <SelectItem key={comp.id} value={comp.name}>
+                        {comp.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Outra competição</SelectItem>
+                  </SelectContent>
+                </Select>
+                {competition === 'custom' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Digite o nome da competição"
+                    value={competition === 'custom' ? '' : competition}
+                    onChange={(e) => setCompetition(e.target.value)}
+                  />
+                )}
                 {errors.competition && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -244,12 +296,30 @@ const BetForm: React.FC = () => {
               {/* Home Team */}
               <div className="space-y-2">
                 <Label htmlFor="homeTeam">Time Mandante</Label>
-                <Input
-                  id="homeTeam"
-                  value={homeTeam}
-                  onChange={(e) => setHomeTeam(e.target.value)}
-                  className={errors.homeTeam ? "border-danger-500" : ""}
-                />
+                <Select 
+                  value={homeTeam} 
+                  onValueChange={setHomeTeam}
+                >
+                  <SelectTrigger className={errors.homeTeam ? "border-danger-500" : ""}>
+                    <SelectValue placeholder="Selecione o time mandante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={team.name}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Outro time</SelectItem>
+                  </SelectContent>
+                </Select>
+                {homeTeam === 'custom' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Digite o nome do time mandante"
+                    value={homeTeam === 'custom' ? '' : homeTeam}
+                    onChange={(e) => setHomeTeam(e.target.value)}
+                  />
+                )}
                 {errors.homeTeam && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -261,12 +331,30 @@ const BetForm: React.FC = () => {
               {/* Away Team */}
               <div className="space-y-2">
                 <Label htmlFor="awayTeam">Time Visitante</Label>
-                <Input
-                  id="awayTeam"
-                  value={awayTeam}
-                  onChange={(e) => setAwayTeam(e.target.value)}
-                  className={errors.awayTeam ? "border-danger-500" : ""}
-                />
+                <Select 
+                  value={awayTeam} 
+                  onValueChange={setAwayTeam}
+                >
+                  <SelectTrigger className={errors.awayTeam ? "border-danger-500" : ""}>
+                    <SelectValue placeholder="Selecione o time visitante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={team.name}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Outro time</SelectItem>
+                  </SelectContent>
+                </Select>
+                {awayTeam === 'custom' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Digite o nome do time visitante"
+                    value={awayTeam === 'custom' ? '' : awayTeam}
+                    onChange={(e) => setAwayTeam(e.target.value)}
+                  />
+                )}
                 {errors.awayTeam && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -278,12 +366,36 @@ const BetForm: React.FC = () => {
               {/* Market */}
               <div className="space-y-2">
                 <Label htmlFor="market">Mercado</Label>
-                <Input
-                  id="market"
-                  value={market}
-                  onChange={(e) => setMarket(e.target.value)}
-                  className={errors.market ? "border-danger-500" : ""}
-                />
+                <Select 
+                  value={market} 
+                  onValueChange={setMarket}
+                >
+                  <SelectTrigger className={errors.market ? "border-danger-500" : ""}>
+                    <SelectValue placeholder="Selecione o mercado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {markets.length > 0 ? (
+                      markets.map((m) => (
+                        <SelectItem key={m.id} value={m.name}>
+                          {m.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="custom">
+                        Cadastre mercados em Configurações
+                      </SelectItem>
+                    )}
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+                {market === 'custom' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Digite o nome do mercado"
+                    value={market === 'custom' ? '' : market}
+                    onChange={(e) => setMarket(e.target.value)}
+                  />
+                )}
                 {errors.market && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -295,12 +407,30 @@ const BetForm: React.FC = () => {
               {/* Bookmaker */}
               <div className="space-y-2">
                 <Label htmlFor="bookmaker">Casa de Apostas</Label>
-                <Input
-                  id="bookmaker"
-                  value={bookmaker}
-                  onChange={(e) => setBookmaker(e.target.value)}
-                  className={errors.bookmaker ? "border-danger-500" : ""}
-                />
+                <Select 
+                  value={bookmaker} 
+                  onValueChange={setBookmaker}
+                >
+                  <SelectTrigger className={errors.bookmaker ? "border-danger-500" : ""}>
+                    <SelectValue placeholder="Selecione a casa de apostas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bookmakers.map((bookie) => (
+                      <SelectItem key={bookie.id} value={bookie.name}>
+                        {bookie.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Outra casa</SelectItem>
+                  </SelectContent>
+                </Select>
+                {bookmaker === 'custom' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Digite o nome da casa de apostas"
+                    value={bookmaker === 'custom' ? '' : bookmaker}
+                    onChange={(e) => setBookmaker(e.target.value)}
+                  />
+                )}
                 {errors.bookmaker && (
                   <p className="text-danger-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />

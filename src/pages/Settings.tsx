@@ -18,6 +18,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TipsterManager from '@/components/settings/TipsterManager';
+import MarketManager from '@/components/settings/MarketManager';
 
 const Settings: React.FC = () => {
   const { unitValue, setUnitValue, bets } = useBets();
@@ -119,83 +122,102 @@ const Settings: React.FC = () => {
         ]}
       />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Valor da Unidade</CardTitle>
-            <CardDescription>
-              Define o valor base para calcular suas apostas em unidades.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="unitValue">Valor da Unidade (R$)</Label>
-                <Input
-                  id="unitValue"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={newUnitValue || ''}
-                  onChange={handleUnitValueChange}
-                  className={error ? "border-danger-500" : ""}
-                />
-                {error && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {error}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={saveUnitValue}>Salvar</Button>
-          </CardFooter>
-        </Card>
+      <Tabs defaultValue="general" className="mb-8">
+        <TabsList className="mb-6">
+          <TabsTrigger value="general">Geral</TabsTrigger>
+          <TabsTrigger value="data">Dados</TabsTrigger>
+          <TabsTrigger value="tipsters">Tipsters</TabsTrigger>
+          <TabsTrigger value="markets">Mercados</TabsTrigger>
+        </TabsList>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Importar / Exportar Dados</CardTitle>
-            <CardDescription>
-              Faça backup dos seus dados ou importe dados de outro dispositivo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="importFile">Importar arquivo de dados</Label>
-                <div className="mt-2">
-                  <Input 
-                    id="importFile" 
-                    type="file" 
-                    accept=".json" 
-                    onChange={handleImportFile}
+        <TabsContent value="general">
+          <Card>
+            <CardHeader>
+              <CardTitle>Valor da Unidade</CardTitle>
+              <CardDescription>
+                Define o valor base para calcular suas apostas em unidades.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="unitValue">Valor da Unidade (R$)</Label>
+                  <Input
+                    id="unitValue"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={newUnitValue || ''}
+                    onChange={handleUnitValueChange}
+                    className={error ? "border-danger-500" : ""}
                   />
+                  {error && (
+                    <p className="text-danger-500 text-sm flex items-center mt-1">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {error}
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-2 items-stretch sm:flex-row sm:space-y-0 sm:space-x-2">
-            <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={handleExportData}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Dados
-            </Button>
-            <Button 
-              variant="destructive" 
-              className="w-full"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Limpar Dados
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={saveUnitValue}>Salvar</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="data">
+          <Card>
+            <CardHeader>
+              <CardTitle>Importar / Exportar Dados</CardTitle>
+              <CardDescription>
+                Faça backup dos seus dados ou importe dados de outro dispositivo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="importFile">Importar arquivo de dados</Label>
+                  <div className="mt-2">
+                    <Input 
+                      id="importFile" 
+                      type="file" 
+                      accept=".json" 
+                      onChange={handleImportFile}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-2 items-stretch sm:flex-row sm:space-y-0 sm:space-x-2">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleExportData}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar Dados
+              </Button>
+              <Button 
+                variant="destructive" 
+                className="w-full"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Limpar Dados
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="tipsters">
+          <TipsterManager />
+        </TabsContent>
+        
+        <TabsContent value="markets">
+          <MarketManager />
+        </TabsContent>
+      </Tabs>
       
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
