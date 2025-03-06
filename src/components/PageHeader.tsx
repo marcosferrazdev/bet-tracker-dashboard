@@ -10,7 +10,7 @@ interface PageHeaderProps {
 const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
-  breadcrumbs,
+  breadcrumbs = [], // Define um array vazio caso não seja passado
 }) => {
   return (
     <div className="mb-8 animate-fade-in">
