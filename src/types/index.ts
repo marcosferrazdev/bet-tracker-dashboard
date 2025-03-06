@@ -77,3 +77,8 @@ export interface Bookmaker {
   name: string;
   isLicensed: boolean;
 }
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}

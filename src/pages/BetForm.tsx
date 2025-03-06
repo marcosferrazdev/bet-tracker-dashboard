@@ -211,7 +211,7 @@ const BetForm: React.FC = () => {
                   <SelectTrigger className={errors.tipster ? "border-danger-500" : ""}>
                     <SelectValue placeholder="Selecione o tipster" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable>
                     {tipsters.length > 0 ? (
                       tipsters.map((t) => (
                         <SelectItem key={t.id} value={t.name}>
@@ -219,7 +219,7 @@ const BetForm: React.FC = () => {
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="custom">
+                      <SelectItem value="cadastre-tipsters">
                         Cadastre tipsters em Configurações
                       </SelectItem>
                     )}
@@ -252,7 +252,7 @@ const BetForm: React.FC = () => {
                   <SelectTrigger className={errors.competition ? "border-danger-500" : ""}>
                     <SelectValue placeholder="Selecione a competição" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable>
                     {competitions.map((comp) => (
                       <SelectItem key={comp.id} value={comp.name}>
                         {comp.name}
@@ -303,20 +303,20 @@ const BetForm: React.FC = () => {
                   <SelectTrigger className={errors.homeTeam ? "border-danger-500" : ""}>
                     <SelectValue placeholder="Selecione o time mandante" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable>
                     {teams.map((team) => (
                       <SelectItem key={team.id} value={team.name}>
                         {team.name}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Outro time</SelectItem>
+                    <SelectItem value="custom-home">Outro time</SelectItem>
                   </SelectContent>
                 </Select>
-                {homeTeam === 'custom' && (
+                {homeTeam === 'custom-home' && (
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome do time mandante"
-                    value={homeTeam === 'custom' ? '' : homeTeam}
+                    value={homeTeam === 'custom-home' ? '' : homeTeam}
                     onChange={(e) => setHomeTeam(e.target.value)}
                   />
                 )}
@@ -338,20 +338,20 @@ const BetForm: React.FC = () => {
                   <SelectTrigger className={errors.awayTeam ? "border-danger-500" : ""}>
                     <SelectValue placeholder="Selecione o time visitante" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable>
                     {teams.map((team) => (
                       <SelectItem key={team.id} value={team.name}>
                         {team.name}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Outro time</SelectItem>
+                    <SelectItem value="custom-away">Outro time</SelectItem>
                   </SelectContent>
                 </Select>
-                {awayTeam === 'custom' && (
+                {awayTeam === 'custom-away' && (
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome do time visitante"
-                    value={awayTeam === 'custom' ? '' : awayTeam}
+                    value={awayTeam === 'custom-away' ? '' : awayTeam}
                     onChange={(e) => setAwayTeam(e.target.value)}
                   />
                 )}
@@ -373,7 +373,7 @@ const BetForm: React.FC = () => {
                   <SelectTrigger className={errors.market ? "border-danger-500" : ""}>
                     <SelectValue placeholder="Selecione o mercado" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable>
                     {markets.length > 0 ? (
                       markets.map((m) => (
                         <SelectItem key={m.id} value={m.name}>
@@ -381,7 +381,7 @@ const BetForm: React.FC = () => {
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="custom">
+                      <SelectItem value="cadastre-mercados">
                         Cadastre mercados em Configurações
                       </SelectItem>
                     )}
@@ -414,20 +414,20 @@ const BetForm: React.FC = () => {
                   <SelectTrigger className={errors.bookmaker ? "border-danger-500" : ""}>
                     <SelectValue placeholder="Selecione a casa de apostas" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable>
                     {bookmakers.map((bookie) => (
                       <SelectItem key={bookie.id} value={bookie.name}>
                         {bookie.name}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Outra casa</SelectItem>
+                    <SelectItem value="custom-bookmaker">Outra casa</SelectItem>
                   </SelectContent>
                 </Select>
-                {bookmaker === 'custom' && (
+                {bookmaker === 'custom-bookmaker' && (
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome da casa de apostas"
-                    value={bookmaker === 'custom' ? '' : bookmaker}
+                    value={bookmaker === 'custom-bookmaker' ? '' : bookmaker}
                     onChange={(e) => setBookmaker(e.target.value)}
                   />
                 )}
