@@ -1,35 +1,52 @@
+// betContext.tsx
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Bet, DashboardStats, DailyStats, MonthlyStats, Tipster, Market, Competition, Team, Bookmaker } from '@/types';
-import { calculateDashboardStats, calculateDailyStats, calculateMonthlyStats, fillMissingDays } from '@/lib/bet-utils';
-import { toast } from 'sonner';
-import { brazilianBookmakers } from '@/data/bookmakers';
-import { competitions } from '@/data/competitions';
-import { teams } from '@/data/teams';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  Bet,
+  DashboardStats,
+  DailyStats,
+  MonthlyStats,
+  Tipster,
+  Market,
+  Competition,
+  Team,
+  Bookmaker,
+} from "@/types";
+import {
+  calculateDashboardStats,
+  calculateDailyStats,
+  calculateMonthlyStats,
+  fillMissingDays,
+} from "@/lib/bet-utils";
+import { toast } from "sonner";
+import { brazilianBookmakers } from "@/data/bookmakers";
+import { competitions } from "@/data/competitions";
+import { teams } from "@/data/teams";
+import { supabase } from "@/services/supabaseClient";
 
 interface BetContextType {
   bets: Bet[];
-  addBet: (bet: Bet) => void;
-  updateBet: (bet: Bet) => void;
-  deleteBet: (id: string) => void;
+  addBet: (bet: Bet) => Promise<void>;
+  updateBet: (bet: Bet) => Promise<void>;
+  deleteBet: (id: string) => Promise<void>;
   stats: DashboardStats;
   dailyStats: DailyStats[];
   monthlyStats: MonthlyStats[];
   isLoading: boolean;
   unitValue: number;
   setUnitValue: (value: number) => void;
-  
+
   // New entities
   tipsters: Tipster[];
   addTipster: (tipster: Tipster) => void;
   updateTipster: (tipster: Tipster) => void;
   deleteTipster: (id: string) => void;
-  
+
   markets: Market[];
   addMarket: (market: Market) => void;
   updateMarket: (market: Market) => void;
   deleteMarket: (id: string) => void;
-  
+
   bookmakers: Bookmaker[];
   competitions: Competition[];
   teams: Team[];
@@ -37,7 +54,9 @@ interface BetContextType {
 
 const BetContext = createContext<BetContextType | undefined>(undefined);
 
-export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [bets, setBets] = useState<Bet[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalBets: 0,
@@ -48,171 +67,253 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     hitRate: 0,
     profitCurrency: 0,
     profitUnits: 0,
-    roi: 0
+    roi: 0,
   });
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [unitValue, setUnitValue] = useState<number>(10); // Default unit value is R$10
-  
-  // New entities state
+  const [unitValue, setUnitValueState] = useState<number>(10); // Default unit value
+
+  // Entities em localStorage (caso queira migrar, replicar a lógica do "bets")
   const [tipsters, setTipsters] = useState<Tipster[]>([]);
   const [markets, setMarkets] = useState<Market[]>([]);
-  const [bookmakers, setBookmakers] = useState<Bookmaker[]>(brazilianBookmakers);
-  
-  // Use predefined data for competitions and teams
+  const [bookmakers, setBookmakers] =
+    useState<Bookmaker[]>(brazilianBookmakers);
+
+  // Predefinidos
   const [competitionsList] = useState<Competition[]>(competitions);
   const [teamsList] = useState<Team[]>(teams);
 
+  // --------------------------------------------------
+  // 1) Carrega as apostas do Supabase (em vez do localStorage)
+  // --------------------------------------------------
   useEffect(() => {
-    // Load data from localStorage
-    const loadData = () => {
+    const loadDataFromSupabase = async () => {
       try {
-        const savedBets = localStorage.getItem('bets');
-        const savedUnitValue = localStorage.getItem('unitValue');
-        const savedTipsters = localStorage.getItem('tipsters');
-        const savedMarkets = localStorage.getItem('markets');
-        
-        if (savedBets) {
-          setBets(JSON.parse(savedBets));
+        const { data, error } = await supabase.from("bets").select("*");
+
+        if (error) {
+          console.error("Erro ao buscar bets no Supabase:", error);
+          toast.error("Erro ao carregar dados do Supabase!");
+        } else if (data) {
+          // data já vem como array de objetos
+          setBets(data as Bet[]);
         }
-        
-        if (savedUnitValue) {
-          setUnitValue(parseFloat(savedUnitValue));
-        }
-        
-        if (savedTipsters) {
-          setTipsters(JSON.parse(savedTipsters));
-        }
-        
-        if (savedMarkets) {
-          setMarkets(JSON.parse(savedMarkets));
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-        toast.error('Erro ao carregar dados!');
+      } catch (err) {
+        console.error("Erro inesperado ao carregar dados:", err);
+        toast.error("Erro inesperado ao carregar dados do Supabase!");
       } finally {
         setIsLoading(false);
       }
     };
-    
-    loadData();
+
+    loadDataFromSupabase();
   }, []);
 
+  // --------------------------------------------------
+  // 2) Carrega tipsters, markets e unitValue do localStorage (mantido como exemplo)
+  // --------------------------------------------------
   useEffect(() => {
-    // Update stats when bets change
+    try {
+      const savedUnitValue = localStorage.getItem("unitValue");
+      const savedTipsters = localStorage.getItem("tipsters");
+      const savedMarkets = localStorage.getItem("markets");
+
+      if (savedUnitValue) {
+        setUnitValueState(parseFloat(savedUnitValue));
+      }
+      if (savedTipsters) {
+        setTipsters(JSON.parse(savedTipsters));
+      }
+      if (savedMarkets) {
+        setMarkets(JSON.parse(savedMarkets));
+      }
+    } catch (error) {
+      console.error("Error loading local data:", error);
+      toast.error("Erro ao carregar dados locais!");
+    }
+  }, []);
+
+  // --------------------------------------------------
+  // 3) Recalcula estatísticas sempre que "bets" mudar
+  // --------------------------------------------------
+  useEffect(() => {
     if (!isLoading) {
       const newStats = calculateDashboardStats(bets);
       const newDailyStats = fillMissingDays(calculateDailyStats(bets));
       const newMonthlyStats = calculateMonthlyStats(bets);
-      
+
       setStats(newStats);
       setDailyStats(newDailyStats);
       setMonthlyStats(newMonthlyStats);
-      
-      // Save to localStorage
-      localStorage.setItem('bets', JSON.stringify(bets));
     }
   }, [bets, isLoading]);
 
+  // --------------------------------------------------
+  // 4) Salva unitValue, tipsters e markets no localStorage quando mudam
+  // --------------------------------------------------
   useEffect(() => {
-    // Save unit value to localStorage when it changes
     if (!isLoading) {
-      localStorage.setItem('unitValue', unitValue.toString());
+      localStorage.setItem("unitValue", unitValue.toString());
     }
   }, [unitValue, isLoading]);
-  
+
   useEffect(() => {
-    // Save tipsters to localStorage when they change
     if (!isLoading) {
-      localStorage.setItem('tipsters', JSON.stringify(tipsters));
+      localStorage.setItem("tipsters", JSON.stringify(tipsters));
     }
   }, [tipsters, isLoading]);
-  
+
   useEffect(() => {
-    // Save markets to localStorage when they change
     if (!isLoading) {
-      localStorage.setItem('markets', JSON.stringify(markets));
+      localStorage.setItem("markets", JSON.stringify(markets));
     }
   }, [markets, isLoading]);
 
-  const addBet = (bet: Bet) => {
-    setBets(prevBets => [...prevBets, bet]);
-    toast.success('Aposta adicionada com sucesso!');
+  // --------------------------------------------------
+  // 5) Funções de CRUD no Supabase
+  // --------------------------------------------------
+  const addBet = async (bet: Bet) => {
+    // Converte o objeto para o formato snake_case
+    const supabaseBet = {
+      id: bet.id,
+      date: bet.date,
+      tipster: bet.tipster,
+      competition: bet.competition,
+      bet_type: bet.type, // convertendo "type" para "bet_type"
+      home_team: bet.homeTeam, // convertendo "homeTeam" para "home_team"
+      away_team: bet.awayTeam, // convertendo "awayTeam" para "away_team"
+      market: bet.market,
+      bookmaker: bet.bookmaker,
+      entry: bet.entry,
+      odds: bet.odds,
+      stake: bet.stake,
+      unit_value: bet.unitValue, // convertendo "unitValue" para "unit_value"
+      stake_units: bet.stakeUnits, // convertendo "stakeUnits" para "stake_units"
+      commission: bet.commission,
+      result: bet.result,
+      profit_currency: bet.profitCurrency, // convertendo "profitCurrency" para "profit_currency"
+      profit_units: bet.profitUnits, // convertendo "profitUnits" para "profit_units"
+    };
+
+    const { error } = await supabase.from("bets").insert(supabaseBet);
+
+    if (error) {
+      toast.error("Erro ao adicionar aposta!");
+      console.error(error);
+      return;
+    }
+
+    setBets((prev) => [...prev, bet]);
+    toast.success("Aposta adicionada com sucesso!");
   };
 
-  const updateBet = (updatedBet: Bet) => {
-    setBets(prevBets => 
-      prevBets.map(bet => bet.id === updatedBet.id ? updatedBet : bet)
+  const updateBet = async (updatedBet: Bet) => {
+    // Atualiza no Supabase
+    const { error } = await supabase
+      .from("bets")
+      .update(updatedBet)
+      .eq("id", updatedBet.id);
+
+    if (error) {
+      toast.error("Erro ao atualizar aposta!");
+      console.error(error);
+      return;
+    }
+
+    // Se deu certo, atualiza estado local
+    setBets((prev) =>
+      prev.map((bet) => (bet.id === updatedBet.id ? updatedBet : bet))
     );
-    toast.success('Aposta atualizada com sucesso!');
+    toast.success("Aposta atualizada com sucesso!");
   };
 
-  const deleteBet = (id: string) => {
-    setBets(prevBets => prevBets.filter(bet => bet.id !== id));
-    toast.success('Aposta removida com sucesso!');
+  const deleteBet = async (id: string) => {
+    // Deleta do Supabase
+    const { error } = await supabase.from("bets").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Erro ao remover aposta!");
+      console.error(error);
+      return;
+    }
+
+    // Se deu certo, atualiza estado local
+    setBets((prev) => prev.filter((bet) => bet.id !== id));
+    toast.success("Aposta removida com sucesso!");
   };
-  
-  // Tipster management
+
+  // --------------------------------------------------
+  // 6) Funções para "unitValue"
+  // --------------------------------------------------
+  const setUnitValue = (value: number) => {
+    setUnitValueState(value);
+    // localStorage é atualizado no useEffect
+  };
+
+  // --------------------------------------------------
+  // 7) Funções CRUD para Tipsters e Markets (em localStorage por enquanto)
+  // --------------------------------------------------
   const addTipster = (tipster: Tipster) => {
-    setTipsters(prev => [...prev, tipster]);
-    toast.success('Tipster adicionado com sucesso!');
+    setTipsters((prev) => [...prev, tipster]);
+    toast.success("Tipster adicionado com sucesso!");
   };
-  
+
   const updateTipster = (updatedTipster: Tipster) => {
-    setTipsters(prev => 
-      prev.map(tipster => tipster.id === updatedTipster.id ? updatedTipster : tipster)
+    setTipsters((prev) =>
+      prev.map((t) => (t.id === updatedTipster.id ? updatedTipster : t))
     );
-    toast.success('Tipster atualizado com sucesso!');
+    toast.success("Tipster atualizado com sucesso!");
   };
-  
+
   const deleteTipster = (id: string) => {
-    setTipsters(prev => prev.filter(tipster => tipster.id !== id));
-    toast.success('Tipster removido com sucesso!');
+    setTipsters((prev) => prev.filter((t) => t.id !== id));
+    toast.success("Tipster removido com sucesso!");
   };
-  
-  // Market management
+
   const addMarket = (market: Market) => {
-    setMarkets(prev => [...prev, market]);
-    toast.success('Mercado adicionado com sucesso!');
+    setMarkets((prev) => [...prev, market]);
+    toast.success("Mercado adicionado com sucesso!");
   };
-  
+
   const updateMarket = (updatedMarket: Market) => {
-    setMarkets(prev => 
-      prev.map(market => market.id === updatedMarket.id ? updatedMarket : market)
+    setMarkets((prev) =>
+      prev.map((m) => (m.id === updatedMarket.id ? updatedMarket : m))
     );
-    toast.success('Mercado atualizado com sucesso!');
+    toast.success("Mercado atualizado com sucesso!");
   };
-  
+
   const deleteMarket = (id: string) => {
-    setMarkets(prev => prev.filter(market => market.id !== id));
-    toast.success('Mercado removido com sucesso!');
+    setMarkets((prev) => prev.filter((m) => m.id !== id));
+    toast.success("Mercado removido com sucesso!");
   };
 
   return (
-    <BetContext.Provider value={{
-      bets,
-      addBet,
-      updateBet,
-      deleteBet,
-      stats,
-      dailyStats,
-      monthlyStats,
-      isLoading,
-      unitValue,
-      setUnitValue,
-      tipsters,
-      addTipster,
-      updateTipster,
-      deleteTipster,
-      markets,
-      addMarket,
-      updateMarket,
-      deleteMarket,
-      bookmakers,
-      competitions: competitionsList,
-      teams: teamsList
-    }}>
+    <BetContext.Provider
+      value={{
+        bets,
+        addBet,
+        updateBet,
+        deleteBet,
+        stats,
+        dailyStats,
+        monthlyStats,
+        isLoading,
+        unitValue,
+        setUnitValue,
+        tipsters,
+        addTipster,
+        updateTipster,
+        deleteTipster,
+        markets,
+        addMarket,
+        updateMarket,
+        deleteMarket,
+        bookmakers,
+        competitions: competitionsList,
+        teams: teamsList,
+      }}
+    >
       {children}
     </BetContext.Provider>
   );
@@ -221,7 +322,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 export const useBets = () => {
   const context = useContext(BetContext);
   if (context === undefined) {
-    throw new Error('useBets must be used within a BetProvider');
+    throw new Error("useBets must be used within a BetProvider");
   }
   return context;
 };
