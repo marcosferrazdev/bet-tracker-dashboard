@@ -389,14 +389,14 @@ const BetForm: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="result">Resultado</Label>
                 <Select 
-                  value={result || ''} 
-                  onValueChange={(value) => setResult(value === '' ? null : value as BetResult)}
+                  value={result || 'PENDING'} 
+                  onValueChange={(value) => setResult(value === 'PENDING' ? null : value as BetResult)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o resultado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Pendente</SelectItem>
+                    <SelectItem value="PENDING">Pendente</SelectItem>
                     <SelectItem value="GREEN">GREEN</SelectItem>
                     <SelectItem value="RED">RED</SelectItem>
                     <SelectItem value="REEMBOLSO">REEMBOLSO</SelectItem>
