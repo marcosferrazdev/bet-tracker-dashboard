@@ -49,12 +49,18 @@ const BetForm: React.FC = () => {
   // Form state
   const [date, setDate] = useState<Date>(new Date());
   const [tipster, setTipster] = useState('');
+  const [customTipster, setCustomTipster] = useState('');
   const [competition, setCompetition] = useState('');
+  const [customCompetition, setCustomCompetition] = useState('');
   const [type, setType] = useState<BetType>('PRÉ');
   const [homeTeam, setHomeTeam] = useState('');
+  const [customHomeTeam, setCustomHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
+  const [customAwayTeam, setCustomAwayTeam] = useState('');
   const [market, setMarket] = useState('');
+  const [customMarket, setCustomMarket] = useState('');
   const [bookmaker, setBookmaker] = useState('');
+  const [customBookmaker, setCustomBookmaker] = useState('');
   const [entry, setEntry] = useState('');
   const [odds, setOdds] = useState<number>(0);
   const [stake, setStake] = useState<number>(0);
@@ -94,6 +100,28 @@ const BetForm: React.FC = () => {
       }
     }
   }, [isEditing, id, bets, navigate]);
+
+  // Handle custom value changes
+  useEffect(() => {
+    if (tipster === 'custom' && customTipster) {
+      setTipster(customTipster);
+    }
+    if (competition === 'custom' && customCompetition) {
+      setCompetition(customCompetition);
+    }
+    if (homeTeam === 'custom-home' && customHomeTeam) {
+      setHomeTeam(customHomeTeam);
+    }
+    if (awayTeam === 'custom-away' && customAwayTeam) {
+      setAwayTeam(customAwayTeam);
+    }
+    if (market === 'custom' && customMarket) {
+      setMarket(customMarket);
+    }
+    if (bookmaker === 'custom-bookmaker' && customBookmaker) {
+      setBookmaker(customBookmaker);
+    }
+  }, [customTipster, customCompetition, customHomeTeam, customAwayTeam, customMarket, customBookmaker]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -212,17 +240,11 @@ const BetForm: React.FC = () => {
                     <SelectValue placeholder="Selecione o tipster" />
                   </SelectTrigger>
                   <SelectContent searchable>
-                    {tipsters.length > 0 ? (
-                      tipsters.map((t) => (
-                        <SelectItem key={t.id} value={t.name}>
-                          {t.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="cadastre-tipsters">
-                        Cadastre tipsters em Configurações
+                    {tipsters.map((t) => (
+                      <SelectItem key={t.id} value={t.name}>
+                        {t.name}
                       </SelectItem>
-                    )}
+                    ))}
                     <SelectItem value="custom">Personalizado</SelectItem>
                   </SelectContent>
                 </Select>
@@ -230,8 +252,8 @@ const BetForm: React.FC = () => {
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome do tipster"
-                    value={tipster === 'custom' ? '' : tipster}
-                    onChange={(e) => setTipster(e.target.value)}
+                    value={customTipster}
+                    onChange={(e) => setCustomTipster(e.target.value)}
                   />
                 )}
                 {errors.tipster && (
@@ -265,8 +287,8 @@ const BetForm: React.FC = () => {
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome da competição"
-                    value={competition === 'custom' ? '' : competition}
-                    onChange={(e) => setCompetition(e.target.value)}
+                    value={customCompetition}
+                    onChange={(e) => setCustomCompetition(e.target.value)}
                   />
                 )}
                 {errors.competition && (
@@ -316,8 +338,8 @@ const BetForm: React.FC = () => {
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome do time mandante"
-                    value={homeTeam === 'custom-home' ? '' : homeTeam}
-                    onChange={(e) => setHomeTeam(e.target.value)}
+                    value={customHomeTeam}
+                    onChange={(e) => setCustomHomeTeam(e.target.value)}
                   />
                 )}
                 {errors.homeTeam && (
@@ -351,8 +373,8 @@ const BetForm: React.FC = () => {
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome do time visitante"
-                    value={awayTeam === 'custom-away' ? '' : awayTeam}
-                    onChange={(e) => setAwayTeam(e.target.value)}
+                    value={customAwayTeam}
+                    onChange={(e) => setCustomAwayTeam(e.target.value)}
                   />
                 )}
                 {errors.awayTeam && (
@@ -374,17 +396,11 @@ const BetForm: React.FC = () => {
                     <SelectValue placeholder="Selecione o mercado" />
                   </SelectTrigger>
                   <SelectContent searchable>
-                    {markets.length > 0 ? (
-                      markets.map((m) => (
-                        <SelectItem key={m.id} value={m.name}>
-                          {m.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="cadastre-mercados">
-                        Cadastre mercados em Configurações
+                    {markets.map((m) => (
+                      <SelectItem key={m.id} value={m.name}>
+                        {m.name}
                       </SelectItem>
-                    )}
+                    ))}
                     <SelectItem value="custom">Personalizado</SelectItem>
                   </SelectContent>
                 </Select>
@@ -392,8 +408,8 @@ const BetForm: React.FC = () => {
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome do mercado"
-                    value={market === 'custom' ? '' : market}
-                    onChange={(e) => setMarket(e.target.value)}
+                    value={customMarket}
+                    onChange={(e) => setCustomMarket(e.target.value)}
                   />
                 )}
                 {errors.market && (
@@ -427,8 +443,8 @@ const BetForm: React.FC = () => {
                   <Input
                     className="mt-2"
                     placeholder="Digite o nome da casa de apostas"
-                    value={bookmaker === 'custom-bookmaker' ? '' : bookmaker}
-                    onChange={(e) => setBookmaker(e.target.value)}
+                    value={customBookmaker}
+                    onChange={(e) => setCustomBookmaker(e.target.value)}
                   />
                 )}
                 {errors.bookmaker && (
