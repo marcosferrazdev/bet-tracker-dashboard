@@ -243,6 +243,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateBet = async (updatedBet: Bet) => {
     const supabaseBet = {
+      date: updatedBet.date,
       tipster: updatedBet.tipster,
       competition: updatedBet.competition,
       bet_type: updatedBet.type,
@@ -265,14 +266,17 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
       .from("bets")
       .update(supabaseBet)
       .eq("id", updatedBet.id);
+
     if (error) {
       toast.error("Erro ao atualizar aposta!");
       console.error(error);
       return;
     }
+
     setBets((prev) =>
       prev.map((bet) => (bet.id === updatedBet.id ? updatedBet : bet))
     );
+
     toast.success("Aposta atualizada com sucesso!");
   };
 
