@@ -78,17 +78,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex items-center rounded-xl px-3 py-2 transition-all
-                  ${
-                    isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-neutral-700 hover:bg-neutral-100"
-                  }
-                `}
+                className={`
+                flex items-center rounded-xl transition-all duration-300
+                ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2"}
+                ${
+                  isActive
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-neutral-700 hover:bg-neutral-100"
+                }
+              `}
               >
-                <span className="mr-2">{link.icon}</span>
-                {/* Se estiver recolhido, esconde o texto */}
-                {!collapsed && <span className="font-medium">{link.name}</span>}
+                {/* Ícone com tamanho consistente */}
+                {React.cloneElement(link.icon, {
+                  className: `h-5 w-5 ${
+                    isActive ? "text-blue-600" : "text-neutral-700"
+                  }`,
+                })}
+
+                {/* Texto condicional */}
+                {!collapsed && (
+                  <span className="ml-3 font-medium">{link.name}</span>
+                )}
               </Link>
             );
           })}
