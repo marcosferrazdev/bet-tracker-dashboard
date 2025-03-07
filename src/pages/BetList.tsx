@@ -42,6 +42,19 @@ import {
 import { generateId } from "@/lib/bet-utils";
 import { PopoverClose } from "@radix-ui/react-popover";
 
+export function getProfitColorClass(result: BetResult) {
+  switch (result) {
+    case "GREEN":
+      return "text-green-600 font-medium";
+    case "RED":
+      return "text-red-600 font-medium";
+    case "REEMBOLSO":
+      return "text-neutral-500 font-medium";
+    default:
+      return "text-neutral-600";
+  }
+}
+
 const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
   const [searchTerm, setSearchTerm] = useState("");
@@ -142,19 +155,6 @@ const BetList: React.FC = () => {
         Pendente
       </Badge>
     );
-  };
-
-  const getProfitColorClass = (result: BetResult) => {
-    switch (result) {
-      case "GREEN":
-        return "text-green-600 font-medium";
-      case "RED":
-        return "text-red-600 font-medium";
-      case "REEMBOLSO":
-        return "text-neutral-500 font-medium";
-      default:
-        return "text-neutral-600";
-    }
   };
 
   const handleCopyBet = (bet: Bet) => {

@@ -54,7 +54,7 @@ const BetForm: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [tipster, setTipster] = useState("");
   const [competition, setCompetition] = useState("");
-  const [type, setType] = useState<BetType>("PRÉ");
+  const [type, setType] = useState<BetType>("Pré");
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
   const [market, setMarket] = useState("");
@@ -254,10 +254,10 @@ const BetForm: React.FC = () => {
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PRÉ">PRÉ</SelectItem>
-                    <SelectItem value="LIVE">LIVE</SelectItem>
-                    <SelectItem value="COMBO">COMBO</SelectItem>
-                    <SelectItem value="OUTROS">OUTROS</SelectItem>
+                    <SelectItem value="Pré">Pré</SelectItem>
+                    <SelectItem value="Live">Live</SelectItem>
+                    <SelectItem value="Combo">Combo</SelectItem>
+                    <SelectItem value="Outros">Outros</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
