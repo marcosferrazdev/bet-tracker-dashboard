@@ -1,4 +1,3 @@
-// betContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   Bet,
@@ -41,10 +40,11 @@ interface BetContextType {
   updateTipster: (tipster: Tipster) => Promise<void>;
   deleteTipster: (id: string) => Promise<void>;
 
+  // Markets CRUD via Supabase
   markets: Market[];
-  addMarket: (market: Market) => void;
-  updateMarket: (market: Market) => void;
-  deleteMarket: (id: string) => void;
+  addMarket: (market: Market) => Promise<void>;
+  updateMarket: (market: Market) => Promise<void>;
+  deleteMarket: (id: string) => Promise<void>;
 
   bookmakers: Bookmaker[];
   competitions: Competition[];
@@ -73,17 +73,18 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [unitValue, setUnitValueState] = useState<number>(10); // Default unit value
 
-  // Carrega tipsters via Supabase
+  // Tipsters carregados via Supabase
   const [tipsters, setTipsters] = useState<Tipster[]>([]);
-  // Os demais dados permanecem via localStorage ou dados fixos
+  // Markets carregados via Supabase
   const [markets, setMarkets] = useState<Market[]>([]);
+  // Os demais dados permanecem fixos ou via localStorage
   const [bookmakers, setBookmakers] =
     useState<Bookmaker[]>(brazilianBookmakers);
   const [competitionsList] = useState<Competition[]>(competitions);
   const [teamsList] = useState<Team[]>(teams);
 
   // --------------------------------------------------
-  // 1) Carrega as apostas do Supabase (em vez do localStorage)
+  // 1) Carrega as apostas do Supabase
   // --------------------------------------------------
   useEffect(() => {
     const loadBets = async () => {
@@ -127,34 +128,49 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // --------------------------------------------------
-  // 3) Carrega markets e unitValue do localStorage (mantido como exemplo)
+  // 3) Carrega markets do Supabase
+  // --------------------------------------------------
+  useEffect(() => {
+    const loadMarkets = async () => {
+      try {
+        const { data, error } = await supabase.from("markets").select("*");
+        if (error) {
+          console.error("Erro ao buscar markets do Supabase:", error);
+          toast.error("Erro ao carregar mercados do Supabase!");
+        } else if (data) {
+          setMarkets(data as Market[]);
+        }
+      } catch (err) {
+        console.error("Erro inesperado ao carregar markets:", err);
+        toast.error("Erro inesperado ao carregar mercados do Supabase!");
+      }
+    };
+    loadMarkets();
+  }, []);
+
+  // --------------------------------------------------
+  // 4) Carrega unitValue do localStorage (mantido)
   // --------------------------------------------------
   useEffect(() => {
     try {
       const savedUnitValue = localStorage.getItem("unitValue");
-      const savedMarkets = localStorage.getItem("markets");
-
       if (savedUnitValue) {
         setUnitValueState(parseFloat(savedUnitValue));
       }
-      if (savedMarkets) {
-        setMarkets(JSON.parse(savedMarkets));
-      }
     } catch (error) {
-      console.error("Error loading local data:", error);
+      console.error("Error loading unitValue from localStorage:", error);
       toast.error("Erro ao carregar dados locais!");
     }
   }, []);
 
   // --------------------------------------------------
-  // 4) Recalcula estatísticas sempre que "bets" mudar
+  // 5) Recalcula estatísticas sempre que "bets" mudar
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
       const newStats = calculateDashboardStats(bets);
       const newDailyStats = fillMissingDays(calculateDailyStats(bets));
       const newMonthlyStats = calculateMonthlyStats(bets);
-
       setStats(newStats);
       setDailyStats(newDailyStats);
       setMonthlyStats(newMonthlyStats);
@@ -162,7 +178,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [bets, isLoading]);
 
   // --------------------------------------------------
-  // 5) Salva unitValue e markets no localStorage quando mudam
+  // 6) Salva unitValue no localStorage quando muda
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -170,14 +186,8 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [unitValue, isLoading]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("markets", JSON.stringify(markets));
-    }
-  }, [markets, isLoading]);
-
   // --------------------------------------------------
-  // 6) Funções de CRUD para Bets (já implementadas)
+  // 7) Funções de CRUD para Bets
   // --------------------------------------------------
   const addBet = async (bet: Bet) => {
     const supabaseBet = {
@@ -239,14 +249,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // --------------------------------------------------
-  // 7) Funções para "unitValue"
+  // 8) Função para "unitValue"
   // --------------------------------------------------
   const setUnitValue = (value: number) => {
     setUnitValueState(value);
   };
 
   // --------------------------------------------------
-  // 8) Funções CRUD para Tipsters via Supabase
+  // 9) Funções CRUD para Tipsters via Supabase
   // --------------------------------------------------
   const addTipster = async (tipster: Tipster) => {
     try {
@@ -302,23 +312,59 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // --------------------------------------------------
-  // 9) Funções CRUD para Markets (mantidas em localStorage por enquanto)
+  // 10) Funções CRUD para Markets via Supabase
   // --------------------------------------------------
-  const addMarket = (market: Market) => {
-    setMarkets((prev) => [...prev, market]);
-    toast.success("Mercado adicionado com sucesso!");
+  const addMarket = async (market: Market) => {
+    try {
+      const { error } = await supabase.from("markets").insert(market);
+      if (error) {
+        toast.error("Erro ao adicionar mercado!");
+        console.error(error);
+        return;
+      }
+      setMarkets((prev) => [...prev, market]);
+      toast.success("Mercado adicionado com sucesso!");
+    } catch (err) {
+      console.error("Erro inesperado ao adicionar mercado:", err);
+      toast.error("Erro inesperado ao adicionar mercado!");
+    }
   };
 
-  const updateMarket = (updatedMarket: Market) => {
-    setMarkets((prev) =>
-      prev.map((m) => (m.id === updatedMarket.id ? updatedMarket : m))
-    );
-    toast.success("Mercado atualizado com sucesso!");
+  const updateMarket = async (updatedMarket: Market) => {
+    try {
+      const { error } = await supabase
+        .from("markets")
+        .update({ name: updatedMarket.name })
+        .eq("id", updatedMarket.id);
+      if (error) {
+        toast.error("Erro ao atualizar mercado!");
+        console.error(error);
+        return;
+      }
+      setMarkets((prev) =>
+        prev.map((m) => (m.id === updatedMarket.id ? updatedMarket : m))
+      );
+      toast.success("Mercado atualizado com sucesso!");
+    } catch (err) {
+      console.error("Erro inesperado ao atualizar mercado:", err);
+      toast.error("Erro inesperado ao atualizar mercado!");
+    }
   };
 
-  const deleteMarket = (id: string) => {
-    setMarkets((prev) => prev.filter((m) => m.id !== id));
-    toast.success("Mercado removido com sucesso!");
+  const deleteMarket = async (id: string) => {
+    try {
+      const { error } = await supabase.from("markets").delete().eq("id", id);
+      if (error) {
+        toast.error("Erro ao remover mercado!");
+        console.error(error);
+        return;
+      }
+      setMarkets((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Mercado removido com sucesso!");
+    } catch (err) {
+      console.error("Erro inesperado ao remover mercado:", err);
+      toast.error("Erro inesperado ao remover mercado!");
+    }
   };
 
   return (
