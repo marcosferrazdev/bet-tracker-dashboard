@@ -30,10 +30,15 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filtra as opções com base na query de busca
   const filteredOptions = useMemo(() => {
+    const normalizeString = (str: string) =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    const normalizedQuery = normalizeString(searchQuery);
     return options.filter((option) =>
-      option.name.toLowerCase().includes(searchQuery.toLowerCase())
+      normalizeString(option.name).includes(normalizedQuery)
     );
   }, [options, searchQuery]);
 
