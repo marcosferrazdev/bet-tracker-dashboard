@@ -1,7 +1,6 @@
-
 export type BetResult = "GREEN" | "RED" | "REEMBOLSO" | null;
 
-export type BetType = "PRÉ" | "LIVE" | "COMBO" | "OUTROS";
+export type BetType = "Pré" | "Live" | "Múltipla" | "Outros";
 
 export interface Bet {
   id: string;
