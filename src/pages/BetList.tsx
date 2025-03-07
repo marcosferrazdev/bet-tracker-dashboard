@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  MoreVertical,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -230,7 +231,46 @@ const BetList: React.FC = () => {
                   {currentItems.map((bet) => (
                     <TableRow key={bet.id}>
                       <TableCell className="text-center">
-                        <div className="flex flex-row gap-2 justify-center">
+                        {/* Menu suspenso para telas pequenas */}
+                        <div className="md:hidden">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="start" className="w-36">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start"
+                                onClick={() => handleCopyBet(bet)}
+                              >
+                                <Copy className="h-4 w-4 mr-2" /> Copiar
+                              </Button>
+                              <Link to={`/editar-aposta/${bet.id}`}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" /> Editar
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start text-danger-500"
+                                onClick={() => handleDeleteClick(bet.id)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                              </Button>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {/* Exibe os três botões normalmente em telas maiores */}
+                        <div className="hidden md:flex gap-2 justify-center">
                           <Button
                             variant="outline"
                             size="sm"
@@ -252,6 +292,7 @@ const BetList: React.FC = () => {
                           </Button>
                         </div>
                       </TableCell>
+
                       <TableCell className="font-medium">
                         {formatDate(bet.date)}
                       </TableCell>
