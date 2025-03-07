@@ -221,6 +221,7 @@ const BetList: React.FC = () => {
                     <TableHead>Mercado</TableHead>
                     <TableHead>Odd</TableHead>
                     <TableHead>Valor</TableHead>
+                    <TableHead>Casa</TableHead>
                     <TableHead>Resultado</TableHead>
                     <TableHead className="text-right">Lucro</TableHead>
                   </TableRow>
@@ -228,7 +229,6 @@ const BetList: React.FC = () => {
                 <TableBody>
                   {currentItems.map((bet) => (
                     <TableRow key={bet.id}>
-                      {/* Coluna de Ações (horizontal) */}
                       <TableCell className="text-center">
                         <div className="flex flex-row gap-2 justify-center">
                           <Button
@@ -275,6 +275,7 @@ const BetList: React.FC = () => {
                       </TableCell>
                       <TableCell>{bet.odds.toFixed(2)}</TableCell>
                       <TableCell>{formatCurrency(bet.stake)}</TableCell>
+                      <TableCell>{bet.bookmaker}</TableCell>
                       <TableCell>
                         <Popover>
                           <PopoverTrigger asChild>
