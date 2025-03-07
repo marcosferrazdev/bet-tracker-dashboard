@@ -36,6 +36,60 @@ ChartJS.register(
 const Dashboard: React.FC = () => {
   const { stats, dailyStats, monthlyStats, isLoading } = useBets();
 
+  // Configuração do gráfico de desempenho diário
+  const dailyChartData = {
+    labels: dailyStats.map((stat) => stat.date),
+    datasets: [
+      {
+        label: "Lucro Diário",
+        data: dailyStats.map((stat) => stat.profitCurrency),
+        backgroundColor: dailyStats.map((stat) =>
+          stat.profitCurrency >= 0
+            ? "rgba(34, 197, 94, 0.7)"
+            : "rgba(239, 68, 68, 0.7)"
+        ), // Verde para lucro, vermelho para prejuízo
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const dailyChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += formatCurrency(context.parsed.y);
+            }
+            return label;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function (value: any) {
+            return formatCurrency(value);
+          },
+        },
+      },
+    },
+  };
+
   // Configuração do gráfico de desempenho mensal
   const barChartData = {
     labels: monthlyStats.map((stat) => stat.month),
@@ -126,6 +180,14 @@ const Dashboard: React.FC = () => {
       {/* Componente para visualizar o lucro diário */}
       <div className="mb-8">
         <DailyProfit />
+      </div>
+
+      {/* Gráfico de Desempenho Diário */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-100 mb-8">
+        <h2 className="text-lg font-medium mb-4">Desempenho Diário</h2>
+        <div className="h-80">
+          <Bar data={dailyChartData} options={dailyChartOptions} />
+        </div>
       </div>
 
       {/* Gráfico de Desempenho Mensal */}
