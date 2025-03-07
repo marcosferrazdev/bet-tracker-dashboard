@@ -12,42 +12,44 @@ const DailyProfit: React.FC = () => {
   const { dailyStats } = useBets();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // Formata a data para o mesmo padrão armazenado no dailyStats (ex: "yyyy-MM-dd")
   const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
-
-  // Encontra a estatística do dia escolhido (se existir)
   const statForSelectedDate = dailyStats.find(
     (stat) => stat.date === formattedDateKey
   );
   const profit = statForSelectedDate ? statForSelectedDate.profitCurrency : 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          Lucro Diário - {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <Label>Escolha o dia:</Label>
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            locale={ptBR}
-            className="mt-2"
-          />
-        </div>
-        <div
-          className={`text-2xl font-semibold ${getProfitColorClass(
-            profit > 0 ? "GREEN" : profit < 0 ? "RED" : "REEMBOLSO"
-          )}`}
-        >
-          {formatCurrency(profit)}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="w-full flex justify-center">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <CardTitle>
+            Lucro Diário -{" "}
+            {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Label className="mb-2 block text-center">Escolha o dia:</Label>
+            {/* Contêiner flex para centralizar o calendário */}
+            <div className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                locale={ptBR}
+              />
+            </div>
+          </div>
+          <div
+            className={`text-2xl font-semibold ${getProfitColorClass(
+              profit > 0 ? "GREEN" : profit < 0 ? "RED" : "REEMBOLSO"
+            )}`}
+          >
+            {formatCurrency(profit)}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
