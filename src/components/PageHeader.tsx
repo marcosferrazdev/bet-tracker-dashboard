@@ -16,11 +16,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     <div className="mb-8 animate-fade-in">
       {/* Breadcrumbs */}
       {breadcrumbs.length > 0 && (
-        <div className="flex items-center space-x-2 text-sm text-neutral-500 mb-3">
+        <div className="flex items-center text-sm text-neutral-500 mb-3">
           {breadcrumbs.map((crumb, index) => (
-            <React.Fragment key={index}>
+            <span key={index} className="flex items-center">
               {index > 0 && (
-                <ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
+                <ChevronRight className="h-4 w-4 text-neutral-400 mx-1" />
               )}
               {crumb.href ? (
                 <a
@@ -34,13 +34,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                   {crumb.label}
                 </span>
               )}
-            </React.Fragment>
+            </span>
           ))}
         </div>
       )}
 
-      {/* Título e subtítulo */}
+      {/* Título */}
       <h1 className="text-3xl font-semibold text-neutral-900">{title}</h1>
+
+      {/* Subtítulo */}
       {subtitle && <p className="text-neutral-600 mt-1">{subtitle}</p>}
     </div>
   );
