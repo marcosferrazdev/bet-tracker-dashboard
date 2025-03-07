@@ -34,4 +34,6 @@ export const brazilianBookmakers: Bookmaker[] = [
   { id: generateId(), name: "Metgol", isLicensed: true },
   { id: generateId(), name: "Kto", isLicensed: true },
   { id: generateId(), name: "Marjosports", isLicensed: true },
+  { id: generateId(), name: "Br4Bet", isLicensed: true },
+  { id: generateId(), name: "Brasil da Sorte", isLicensed: true },
 ];
