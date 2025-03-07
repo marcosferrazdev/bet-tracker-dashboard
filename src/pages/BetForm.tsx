@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+// src/pages/BetForm.tsx
+
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -19,20 +21,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBets } from "@/context/BetContext";
 import { Bet, BetType, BetResult } from "@/types";
 import { generateId, calculateUnits, calculateProfit } from "@/lib/bet-utils";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
+
+// >>> Importe o DatePicker <<<
+import { AlertCircle } from "lucide-react";
+import DatePicker from "@/components/DataPicker";
 
 const BetForm: React.FC = () => {
   const { id } = useParams();
@@ -48,6 +47,7 @@ const BetForm: React.FC = () => {
     competitions,
     teams,
   } = useBets();
+
   const isEditing = !!id;
 
   // Form state
@@ -65,7 +65,7 @@ const BetForm: React.FC = () => {
   const [commission, setCommission] = useState<number | undefined>(undefined);
   const [result, setResult] = useState<BetResult>(null);
 
-  // Computed values
+  // Computed
   const stakeUnits = calculateUnits(stake, unitValue);
   const profitCurrency = calculateProfit(stake, odds, result);
   const profitUnits = calculateUnits(profitCurrency, unitValue);
@@ -73,6 +73,7 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Se houver só 1 tipster, seleciona automaticamente
   useEffect(() => {
     if (!isEditing && tipsters.length === 1 && !tipster) {
       setTipster(tipsters[0].name);
@@ -117,6 +118,7 @@ const BetForm: React.FC = () => {
     if (odds < 1) newErrors.odds = "Odd deve ser maior que 1";
     if (!stake) newErrors.stake = "Valor da aposta é obrigatório";
     if (stake <= 0) newErrors.stake = "Valor da aposta deve ser maior que 0";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -177,34 +179,13 @@ const BetForm: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Date */}
+              {/* Data */}
               <div className="space-y-2">
                 <Label htmlFor="date">Data</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date
-                        ? format(date, "PPP", { locale: ptBR })
-                        : "Selecione uma data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(date) => date && setDate(date)}
-                      locale={ptBR}
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  date={date}
+                  onDateChange={(newDate) => setDate(newDate)}
+                />
               </div>
 
               {/* Tipster */}
@@ -243,7 +224,7 @@ const BetForm: React.FC = () => {
                 )}
               </div>
 
-              {/* Type */}
+              {/* Tipo */}
               <div className="space-y-2">
                 <Label htmlFor="type">Tipo</Label>
                 <Select
@@ -262,7 +243,7 @@ const BetForm: React.FC = () => {
                 </Select>
               </div>
 
-              {/* Home Team */}
+              {/* Time Mandante */}
               <div className="space-y-2">
                 <Label htmlFor="homeTeam">Time Mandante</Label>
                 <SearchableSelect
@@ -280,7 +261,7 @@ const BetForm: React.FC = () => {
                 )}
               </div>
 
-              {/* Away Team */}
+              {/* Time Visitante */}
               <div className="space-y-2">
                 <Label htmlFor="awayTeam">Time Visitante</Label>
                 <SearchableSelect
@@ -298,7 +279,7 @@ const BetForm: React.FC = () => {
                 )}
               </div>
 
-              {/* Market */}
+              {/* Mercado */}
               <div className="space-y-2">
                 <Label htmlFor="market">Mercado</Label>
                 <SearchableSelect
@@ -316,7 +297,7 @@ const BetForm: React.FC = () => {
                 )}
               </div>
 
-              {/* Bookmaker */}
+              {/* Casa de Apostas */}
               <div className="space-y-2">
                 <Label htmlFor="bookmaker">Casa de Apostas</Label>
                 <SearchableSelect
@@ -334,7 +315,7 @@ const BetForm: React.FC = () => {
                 )}
               </div>
 
-              {/* Entry */}
+              {/* Entrada */}
               <div className="space-y-2">
                 <Label htmlFor="entry">Entrada</Label>
                 <Input
@@ -394,7 +375,7 @@ const BetForm: React.FC = () => {
                 </p>
               </div>
 
-              {/* Commission */}
+              {/* Comissão */}
               <div className="space-y-2">
                 <Label htmlFor="commission">Comissão (opcional)</Label>
                 <Input
@@ -412,7 +393,7 @@ const BetForm: React.FC = () => {
                 />
               </div>
 
-              {/* Result */}
+              {/* Resultado */}
               <div className="space-y-2">
                 <Label htmlFor="result">Resultado</Label>
                 <Select
@@ -434,7 +415,7 @@ const BetForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Profit Preview */}
+            {/* Prévia do Resultado */}
             {result && (
               <div
                 className={`p-4 rounded-lg border ${
@@ -465,6 +446,7 @@ const BetForm: React.FC = () => {
               </div>
             )}
           </CardContent>
+
           <CardFooter className="flex justify-between">
             <Button
               variant="outline"

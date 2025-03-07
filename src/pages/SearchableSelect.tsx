@@ -54,7 +54,6 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             placeholder="Buscar..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            // Impede que as teclas causem comportamentos inesperados no Select
             onKeyDown={(e) => e.stopPropagation()}
           />
         </div>
