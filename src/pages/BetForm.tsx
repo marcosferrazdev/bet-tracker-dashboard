@@ -73,6 +73,12 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (!isEditing && tipsters.length === 1 && !tipster) {
+      setTipster(tipsters[0].name);
+    }
+  }, [tipsters, isEditing, tipster]);
+
   // Carrega dados se estiver editando
   useEffect(() => {
     if (isEditing && id) {

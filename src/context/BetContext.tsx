@@ -84,7 +84,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [teamsList] = useState<Team[]>(teams);
 
   // --------------------------------------------------
-  // 1) Carrega as apostas do Supabase
+  // 1) Carrega as apostas do Supabase e converte para camelCase
   // --------------------------------------------------
   useEffect(() => {
     const loadBets = async () => {
@@ -94,7 +94,27 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
           console.error("Erro ao buscar bets no Supabase:", error);
           toast.error("Erro ao carregar dados do Supabase!");
         } else if (data) {
-          setBets(data as Bet[]);
+          const mappedBets = data.map((row: any) => ({
+            id: row.id,
+            date: row.date,
+            tipster: row.tipster,
+            competition: row.competition,
+            type: row.bet_type, // Converte para camelCase
+            homeTeam: row.home_team, // Converte para camelCase
+            awayTeam: row.away_team, // Converte para camelCase
+            market: row.market,
+            bookmaker: row.bookmaker,
+            entry: row.entry,
+            odds: row.odds,
+            stake: row.stake,
+            unitValue: row.unit_value, // Converte para camelCase
+            stakeUnits: row.stake_units, // Converte para camelCase
+            commission: row.commission,
+            result: row.result,
+            profitCurrency: row.profit_currency, // Converte para camelCase
+            profitUnits: row.profit_units, // Converte para camelCase
+          }));
+          setBets(mappedBets as Bet[]);
         }
       } catch (err) {
         console.error("Erro inesperado ao carregar bets:", err);
@@ -222,9 +242,28 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateBet = async (updatedBet: Bet) => {
+    const supabaseBet = {
+      tipster: updatedBet.tipster,
+      competition: updatedBet.competition,
+      bet_type: updatedBet.type,
+      home_team: updatedBet.homeTeam,
+      away_team: updatedBet.awayTeam,
+      market: updatedBet.market,
+      bookmaker: updatedBet.bookmaker,
+      entry: updatedBet.entry,
+      odds: updatedBet.odds,
+      stake: updatedBet.stake,
+      unit_value: updatedBet.unitValue,
+      stake_units: updatedBet.stakeUnits,
+      commission: updatedBet.commission,
+      result: updatedBet.result,
+      profit_currency: updatedBet.profitCurrency,
+      profit_units: updatedBet.profitUnits,
+    };
+
     const { error } = await supabase
       .from("bets")
-      .update(updatedBet)
+      .update(supabaseBet)
       .eq("id", updatedBet.id);
     if (error) {
       toast.error("Erro ao atualizar aposta!");
