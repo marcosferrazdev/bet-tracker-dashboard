@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import React, { useMemo, useState } from "react";
 
 export interface OptionItem {
   id: string;
@@ -54,6 +54,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             placeholder="Buscar..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onMouseDown={(e) => e.stopPropagation()} // Impede que o clique feche o dropdown
             onKeyDown={(e) => e.stopPropagation()}
           />
         </div>
