@@ -1,26 +1,47 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { brazilianBookmakers } from "@/data/bookmakers";
+import { competitions } from "@/data/competitions";
 import {
-  Bet,
-  DashboardStats,
-  DailyStats,
-  MonthlyStats,
-  Tipster,
-  Market,
-  Competition,
-  Team,
-  Bookmaker,
-} from "@/types";
-import {
-  calculateDashboardStats,
   calculateDailyStats,
+  calculateDashboardStats,
   calculateMonthlyStats,
   fillMissingDays,
 } from "@/lib/bet-utils";
-import { toast } from "sonner";
-import { brazilianBookmakers } from "@/data/bookmakers";
-import { competitions } from "@/data/competitions";
-import { teams } from "@/data/teams";
 import { supabase } from "@/services/supabaseClient";
+import {
+  Bet,
+  Bookmaker,
+  Competition,
+  DailyStats,
+  DashboardStats,
+  Market,
+  MonthlyStats,
+  Team,
+  Tipster,
+} from "@/types";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+
+// Interface para os dados brutos retornados do Supabase (snake_case)
+interface SupabaseBet {
+  id: string;
+  date: string;
+  tipster: string;
+  competition: string;
+  bet_type: string;
+  home_team: string;
+  away_team: string;
+  market: string;
+  bookmaker: string;
+  entry: string;
+  odds: number;
+  stake: number;
+  unit_value: number;
+  stake_units: number;
+  commission: number | null;
+  result: string | null;
+  profit_currency: number;
+  profit_units: number;
+}
 
 interface BetContextType {
   bets: Bet[];
@@ -77,11 +98,11 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [tipsters, setTipsters] = useState<Tipster[]>([]);
   // Markets carregados via Supabase
   const [markets, setMarkets] = useState<Market[]>([]);
-  // Os demais dados permanecem fixos ou via localStorage
-  const [bookmakers, setBookmakers] =
-    useState<Bookmaker[]>(brazilianBookmakers);
+  // Teams carregados via Supabase
+  const [teamsList, setTeamsList] = useState<Team[]>([]);
+  // Bookmakers e Competitions permanecem fixos ou via localStorage
+  const [bookmakers, setBookmakers] = useState<Bookmaker[]>(brazilianBookmakers);
   const [competitionsList] = useState<Competition[]>(competitions);
-  const [teamsList] = useState<Team[]>(teams);
 
   // --------------------------------------------------
   // 1) Carrega as apostas do Supabase e converte para camelCase
@@ -94,25 +115,25 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
           console.error("Erro ao buscar bets no Supabase:", error);
           toast.error("Erro ao carregar dados do Supabase!");
         } else if (data) {
-          const mappedBets = data.map((row: any) => ({
+          const mappedBets = data.map((row: SupabaseBet) => ({
             id: row.id,
             date: row.date,
             tipster: row.tipster,
             competition: row.competition,
-            type: row.bet_type, // Converte para camelCase
-            homeTeam: row.home_team, // Converte para camelCase
-            awayTeam: row.away_team, // Converte para camelCase
+            type: row.bet_type,
+            homeTeam: row.home_team,
+            awayTeam: row.away_team,
             market: row.market,
             bookmaker: row.bookmaker,
             entry: row.entry,
             odds: row.odds,
             stake: row.stake,
-            unitValue: row.unit_value, // Converte para camelCase
-            stakeUnits: row.stake_units, // Converte para camelCase
+            unitValue: row.unit_value,
+            stakeUnits: row.stake_units,
             commission: row.commission,
             result: row.result,
-            profitCurrency: row.profit_currency, // Converte para camelCase
-            profitUnits: row.profit_units, // Converte para camelCase
+            profitCurrency: row.profit_currency,
+            profitUnits: row.profit_units,
           }));
           setBets(mappedBets as Bet[]);
         }
@@ -169,7 +190,28 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // --------------------------------------------------
-  // 4) Carrega unitValue do localStorage (mantido)
+  // 4) Carrega teams do Supabase
+  // --------------------------------------------------
+  useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        const { data, error } = await supabase.from("teams").select("*");
+        if (error) {
+          console.error("Erro ao buscar teams do Supabase:", error);
+          toast.error("Erro ao carregar times do Supabase!");
+        } else if (data) {
+          setTeamsList(data as Team[]);
+        }
+      } catch (err) {
+        console.error("Erro inesperado ao carregar teams:", err);
+        toast.error("Erro inesperado ao carregar times do Supabase!");
+      }
+    };
+    loadTeams();
+  }, []);
+
+  // --------------------------------------------------
+  // 5) Carrega unitValue do localStorage (mantido)
   // --------------------------------------------------
   useEffect(() => {
     try {
@@ -184,7 +226,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // --------------------------------------------------
-  // 5) Recalcula estatísticas sempre que "bets" mudar
+  // 6) Recalcula estatísticas sempre que "bets" mudar
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -198,7 +240,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [bets, isLoading]);
 
   // --------------------------------------------------
-  // 6) Salva unitValue no localStorage quando muda
+  // 7) Salva unitValue no localStorage quando muda
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -207,7 +249,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [unitValue, isLoading]);
 
   // --------------------------------------------------
-  // 7) Funções de CRUD para Bets
+  // 8) Funções de CRUD para Bets
   // --------------------------------------------------
   const addBet = async (bet: Bet) => {
     const supabaseBet = {
@@ -292,14 +334,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // --------------------------------------------------
-  // 8) Função para "unitValue"
+  // 9) Função para "unitValue"
   // --------------------------------------------------
   const setUnitValue = (value: number) => {
     setUnitValueState(value);
   };
 
   // --------------------------------------------------
-  // 9) Funções CRUD para Tipsters via Supabase
+  // 10) Funções CRUD para Tipsters via Supabase
   // --------------------------------------------------
   const addTipster = async (tipster: Tipster) => {
     try {
@@ -355,7 +397,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // --------------------------------------------------
-  // 10) Funções CRUD para Markets via Supabase
+  // 11) Funções CRUD para Markets via Supabase
   // --------------------------------------------------
   const addMarket = async (market: Market) => {
     try {
