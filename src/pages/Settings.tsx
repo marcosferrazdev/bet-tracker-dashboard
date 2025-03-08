@@ -18,8 +18,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBets } from '@/context/BetContext';
+import { supabase } from '@/services/supabaseClient';
 import { AlertCircle, Download, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TeamManager from './TeamManager';
 
@@ -31,20 +32,75 @@ const Settings: React.FC = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [importedData, setImportedData] = useState<string>('');
 
+  // Carrega o valor da unidade do banco de dados
+  useEffect(() => {
+    const fetchUnitValue = async () => {
+      const { data, error } = await supabase
+        .from('unit_values')
+        .select('value')
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Nenhum valor encontrado, podemos inicializar com 0 ou outro valor padrão
+          setNewUnitValue(0);
+        } else {
+          toast.error('Erro ao carregar valor da unidade');
+        }
+        return;
+      }
+      setNewUnitValue(data.value);
+      setUnitValue(data.value); // Atualiza o contexto
+    };
+
+    fetchUnitValue();
+  }, [setUnitValue]);
+  
   const handleUnitValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewUnitValue(parseFloat(e.target.value));
     setError(null);
   };
 
-  const saveUnitValue = () => {
-    if (!newUnitValue || newUnitValue <= 0) {
-      setError('O valor da unidade deve ser maior que zero');
+  const saveUnitValue = async () => {
+  if (!newUnitValue || newUnitValue <= 0) {
+    setError('O valor da unidade deve ser maior que zero');
+    return;
+  }
+
+  // Verifica se já existe um valor no banco
+  const { data: existingValue } = await supabase
+    .from('unit_values')
+    .select('id')
+    .limit(1)
+    .single();
+
+  if (existingValue) {
+    // Atualiza o valor existente
+    const { error } = await supabase
+      .from('unit_values')
+      .update({ value: newUnitValue })
+      .eq('id', existingValue.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar valor da unidade');
       return;
     }
-    
-    setUnitValue(newUnitValue);
-    toast.success('Valor da unidade atualizado com sucesso!');
-  };
+  } else {
+    // Insere um novo valor
+    const { error } = await supabase
+      .from('unit_values')
+      .insert([{ value: newUnitValue }]);
+
+    if (error) {
+      toast.error('Erro ao salvar valor da unidade');
+      return;
+    }
+  }
+
+  setUnitValue(newUnitValue); // Atualiza o contexto
+  toast.success('Valor da unidade atualizado com sucesso!');
+};
 
   const handleExportData = () => {
     const dataStr = JSON.stringify({ bets, unitValue });
