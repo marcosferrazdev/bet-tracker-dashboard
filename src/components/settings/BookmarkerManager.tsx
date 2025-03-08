@@ -26,9 +26,9 @@ const BookmakerManager: React.FC = () => {
     }
 
     if (editMode && currentId) {
-      await updateBookmaker({ id: currentId, name: name.trim(), isLicensed: true });
+      await updateBookmaker({ id: currentId, name: name.trim() });
     } else {
-      await addBookmaker({ name: name.trim(), isLicensed: true } as Bookmaker);
+      await addBookmaker({ name: name.trim() } as Bookmaker);
     }
 
     // Reset do formulário
@@ -50,13 +50,14 @@ const BookmakerManager: React.FC = () => {
     setError(null);
   };
 
+  // Usa optional chaining para evitar erros se algum item for nulo
+  const filteredBookmakers = bookmakers.filter((bookmaker) =>
+    bookmaker?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + 10);
   };
-
-  const filteredBookmakers = bookmakers.filter((bookmaker) =>
-    bookmaker.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <Card>

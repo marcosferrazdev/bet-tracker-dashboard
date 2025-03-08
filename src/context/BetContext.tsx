@@ -488,8 +488,9 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error(error);
         return;
       }
-      // Atualiza o estado com os dados inseridos
-      setBookmakers((prev) => [...prev, ...(data as Bookmaker[])]);
+      // Verifica se data é um array; se não for, encapsula-o em um array.
+      const newBookmakers = Array.isArray(data) ? data : [data];
+      setBookmakers((prev) => [...prev, ...newBookmakers]);
       toast.success("Casa adicionada com sucesso!");
     } catch (err) {
       toast.error("Erro inesperado ao adicionar casa");
@@ -497,11 +498,12 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+
   const updateBookmaker = async (bookmaker: Bookmaker) => {
     try {
       const { error } = await supabase
         .from("bookmakers")
-        .update({ name: bookmaker.name, is_licensed: bookmaker.isLicensed })
+        .update({ name: bookmaker.name})
         .eq("id", bookmaker.id);
       if (error) {
         toast.error("Erro ao atualizar casa");
