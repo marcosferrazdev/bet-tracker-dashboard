@@ -1,4 +1,3 @@
-import { brazilianBookmakers } from "@/data/bookmakers";
 import { competitions } from "@/data/competitions";
 import {
   calculateDailyStats,
@@ -92,7 +91,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [unitValue, setUnitValueState] = useState<number>(10); // Default unit value
+  const [unitValue, setUnitValueState] = useState<number>(10); // Valor padrão
 
   // Tipsters carregados via Supabase
   const [tipsters, setTipsters] = useState<Tipster[]>([]);
@@ -100,8 +99,8 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [markets, setMarkets] = useState<Market[]>([]);
   // Teams carregados via Supabase
   const [teamsList, setTeamsList] = useState<Team[]>([]);
-  // Bookmakers e Competitions permanecem fixos ou via localStorage
-  const [bookmakers, setBookmakers] = useState<Bookmaker[]>(brazilianBookmakers);
+  // Bookmakers carregados via Supabase (inicialmente vazio)
+  const [bookmakers, setBookmakers] = useState<Bookmaker[]>([]);
   const [competitionsList] = useState<Competition[]>(competitions);
 
   // --------------------------------------------------
@@ -211,7 +210,28 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // --------------------------------------------------
-  // 5) Carrega unitValue do localStorage (mantido)
+  // 5) Carrega bookmakers do Supabase
+  // --------------------------------------------------
+  useEffect(() => {
+    const loadBookmakers = async () => {
+      try {
+        const { data, error } = await supabase.from("bookmakers").select("*");
+        if (error) {
+          console.error("Erro ao buscar bookmakers do Supabase:", error);
+          toast.error("Erro ao carregar casas de apostas do Supabase!");
+        } else if (data) {
+          setBookmakers(data as Bookmaker[]);
+        }
+      } catch (err) {
+        console.error("Erro inesperado ao carregar bookmakers:", err);
+        toast.error("Erro inesperado ao carregar casas de apostas!");
+      }
+    };
+    loadBookmakers();
+  }, []);
+
+  // --------------------------------------------------
+  // 6) Carrega unitValue do localStorage (mantido)
   // --------------------------------------------------
   useEffect(() => {
     try {
@@ -226,7 +246,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // --------------------------------------------------
-  // 6) Recalcula estatísticas sempre que "bets" mudar
+  // 7) Recalcula estatísticas sempre que "bets" mudar
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -240,7 +260,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [bets, isLoading]);
 
   // --------------------------------------------------
-  // 7) Salva unitValue no localStorage quando muda
+  // 8) Salva unitValue no localStorage quando muda
   // --------------------------------------------------
   useEffect(() => {
     if (!isLoading) {
@@ -249,7 +269,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [unitValue, isLoading]);
 
   // --------------------------------------------------
-  // 8) Funções de CRUD para Bets
+  // 9) Funções de CRUD para Bets
   // --------------------------------------------------
   const addBet = async (bet: Bet) => {
     const supabaseBet = {
@@ -334,14 +354,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // --------------------------------------------------
-  // 9) Função para "unitValue"
+  // 10) Função para "unitValue"
   // --------------------------------------------------
   const setUnitValue = (value: number) => {
     setUnitValueState(value);
   };
 
   // --------------------------------------------------
-  // 10) Funções CRUD para Tipsters via Supabase
+  // 11) Funções CRUD para Tipsters via Supabase
   // --------------------------------------------------
   const addTipster = async (tipster: Tipster) => {
     try {
@@ -397,7 +417,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // --------------------------------------------------
-  // 11) Funções CRUD para Markets via Supabase
+  // 12) Funções CRUD para Markets via Supabase
   // --------------------------------------------------
   const addMarket = async (market: Market) => {
     try {
