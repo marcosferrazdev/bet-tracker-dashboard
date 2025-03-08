@@ -54,7 +54,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             placeholder="Buscar..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onMouseDown={(e) => e.stopPropagation()} // Impede que o clique feche o dropdown
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()} 
             onKeyDown={(e) => e.stopPropagation()}
           />
         </div>
