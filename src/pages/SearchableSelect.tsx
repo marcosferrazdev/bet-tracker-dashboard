@@ -32,10 +32,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const filteredOptions = useMemo(() => {
     const normalizeString = (str: string) =>
-      str
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
+      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const normalizedQuery = normalizeString(searchQuery);
     return options.filter((option) =>
       normalizeString(option.name).includes(normalizedQuery)
@@ -54,9 +51,17 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             placeholder="Buscar..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()} 
-            onKeyDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+            }}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onFocus={(e) => e.stopPropagation()}
           />
         </div>
         {filteredOptions.map((option) => (
