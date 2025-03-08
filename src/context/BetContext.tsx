@@ -66,7 +66,12 @@ interface BetContextType {
   updateMarket: (market: Market) => Promise<void>;
   deleteMarket: (id: string) => Promise<void>;
 
+  // Bookmakers CRUD via Supabase
   bookmakers: Bookmaker[];
+  addBookmaker: (bookmaker: Bookmaker) => Promise<void>;
+  updateBookmaker: (bookmaker: Bookmaker) => Promise<void>;
+  deleteBookmaker: (id: string) => Promise<void>;
+
   competitions: Competition[];
   teams: Team[];
 }
@@ -472,6 +477,63 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // --------------------------------------------------
+  // 13) Funções CRUD para Bookmakers via Supabase
+  // --------------------------------------------------
+  const addBookmaker = async (bookmaker: Bookmaker) => {
+    try {
+      const { data, error } = await supabase.from("bookmakers").insert(bookmaker);
+      if (error) {
+        toast.error("Erro ao adicionar casa");
+        console.error(error);
+        return;
+      }
+      // Atualiza o estado com os dados inseridos
+      setBookmakers((prev) => [...prev, ...(data as Bookmaker[])]);
+      toast.success("Casa adicionada com sucesso!");
+    } catch (err) {
+      toast.error("Erro inesperado ao adicionar casa");
+      console.error(err);
+    }
+  };
+
+  const updateBookmaker = async (bookmaker: Bookmaker) => {
+    try {
+      const { error } = await supabase
+        .from("bookmakers")
+        .update({ name: bookmaker.name, is_licensed: bookmaker.isLicensed })
+        .eq("id", bookmaker.id);
+      if (error) {
+        toast.error("Erro ao atualizar casa");
+        console.error(error);
+        return;
+      }
+      setBookmakers((prev) =>
+        prev.map((b) => (b.id === bookmaker.id ? bookmaker : b))
+      );
+      toast.success("Casa atualizada com sucesso!");
+    } catch (err) {
+      toast.error("Erro inesperado ao atualizar casa");
+      console.error(err);
+    }
+  };
+
+  const deleteBookmaker = async (id: string) => {
+    try {
+      const { error } = await supabase.from("bookmakers").delete().eq("id", id);
+      if (error) {
+        toast.error("Erro ao excluir casa");
+        console.error(error);
+        return;
+      }
+      setBookmakers((prev) => prev.filter((b) => b.id !== id));
+      toast.success("Casa excluída com sucesso!");
+    } catch (err) {
+      toast.error("Erro inesperado ao excluir casa");
+      console.error(err);
+    }
+  };
+
   return (
     <BetContext.Provider
       value={{
@@ -494,6 +556,9 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
         updateMarket,
         deleteMarket,
         bookmakers,
+        addBookmaker,
+        updateBookmaker,
+        deleteBookmaker,
         competitions: competitionsList,
         teams: teamsList,
       }}

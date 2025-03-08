@@ -11,8 +11,8 @@ import { supabase } from '@/services/supabaseClient';
 import { AlertCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import BookmakerManager from './BookmarkerManager';
-import TeamManager from './TeamManager';
+import BookmakerManager from '../components/settings/BookmarkerManager';
+import TeamManager from '../components/settings/TeamManager';
 
 const Settings: React.FC = () => {
   const { unitValue, setUnitValue } = useBets();

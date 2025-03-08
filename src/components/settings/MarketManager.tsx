@@ -1,13 +1,13 @@
 
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Market } from '@/types';
 import { useBets } from '@/context/BetContext';
 import { generateId } from '@/lib/bet-utils';
-import { AlertCircle, Plus, Edit, Trash2 } from 'lucide-react';
+import { Market } from '@/types';
+import { AlertCircle, Edit, Plus, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
 
 const MarketManager: React.FC = () => {
   const { markets, addMarket, updateMarket, deleteMarket } = useBets();
