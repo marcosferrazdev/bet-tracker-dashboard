@@ -1,43 +1,37 @@
-import React from "react";
 import PageHeader from "@/components/PageHeader";
 import StatsCard from "@/components/StatsCard";
 import { useBets } from "@/context/BetContext";
 import { formatCurrency } from "@/lib/bet-utils";
 import {
+  BarChart2,
   CircleDollarSign,
   PercentCircle,
   TrendingUp,
-  BarChart2,
 } from "lucide-react";
+import React from "react";
 import { Bar } from "react-chartjs-2";
-import { parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  ChartData,
+  Chart as ChartJS,
+  ChartOptions,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
-} from "chart.js";
+  TooltipItem,
+} from "chart.js"; // Importando tipos adicionais
 import DailyProfit from "./DailyProfit";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard: React.FC = () => {
   const { stats, dailyStats, monthlyStats, isLoading } = useBets();
 
   // Configuração do gráfico de desempenho diário
-  const dailyChartData = {
+  const dailyChartData: ChartData<"bar"> = {
     labels: dailyStats.map((stat) => stat.date),
     datasets: [
       {
@@ -53,7 +47,7 @@ const Dashboard: React.FC = () => {
     ],
   };
 
-  const dailyChartOptions = {
+  const dailyChartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -65,7 +59,7 @@ const Dashboard: React.FC = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: any) {
+          label: function (context: TooltipItem<"bar">) {
             let label = context.dataset.label || "";
             if (label) {
               label += ": ";
@@ -82,7 +76,7 @@ const Dashboard: React.FC = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value: any) {
+          callback: function (value: number) {
             return formatCurrency(value);
           },
         },
@@ -91,7 +85,7 @@ const Dashboard: React.FC = () => {
   };
 
   // Configuração do gráfico de desempenho mensal
-  const barChartData = {
+  const barChartData: ChartData<"bar"> = {
     labels: monthlyStats.map((stat) => stat.month),
     datasets: [
       {
@@ -103,7 +97,7 @@ const Dashboard: React.FC = () => {
     ],
   };
 
-  const barChartOptions = {
+  const barChartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -115,7 +109,7 @@ const Dashboard: React.FC = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: any) {
+          label: function (context: TooltipItem<"bar">) {
             let label = context.dataset.label || "";
             if (label) {
               label += ": ";
@@ -132,7 +126,7 @@ const Dashboard: React.FC = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value: any) {
+          callback: function (value: number) {
             return formatCurrency(value);
           },
         },
