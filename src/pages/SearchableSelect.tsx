@@ -1,12 +1,5 @@
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import React, { useMemo, useState } from "react";
+import React from "react";
+import Select, { SingleValue, StylesConfig } from "react-select";
 
 export interface OptionItem {
   id: string;
@@ -21,50 +14,59 @@ interface SearchableSelectProps {
   error?: string;
 }
 
+interface OptionType {
+  value: string;
+  label: string;
+}
+
+const customStyles: StylesConfig<OptionType, false> = {
+  control: (provided, state) => ({
+    ...provided,
+    borderColor: state.isFocused ? "#6366F1" : provided.borderColor,
+    boxShadow: state.isFocused ? "0 0 0 1px #6366F1" : provided.boxShadow,
+    "&:hover": {
+      borderColor: state.isFocused ? "#6366F1" : provided.borderColor,
+    },
+  }),
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+  }),
+};
+
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
   value,
   onValueChange,
   options,
-  placeholder = "",
+  placeholder = "Selecione...",
   error,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  // Converte as opções para o formato do react-select: { value, label }
+  const selectOptions: OptionType[] = options.map((opt) => ({
+    value: opt.name, // usamos o nome como valor
+    label: opt.name,
+  }));
 
-  const filteredOptions = useMemo(() => {
-    const normalizeString = (str: string) =>
-      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    const normalizedQuery = normalizeString(searchQuery);
-    return options.filter((option) =>
-      normalizeString(option.name).includes(normalizedQuery)
-    );
-  }, [options, searchQuery]);
+  // Encontra a opção selecionada comparando o valor (string)
+  const selectedOption: OptionType | null =
+    selectOptions.find((opt) => opt.value === value) || null;
+
+  const handleChange = (selected: SingleValue<OptionType>) => {
+    onValueChange(selected?.value || "");
+  };
 
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className={error ? "border-danger-500" : ""}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {/* Container para o input de busca */}
-        <div className="p-2">
-          <Input
-            placeholder="Buscar..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onMouseDown={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-            onFocusCapture={(e) => e.stopPropagation()}
-          />
-        </div>
-        {filteredOptions.map((option) => (
-          <SelectItem key={option.id} value={option.name}>
-            {option.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div>
+      <Select<OptionType, false>
+        value={selectedOption}
+        onChange={handleChange}
+        options={selectOptions}
+        placeholder={placeholder}
+        styles={customStyles}
+        isSearchable
+      />
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    </div>
   );
 };
 

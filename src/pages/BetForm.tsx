@@ -1,9 +1,14 @@
 // src/pages/BetForm.tsx
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,25 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { useBets } from "@/context/BetContext";
-import { Bet, BetType, BetResult } from "@/types";
-import { generateId, calculateUnits, calculateProfit } from "@/lib/bet-utils";
+import { calculateProfit, calculateUnits, generateId } from "@/lib/bet-utils";
+import { Bet, BetResult, BetType } from "@/types";
+import { format } from "date-fns";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
 
 // >>> Importe o DatePicker <<<
-import { AlertCircle } from "lucide-react";
 import DatePicker from "@/components/DataPicker";
+import { AlertCircle } from "lucide-react";
 
 const BetForm: React.FC = () => {
   const { id } = useParams();
