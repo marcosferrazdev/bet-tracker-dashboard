@@ -216,7 +216,7 @@ const BetList: React.FC = () => {
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Apostas" }]}
       />
 
-      {/* Barra superior com pesquisa e ícone de filtro */}
+      {/* Barra superior com pesquisa, ícone de filtro e botão Nova Aposta */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative">
@@ -234,8 +234,9 @@ const BetList: React.FC = () => {
         </div>
         <Link to="/nova-aposta">
           <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nova Aposta
+            <PlusCircle className="h-4 w-4" />
+            {/* Opcional: para telas maiores, você pode exibir o texto */}
+            <span className="hidden md:inline">Nova Aposta</span>
           </Button>
         </Link>
       </div>
@@ -250,8 +251,8 @@ const BetList: React.FC = () => {
           </p>
           <Link to="/nova-aposta">
             <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Aposta
+              <PlusCircle className="h-4 w-4" />
+              <span className="hidden md:inline">Adicionar Aposta</span>
             </Button>
           </Link>
         </div>
