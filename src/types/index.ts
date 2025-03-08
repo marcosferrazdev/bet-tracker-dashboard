@@ -74,7 +74,6 @@ export interface Team {
 export interface Bookmaker {
   id: string;
   name: string;
-  isLicensed: boolean;
 }
 
 export interface SelectOption {
