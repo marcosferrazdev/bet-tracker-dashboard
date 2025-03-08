@@ -1,15 +1,16 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { BetProvider } from "@/context/BetContext";
 import Layout from "@/components/Layout";
-import Dashboard from "@/pages/Dashboard";
-import BetList from "@/pages/BetList";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { BetProvider } from "@/context/BetContext";
 import BetForm from "@/pages/BetForm";
+import BetList from "@/pages/BetList";
+import Dashboard from "@/pages/Dashboard";
 import Settings from "@/pages/Settings";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AnalysisTab from "./pages/AnalysisTab";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/apostas" element={<BetList />} />
               <Route path="/nova-aposta" element={<BetForm />} />
               <Route path="/editar-aposta/:id" element={<BetForm />} />
+              <Route path="/analise" element={<AnalysisTab />} />
               <Route path="/configuracoes" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

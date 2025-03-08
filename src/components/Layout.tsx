@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
-  CircleDollarSign,
   BarChart2,
-  PlusCircle,
-  Settings,
   ChevronLeft,
   ChevronRight,
+  CircleDollarSign,
+  PieChart,
+  PlusCircle,
+  Settings,
 } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -33,6 +34,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Nova Aposta",
       path: "/nova-aposta",
       icon: <PlusCircle className="h-5 w-5" />,
+    },
+    {
+      name: "Análise",
+      path: "/analise",
+      icon: <PieChart className="h-5 w-5" />,
     },
     {
       name: "Configurações",
