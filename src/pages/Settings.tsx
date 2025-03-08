@@ -1,13 +1,7 @@
 
-import React, { useState } from 'react';
 import PageHeader from '@/components/PageHeader';
-import { useBets } from '@/context/BetContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Download, Upload, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
+import MarketManager from '@/components/settings/MarketManager';
+import TipsterManager from '@/components/settings/TipsterManager';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,9 +12,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TipsterManager from '@/components/settings/TipsterManager';
-import MarketManager from '@/components/settings/MarketManager';
+import { useBets } from '@/context/BetContext';
+import { AlertCircle, Download, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { toast } from 'sonner';
+import TeamManager from './TeamManager';
 
 const Settings: React.FC = () => {
   const { unitValue, setUnitValue, bets } = useBets();
@@ -128,6 +129,7 @@ const Settings: React.FC = () => {
           <TabsTrigger value="data">Dados</TabsTrigger>
           <TabsTrigger value="tipsters">Tipsters</TabsTrigger>
           <TabsTrigger value="markets">Mercados</TabsTrigger>
+          <TabsTrigger value="teams">Times</TabsTrigger> {/* Nova aba */}
         </TabsList>
         
         <TabsContent value="general">
@@ -216,6 +218,10 @@ const Settings: React.FC = () => {
         
         <TabsContent value="markets">
           <MarketManager />
+        </TabsContent>
+
+        <TabsContent value="teams">
+          <TeamManager />
         </TabsContent>
       </Tabs>
       
