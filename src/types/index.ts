@@ -21,6 +21,7 @@ export interface Bet {
   result: BetResult;
   profitCurrency: number;
   profitUnits: number;
+  comboGames?: { homeTeam: string; awayTeam: string, competition: string }[];
 }
 
 export interface DashboardStats {

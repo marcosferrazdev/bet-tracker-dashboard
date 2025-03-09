@@ -19,12 +19,31 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useBets } from "@/context/BetContext";
-import { formatCurrency, formatDate, generateId, getProfitColorClass } from "@/lib/bet-utils";
+import {
+  formatCurrency,
+  formatDate,
+  generateId,
+  getProfitColorClass,
+} from "@/lib/bet-utils";
 import { Bet, BetResult } from "@/types";
 import { PopoverClose } from "@radix-ui/react-popover";
-import { endOfDay, format, isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
+import {
+  endOfDay,
+  format,
+  isAfter,
+  isBefore,
+  isSameDay,
+  startOfDay,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Calendar,
@@ -86,8 +105,14 @@ const BetList: React.FC = () => {
       bet.awayTeam.toLowerCase().includes(searchLower) ||
       bet.market.toLowerCase().includes(searchLower) ||
       bet.bookmaker.toLowerCase().includes(searchLower) ||
-      bet.entry.toLowerCase().includes(searchLower);
-    
+      bet.entry.toLowerCase().includes(searchLower) ||
+      (bet.comboGames &&
+        bet.comboGames.some(
+          (game) =>
+            game.homeTeam.toLowerCase().includes(searchLower) ||
+            game.awayTeam.toLowerCase().includes(searchLower)
+        ));
+
     const matchesResult =
       selectedResults.length === 0 ||
       ((selectedResults.includes("Pendente") && bet.result === null) ||
@@ -99,8 +124,9 @@ const BetList: React.FC = () => {
 
     let matchesDate = true;
     if (adjustedStartDate && adjustedEndDate) {
-      matchesDate = 
-        (isSameDay(betDate, adjustedStartDate) || isAfter(betDate, adjustedStartDate)) &&
+      matchesDate =
+        (isSameDay(betDate, adjustedStartDate) ||
+          isAfter(betDate, adjustedStartDate)) &&
         (isSameDay(betDate, adjustedEndDate) || isBefore(betDate, adjustedEndDate));
     }
 
@@ -241,6 +267,29 @@ const BetList: React.FC = () => {
     return false;
   };
 
+  // BetList.tsx (apenas o trecho relevante)
+  const renderGameDetails = (bet: Bet) => {
+  const games = [
+    { competition: bet.competition, homeTeam: bet.homeTeam, awayTeam: bet.awayTeam },
+    ...(bet.comboGames || []),
+  ];
+
+   return (
+    <div className="flex flex-col space-y-1">
+      {games.map((game, index) => (
+        <div key={index} className="flex flex-col">
+          <span className="font-medium">
+            {game.homeTeam} x {game.awayTeam}
+          </span>
+          <span className="text-sm text-neutral-500">
+            {"competition" in game ? game.competition : "Competição não especificada"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
   return (
     <div>
       <PageHeader
@@ -250,6 +299,7 @@ const BetList: React.FC = () => {
       />
 
       {/* Barra superior com pesquisa, ícone de filtro e botão Nova Aposta */}
+      
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative">
@@ -262,9 +312,9 @@ const BetList: React.FC = () => {
             />
           </div>
           <div className="relative">
-            <Button 
-              variant="outline" 
-              size="icon" 
+            <Button
+              variant="outline"
+              size="icon"
               className="md:hidden"
               onClick={() => setShowFilterModal(true)}
             >
@@ -274,9 +324,9 @@ const BetList: React.FC = () => {
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full md:hidden" />
             )}
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="hidden md:flex"
             onClick={() => setShowFilterModal(true)}
           >
@@ -326,7 +376,7 @@ const BetList: React.FC = () => {
                   <TableRow>
                     <TableHead className="text-left w-[100px]">Ações</TableHead>
                     <TableHead className="w-[100px]">Data</TableHead>
-                    <TableHead className="w-[200px]">Jogo</TableHead>
+                    <TableHead className="w-[300px]">Jogo</TableHead> {/* Aumentado de w-[200px] para w-[300px] */}
                     <TableHead className="min-w-[150px]">Mercado</TableHead>
                     <TableHead className="w-[80px]">Odd</TableHead>
                     <TableHead className="w-[100px]">Valor</TableHead>
@@ -376,7 +426,11 @@ const BetList: React.FC = () => {
                           </Popover>
                         </div>
                         <div className="hidden md:flex gap-2 justify-center">
-                          <Button variant="outline" size="sm" onClick={() => handleCopyBet(bet)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopyBet(bet)}
+                          >
                             <Copy className="h-4 w-4" />
                           </Button>
                           <Link to={`/editar-aposta/${bet.id}`}>
@@ -384,20 +438,17 @@ const BetList: React.FC = () => {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button variant="outline" size="sm" onClick={() => handleDeleteClick(bet.id)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteClick(bet.id)}
+                          >
                             <Trash2 className="h-4 w-4 text-danger-500" />
                           </Button>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{formatDate(bet.date)}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {bet.homeTeam} x {bet.awayTeam}
-                          </span>
-                          <span className="text-sm text-neutral-500">{bet.competition}</span>
-                        </div>
-                      </TableCell>
+                      <TableCell>{renderGameDetails(bet)}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
                           <span>{bet.entry}</span>
@@ -416,29 +467,47 @@ const BetList: React.FC = () => {
                           </PopoverTrigger>
                           <PopoverContent className="p-2 flex flex-col gap-1">
                             <PopoverClose asChild>
-                              <Button variant="ghost" size="sm" onClick={() => handleResolveBet(bet, "GREEN")}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, "GREEN")}
+                              >
                                 Green
                               </Button>
                             </PopoverClose>
                             <PopoverClose asChild>
-                              <Button variant="ghost" size="sm" onClick={() => handleResolveBet(bet, "RED")}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, "RED")}
+                              >
                                 Red
                               </Button>
                             </PopoverClose>
                             <PopoverClose asChild>
-                              <Button variant="ghost" size="sm" onClick={() => handleResolveBet(bet, "REEMBOLSO")}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, "REEMBOLSO")}
+                              >
                                 Reembolso
                               </Button>
                             </PopoverClose>
                             <PopoverClose asChild>
-                              <Button variant="ghost" size="sm" onClick={() => handleResolveBet(bet, null)}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, null)}
+                              >
                                 Pendente
                               </Button>
                             </PopoverClose>
                           </PopoverContent>
                         </Popover>
                       </TableCell>
-                      <TableCell className={`${getProfitColorClass(bet.result)} text-right`}>
+                      <TableCell
+                        className={`${getProfitColorClass(bet.result)} text-right`}
+                      >
                         {formatCurrency(bet.profitCurrency)}
                       </TableCell>
                     </TableRow>
@@ -449,15 +518,30 @@ const BetList: React.FC = () => {
           </div>
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mb-8">
-              <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button key={page} variant={page === currentPage ? "default" : "outline"} size="sm" onClick={() => handlePageChange(page)}>
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                >
                   {page}
                 </Button>
               ))}
-              <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -502,7 +586,9 @@ const BetList: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label htmlFor="startDate" className="text-sm mb-1 block">Data Inicial</label>
+                    <label htmlFor="startDate" className="text-sm mb-1 block">
+                      Data Inicial
+                    </label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -527,7 +613,9 @@ const BetList: React.FC = () => {
                     </Popover>
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="endDate" className="text-sm mb-1 block">Data Final</label>
+                    <label htmlFor="endDate" className="text-sm mb-1 block">
+                      Data Final
+                    </label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -546,7 +634,9 @@ const BetList: React.FC = () => {
                           selected={tempEndDate}
                           onSelect={setTempEndDate}
                           initialFocus
-                          disabled={(date) => tempStartDate ? isBefore(date, tempStartDate) : false}
+                          disabled={(date) =>
+                            tempStartDate ? isBefore(date, tempStartDate) : false
+                          }
                         />
                       </PopoverContent>
                     </Popover>
@@ -572,10 +662,7 @@ const BetList: React.FC = () => {
               </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button 
-                onClick={applyFilters} 
-                disabled={isApplyDisabled()}
-              >
+              <Button onClick={applyFilters} disabled={isApplyDisabled()}>
                 Aplicar
               </Button>
             </AlertDialogAction>
@@ -594,7 +681,10 @@ const BetList: React.FC = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={cancelDelete}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-danger-500 hover:bg-danger-600 text-white">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-danger-500 hover:bg-danger-600 text-white"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
