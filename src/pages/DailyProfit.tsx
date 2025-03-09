@@ -2,11 +2,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useBets } from "@/context/BetContext";
-import { formatCurrency } from "@/lib/bet-utils";
+import { formatCurrency, getProfitColorClass } from "@/lib/bet-utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import React, { useState } from "react";
-import { getProfitColorClass } from "./BetList";
 
 const DailyProfit: React.FC = () => {
   const { dailyStats } = useBets();

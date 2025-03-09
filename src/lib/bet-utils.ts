@@ -1,6 +1,6 @@
 
-import { Bet, BetResult, DashboardStats, DailyStats, MonthlyStats } from "@/types";
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { Bet, BetResult, DailyStats, DashboardStats, MonthlyStats } from "@/types";
+import { eachDayOfInterval, endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Generate a unique ID
@@ -187,3 +187,17 @@ export const getResultBgClass = (result: BetResult): string => {
       return "bg-neutral-300";
   }
 };
+
+export function getProfitColorClass(result: BetResult) {
+  switch (result) {
+    case "GREEN":
+      return "text-green-600 font-medium";
+    case "RED":
+      return "text-red-600 font-medium";
+    case "REEMBOLSO":
+      return "text-neutral-500 font-medium";
+    default:
+      return "text-neutral-600";
+  }
+}
+
