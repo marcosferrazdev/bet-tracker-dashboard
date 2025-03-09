@@ -151,9 +151,6 @@ const BetList: React.FC = () => {
     } else if (newResult === "REEMBOLSO") {
       updatedProfit = 0;
       updatedUnits = 0;
-    } else if (newResult === null) {
-      updatedProfit = 0;
-      updatedUnits = 0;
     }
     const updatedBet: Bet = {
       ...bet,
@@ -515,10 +512,11 @@ const BetList: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="text-sm mb-1 block">Data Inicial</label>
+                    <label htmlFor="startDate" className="text-sm mb-1 block">Data Inicial</label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
+                          id="startDate"
                           variant="outline"
                           className="w-full justify-start text-left font-normal"
                         >
@@ -539,7 +537,7 @@ const BetList: React.FC = () => {
                     </Popover>
                   </div>
                   <div className="flex-1">
-                    <label className="text-sm mb-1 block">Data Final</label>
+                    <label htmlFor="endDate" className="text-sm mb-1 block">Data Final</label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
