@@ -1,3 +1,4 @@
+// BetList.tsx
 import PageHeader from "@/components/PageHeader";
 import {
   AlertDialog,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -22,7 +24,10 @@ import { useBets } from "@/context/BetContext";
 import { formatCurrency, formatDate, generateId } from "@/lib/bet-utils";
 import { Bet, BetResult } from "@/types";
 import { PopoverClose } from "@radix-ui/react-popover";
+import { endOfDay, format, isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
+  Calendar,
   ChevronLeft,
   ChevronRight,
   Copy,
@@ -72,7 +77,19 @@ const BetList: React.FC = () => {
     ...selectedResults,
   ]);
 
-  // Função de filtragem principal
+  // Estados para filtro de data
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [tempStartDate, setTempStartDate] = useState<Date | undefined>(undefined);
+  const [tempEndDate, setTempEndDate] = useState<Date | undefined>(undefined);
+
+  // Função para normalizar data considerando o fuso horário local
+  const normalizeDate = (date: Date | string) => {
+    const d = new Date(date);
+    const localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return startOfDay(localDate);
+  };
+
   const filteredBets = bets.filter((bet) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
@@ -83,11 +100,25 @@ const BetList: React.FC = () => {
       bet.market.toLowerCase().includes(searchLower) ||
       bet.bookmaker.toLowerCase().includes(searchLower) ||
       bet.entry.toLowerCase().includes(searchLower);
+    
     const matchesResult =
       selectedResults.length === 0 ||
       ((selectedResults.includes("Pendente") && bet.result === null) ||
         (bet.result !== null && selectedResults.includes(bet.result)));
-    return matchesSearch && matchesResult;
+
+    // Filtro de data - só aplica se ambas as datas estiverem definidas
+    const betDate = normalizeDate(bet.date);
+    const adjustedStartDate = startDate ? normalizeDate(startDate) : undefined;
+    const adjustedEndDate = endDate ? endOfDay(normalizeDate(endDate)) : undefined;
+
+    let matchesDate = true;
+    if (adjustedStartDate && adjustedEndDate) {
+      matchesDate = 
+        (isSameDay(betDate, adjustedStartDate) || isAfter(betDate, adjustedStartDate)) &&
+        (isSameDay(betDate, adjustedEndDate) || isBefore(betDate, adjustedEndDate));
+    }
+
+    return matchesSearch && matchesResult && matchesDate;
   });
 
   // Ordenação decrescente por data
@@ -198,14 +229,44 @@ const BetList: React.FC = () => {
   };
 
   const applyFilters = () => {
+    // Se uma data estiver preenchida, a outra também deve estar
+    if ((tempStartDate && !tempEndDate) || (!tempStartDate && tempEndDate)) {
+      return; // Não aplica filtro se apenas uma data estiver preenchida
+    }
+    // Verifica se a data final é anterior à data inicial
+    if (tempStartDate && tempEndDate && isAfter(tempStartDate, tempEndDate)) {
+      return; // Não aplica filtro se a data final for anterior à inicial
+    }
     setSelectedResults(tempSelectedResults);
+    setStartDate(tempStartDate);
+    setEndDate(tempEndDate);
     setShowFilterModal(false);
     setCurrentPage(1);
   };
 
   const cancelFilters = () => {
     setTempSelectedResults([...selectedResults]);
+    setTempStartDate(startDate);
+    setTempEndDate(endDate);
     setShowFilterModal(false);
+  };
+
+  const clearDateFilters = () => {
+    setTempStartDate(undefined);
+    setTempEndDate(undefined);
+  };
+
+  // Função auxiliar para determinar se o botão deve estar desabilitado
+  const isApplyDisabled = () => {
+    // Desabilita se apenas uma data estiver preenchida
+    if ((tempStartDate && !tempEndDate) || (!tempStartDate && tempEndDate)) {
+      return true;
+    }
+    // Desabilita se a data final for anterior à inicial
+    if (tempStartDate && tempEndDate && isAfter(tempStartDate, tempEndDate)) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -228,17 +289,43 @@ const BetList: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" onClick={() => setShowFilterModal(true)}>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => setShowFilterModal(true)}
+          >
             <Filter className="h-4 w-4" />
+            {(selectedResults.length < 4 || (startDate && endDate)) && (
+              <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full" />
+            )}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="hidden md:flex"
+            onClick={() => setShowFilterModal(true)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+            {(selectedResults.length < 4 || (startDate && endDate)) && (
+              <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full" />
+            )}
           </Button>
         </div>
-        <Link to="/nova-aposta">
-          <Button>
-            <PlusCircle className="h-4 w-4" />
-            {/* Opcional: para telas maiores, você pode exibir o texto */}
-            <span className="hidden md:inline">Nova Aposta</span>
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/nova-aposta" className="md:hidden">
+            <Button size="icon" className="bg-blue-500 hover:bg-blue-600 text-white">
+              <PlusCircle className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link to="/nova-aposta" className="hidden md:inline-block">
+            <Button className="bg-blue-500 hover:bg-blue-600">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Nova Aposta
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {sortedBets.length === 0 ? (
@@ -247,12 +334,12 @@ const BetList: React.FC = () => {
             Nenhuma aposta encontrada
           </h3>
           <p className="text-neutral-600 mb-6">
-            Comece adicionando sua primeira aposta.
+            Comece adicionando sua primeira aposta ou ajuste os filtros.
           </p>
           <Link to="/nova-aposta">
-            <Button>
-              <PlusCircle className="h-4 w-4" />
-              <span className="hidden md:inline">Adicionar Aposta</span>
+            <Button className="bg-blue-500 hover:bg-blue-600">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Adicionar Aposta
             </Button>
           </Link>
         </div>
@@ -263,7 +350,7 @@ const BetList: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-rigth">Ações</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                     <TableHead>Data</TableHead>
                     <TableHead>Jogo</TableHead>
                     <TableHead>Mercado</TableHead>
@@ -278,7 +365,6 @@ const BetList: React.FC = () => {
                   {currentItems.map((bet) => (
                     <TableRow key={bet.id}>
                       <TableCell className="text-center">
-                        {/* Menu para telas pequenas */}
                         <div className="md:hidden">
                           <Popover>
                             <PopoverTrigger asChild>
@@ -315,7 +401,6 @@ const BetList: React.FC = () => {
                             </PopoverContent>
                           </Popover>
                         </div>
-                        {/* Botões para telas maiores */}
                         <div className="hidden md:flex gap-2 justify-center">
                           <Button variant="outline" size="sm" onClick={() => handleCopyBet(bet)}>
                             <Copy className="h-4 w-4" />
@@ -406,30 +491,104 @@ const BetList: React.FC = () => {
         </>
       )}
 
-      {/* Modal de Filtro de Resultados */}
+      {/* Modal de Filtro */}
       <AlertDialog open={showFilterModal} onOpenChange={setShowFilterModal}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Filtrar Resultados</AlertDialogTitle>
+            <AlertDialogTitle>Filtrar Apostas</AlertDialogTitle>
             <AlertDialogDescription>
-              Selecione os resultados que deseja visualizar:
+              Selecione os critérios para filtrar suas apostas:
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex flex-col gap-3 my-4">
-            {["GREEN", "RED", "REEMBOLSO", "Pendente"].map((status) => (
-              <div key={status} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={tempSelectedResults.includes(status)}
-                  onChange={() => toggleFilter(status)}
-                  id={status}
-                  className="form-checkbox h-4 w-4 text-primary-600"
-                />
-                <label htmlFor={status} className="text-sm cursor-pointer">
-                  {status}
-                </label>
+          <div className="flex flex-col gap-6 my-4">
+            {/* Filtros de Resultado */}
+            <div>
+              <h3 className="text-sm font-medium mb-2">Resultados</h3>
+              <div className="flex flex-col gap-3">
+                {["GREEN", "RED", "REEMBOLSO", "Pendente"].map((status) => (
+                  <div key={status} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={tempSelectedResults.includes(status)}
+                      onChange={() => toggleFilter(status)}
+                      id={status}
+                      className="form-checkbox h-4 w-4 text-primary-600"
+                    />
+                    <label htmlFor={status} className="text-sm cursor-pointer">
+                      {status}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Filtros de Data */}
+            <div>
+              <h3 className="text-sm font-medium mb-2">Período</h3>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="text-sm mb-1 block">Data Inicial</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {tempStartDate
+                            ? format(tempStartDate, "dd/MM/yyyy", { locale: ptBR })
+                            : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                          mode="single"
+                          selected={tempStartDate}
+                          onSelect={setTempStartDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm mb-1 block">Data Final</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {tempEndDate
+                            ? format(tempEndDate, "dd/MM/yyyy", { locale: ptBR })
+                            : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                          mode="single"
+                          selected={tempEndDate}
+                          onSelect={setTempEndDate}
+                          initialFocus
+                          disabled={(date) => tempStartDate ? isBefore(date, tempStartDate) : false}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                {(tempStartDate || tempEndDate) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearDateFilters}
+                    className="w-full"
+                  >
+                    Limpar datas
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
@@ -438,7 +597,10 @@ const BetList: React.FC = () => {
               </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button onClick={applyFilters}>
+              <Button 
+                onClick={applyFilters} 
+                disabled={isApplyDisabled()}
+              >
                 Aplicar
               </Button>
             </AlertDialogAction>
