@@ -1,7 +1,9 @@
+// BookmakerManager.tsx
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton'; // Certifique-se de ter este componente
 import { useBets } from '@/context/BetContext';
 import { Bookmaker } from '@/types';
 import { Edit, Plus, Trash2 } from 'lucide-react';
@@ -15,7 +17,17 @@ const BookmakerManager: React.FC = () => {
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState<number>(10);
+  const [isLoading, setIsLoading] = useState(false); // Novo estado para loading
 
+  // Função para resetar formulário
+  const resetForm = () => {
+    setName('');
+    setEditMode(false);
+    setCurrentId(null);
+    setError(null);
+  };
+
+  // Função para submissão do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -25,16 +37,19 @@ const BookmakerManager: React.FC = () => {
       return;
     }
 
-    if (editMode && currentId) {
-      await updateBookmaker({ id: currentId, name: name.trim() });
-    } else {
-      await addBookmaker({ name: name.trim() } as Bookmaker);
+    setIsLoading(true); // Ativa o loading
+    try {
+      if (editMode && currentId) {
+        await updateBookmaker({ id: currentId, name: name.trim() });
+      } else {
+        await addBookmaker({ name: name.trim() } as Bookmaker);
+      }
+      resetForm();
+    } catch (error) {
+      setError('Erro ao salvar a casa');
+    } finally {
+      setIsLoading(false); // Desativa o loading
     }
-
-    // Reset do formulário
-    setName('');
-    setEditMode(false);
-    setCurrentId(null);
   };
 
   const handleEdit = (bookmaker: Bookmaker) => {
@@ -43,14 +58,21 @@ const BookmakerManager: React.FC = () => {
     setEditMode(true);
   };
 
-  const handleCancel = () => {
-    setName('');
-    setEditMode(false);
-    setCurrentId(null);
-    setError(null);
+  const handleDelete = async (id: string) => {
+    setIsLoading(true); // Ativa o loading
+    try {
+      await deleteBookmaker(id);
+    } catch (error) {
+      setError('Erro ao excluir a casa');
+    } finally {
+      setIsLoading(false); // Desativa o loading
+    }
   };
 
-  // Usa optional chaining para evitar erros se algum item for nulo
+  const handleCancel = () => {
+    resetForm();
+  };
+
   const filteredBookmakers = bookmakers.filter((bookmaker) =>
     bookmaker?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -77,7 +99,7 @@ const BookmakerManager: React.FC = () => {
                 placeholder="Digite o nome da casa"
                 className={error ? "border-danger-500" : ""}
               />
-              <Button type="submit" size="sm">
+              <Button type="submit" size="sm" disabled={isLoading}>
                 {editMode ? <Edit className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 {editMode ? 'Atualizar' : 'Adicionar'}
               </Button>
@@ -106,7 +128,20 @@ const BookmakerManager: React.FC = () => {
           />
 
           <h3 className="font-medium mb-3">Casas Cadastradas</h3>
-          {filteredBookmakers.length === 0 ? (
+          {isLoading ? (
+            // Skeleton loading
+            <div className="space-y-2">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-md">
+                  <Skeleton className="h-4 w-[200px]" />
+                  <div className="flex space-x-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredBookmakers.length === 0 ? (
             <p className="text-muted-foreground">Nenhuma casa encontrada</p>
           ) : (
             <ul className="space-y-2">
@@ -123,7 +158,7 @@ const BookmakerManager: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => deleteBookmaker(bookmaker.id)}
+                      onClick={() => handleDelete(bookmaker.id)}
                       className="text-danger-500 hover:text-danger-700 hover:bg-danger-50"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -133,7 +168,7 @@ const BookmakerManager: React.FC = () => {
               ))}
             </ul>
           )}
-          {visibleCount < filteredBookmakers.length && (
+          {visibleCount < filteredBookmakers.length && !isLoading && (
             <div className="mt-4">
               <Button variant="outline" onClick={handleShowMore}>
                 Ver mais
