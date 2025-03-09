@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useBets } from "@/context/BetContext";
-import { formatCurrency, formatDate, generateId } from "@/lib/bet-utils";
+import { formatCurrency, formatDate, generateId, getProfitColorClass } from "@/lib/bet-utils";
 import { Bet, BetResult } from "@/types";
 import { PopoverClose } from "@radix-ui/react-popover";
 import { endOfDay, format, isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
@@ -40,19 +40,6 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
-export function getProfitColorClass(result: BetResult) {
-  switch (result) {
-    case "GREEN":
-      return "text-green-600 font-medium";
-    case "RED":
-      return "text-red-600 font-medium";
-    case "REEMBOLSO":
-      return "text-neutral-500 font-medium";
-    default:
-      return "text-neutral-600";
-  }
-}
 
 const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
