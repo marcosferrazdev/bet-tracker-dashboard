@@ -93,7 +93,6 @@ const BetList: React.FC = () => {
       ((selectedResults.includes("Pendente") && bet.result === null) ||
         (bet.result !== null && selectedResults.includes(bet.result)));
 
-    // Filtro de data - só aplica se ambas as datas estiverem definidas
     const betDate = normalizeDate(bet.date);
     const adjustedStartDate = startDate ? normalizeDate(startDate) : undefined;
     const adjustedEndDate = endDate ? endOfDay(normalizeDate(endDate)) : undefined;
@@ -108,12 +107,10 @@ const BetList: React.FC = () => {
     return matchesSearch && matchesResult && matchesDate;
   });
 
-  // Ordenação decrescente por data
   const sortedBets = [...filteredBets].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  // Paginação
   const totalPages = Math.ceil(sortedBets.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -138,7 +135,6 @@ const BetList: React.FC = () => {
     setDeleteId(null);
   };
 
-  // Atualiza o resultado da aposta
   const handleResolveBet = (bet: Bet, newResult: BetResult | null) => {
     let updatedProfit = 0;
     let updatedUnits = 0;
@@ -161,7 +157,6 @@ const BetList: React.FC = () => {
     updateBet(updatedBet);
   };
 
-  // Renderiza o Badge do resultado
   const renderResultBadge = (result: BetResult) => {
     if (result === "GREEN") {
       return (
@@ -191,7 +186,6 @@ const BetList: React.FC = () => {
     );
   };
 
-  // Duplicar aposta
   const handleCopyBet = (bet: Bet) => {
     const newBet: Bet = {
       ...bet,
@@ -203,7 +197,6 @@ const BetList: React.FC = () => {
     addBet(newBet);
   };
 
-  // Lógica da modal de filtros
   const toggleFilter = (value: string) => {
     if (tempSelectedResults.includes(value)) {
       setTempSelectedResults(tempSelectedResults.filter((v) => v !== value));
@@ -213,13 +206,11 @@ const BetList: React.FC = () => {
   };
 
   const applyFilters = () => {
-    // Se uma data estiver preenchida, a outra também deve estar
     if ((tempStartDate && !tempEndDate) || (!tempStartDate && tempEndDate)) {
-      return; // Não aplica filtro se apenas uma data estiver preenchida
+      return;
     }
-    // Verifica se a data final é anterior à data inicial
     if (tempStartDate && tempEndDate && isAfter(tempStartDate, tempEndDate)) {
-      return; // Não aplica filtro se a data final for anterior à inicial
+      return;
     }
     setSelectedResults(tempSelectedResults);
     setStartDate(tempStartDate);
@@ -240,13 +231,10 @@ const BetList: React.FC = () => {
     setTempEndDate(undefined);
   };
 
-  // Função auxiliar para determinar se o botão deve estar desabilitado
   const isApplyDisabled = () => {
-    // Desabilita se apenas uma data estiver preenchida
     if ((tempStartDate && !tempEndDate) || (!tempStartDate && tempEndDate)) {
       return true;
     }
-    // Desabilita se a data final for anterior à inicial
     if (tempStartDate && tempEndDate && isAfter(tempStartDate, tempEndDate)) {
       return true;
     }
@@ -273,17 +261,19 @@ const BetList: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="md:hidden"
-            onClick={() => setShowFilterModal(true)}
-          >
-            <Filter className="h-4 w-4" />
+          <div className="relative">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="md:hidden"
+              onClick={() => setShowFilterModal(true)}
+            >
+              <Filter className="h-4 w-4" />
+            </Button>
             {(selectedResults.length < 4 || (startDate && endDate)) && (
-              <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full md:hidden" />
             )}
-          </Button>
+          </div>
           <Button 
             variant="outline" 
             size="sm" 
@@ -334,15 +324,15 @@ const BetList: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-left">Ações</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Jogo</TableHead>
-                    <TableHead>Mercado</TableHead>
-                    <TableHead>Odd</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Casa</TableHead>
-                    <TableHead>Resultado</TableHead>
-                    <TableHead className="text-right">Lucro</TableHead>
+                    <TableHead className="text-left w-[100px]">Ações</TableHead>
+                    <TableHead className="w-[100px]">Data</TableHead>
+                    <TableHead className="w-[200px]">Jogo</TableHead>
+                    <TableHead className="min-w-[150px]">Mercado</TableHead>
+                    <TableHead className="w-[80px]">Odd</TableHead>
+                    <TableHead className="w-[100px]">Valor</TableHead>
+                    <TableHead className="w-[120px]">Casa</TableHead>
+                    <TableHead className="w-[100px]">Resultado</TableHead>
+                    <TableHead className="text-right w-[100px]">Lucro</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
