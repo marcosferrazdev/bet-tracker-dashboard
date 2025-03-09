@@ -308,6 +308,19 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     toast.success("Aposta adicionada com sucesso!");
   };
 
+  const refetchBookmakers = async () => {
+    try {
+      const { data, error } = await supabase.from("bookmakers").select("*");
+      if (error) {
+        throw error;
+      }
+      setBookmakers(data as Bookmaker[]);
+    } catch (err) {
+      console.error("Erro ao recarregar bookmakers:", err);
+      toast.error("Erro ao atualizar lista de casas");
+    }
+  };
+
   const updateBet = async (updatedBet: Bet) => {
     const supabaseBet = {
       date: updatedBet.date,
@@ -482,15 +495,13 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   // --------------------------------------------------
   const addBookmaker = async (bookmaker: Bookmaker) => {
     try {
-      const { data, error } = await supabase.from("bookmakers").insert(bookmaker);
+      const { data, error } = await supabase.from("bookmakers").insert(bookmaker).select();
       if (error) {
         toast.error("Erro ao adicionar casa");
         console.error(error);
         return;
       }
-      // Verifica se data é um array; se não for, encapsula-o em um array.
-      const newBookmakers = Array.isArray(data) ? data : [data];
-      setBookmakers((prev) => [...prev, ...newBookmakers]);
+      await refetchBookmakers(); // Refetch após adicionar
       toast.success("Casa adicionada com sucesso!");
     } catch (err) {
       toast.error("Erro inesperado ao adicionar casa");
@@ -503,16 +514,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const { error } = await supabase
         .from("bookmakers")
-        .update({ name: bookmaker.name})
+        .update({ name: bookmaker.name })
         .eq("id", bookmaker.id);
       if (error) {
         toast.error("Erro ao atualizar casa");
         console.error(error);
         return;
       }
-      setBookmakers((prev) =>
-        prev.map((b) => (b.id === bookmaker.id ? bookmaker : b))
-      );
+      await refetchBookmakers(); // Refetch após atualizar
       toast.success("Casa atualizada com sucesso!");
     } catch (err) {
       toast.error("Erro inesperado ao atualizar casa");
@@ -528,14 +537,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error(error);
         return;
       }
-      setBookmakers((prev) => prev.filter((b) => b.id !== id));
+      await refetchBookmakers(); // Refetch após excluir
       toast.success("Casa excluída com sucesso!");
     } catch (err) {
       toast.error("Erro inesperado ao excluir casa");
       console.error(err);
     }
   };
-
+  
   return (
     <BetContext.Provider
       value={{
