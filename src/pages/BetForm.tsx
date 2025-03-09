@@ -83,7 +83,7 @@ const BetForm: React.FC = () => {
     if (isEditing && id) {
       const betToEdit = bets.find((bet) => bet.id === id);
       if (betToEdit) {
-        setDate(new Date(betToEdit.date));
+        setDate(new Date(betToEdit.date + "T00:00:00"));
         setTipster(betToEdit.tipster);
         setType(betToEdit.type);
         if (betToEdit.type === "Múltipla" && betToEdit.comboGames && betToEdit.comboGames.length > 0) {
