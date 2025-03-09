@@ -334,7 +334,7 @@ const BetList: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">Ações</TableHead>
+                    <TableHead className="text-left">Ações</TableHead>
                     <TableHead>Data</TableHead>
                     <TableHead>Jogo</TableHead>
                     <TableHead>Mercado</TableHead>

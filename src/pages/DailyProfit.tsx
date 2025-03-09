@@ -17,6 +17,15 @@ const DailyProfit: React.FC = () => {
   );
   const profit = statForSelectedDate ? statForSelectedDate.profitCurrency : 0;
 
+  let profitColorClass;
+  if (profit > 0) {
+    profitColorClass = "GREEN";
+  } else if (profit < 0) {
+    profitColorClass = "RED";
+  } else {
+    profitColorClass = "REEMBOLSO";
+  }
+
   return (
     <div className="w-full flex justify-center">
       <Card className="w-full max-w-md text-center">
@@ -40,9 +49,7 @@ const DailyProfit: React.FC = () => {
             </div>
           </div>
           <div
-            className={`text-2xl font-semibold ${getProfitColorClass(
-              profit > 0 ? "GREEN" : profit < 0 ? "RED" : "REEMBOLSO"
-            )}`}
+            className={`text-2xl font-semibold ${getProfitColorClass(profitColorClass)}`}
           >
             {formatCurrency(profit)}
           </div>
