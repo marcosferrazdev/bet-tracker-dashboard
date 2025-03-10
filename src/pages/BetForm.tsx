@@ -56,7 +56,9 @@ const BetForm: React.FC = () => {
   const [tipster, setTipster] = useState("");
   const [competition, setCompetition] = useState("");
   const [type, setType] = useState<BetType>("Pré");
-  const [games, setGames] = useState<Game[]>([{ competition: "", homeTeam: "", awayTeam: "" }]);
+  const [games, setGames] = useState<Game[]>([
+    { competition: "", homeTeam: "", awayTeam: "" },
+  ]);
   const [market, setMarket] = useState("");
   const [bookmaker, setBookmaker] = useState("");
   const [entry, setEntry] = useState("");
@@ -86,18 +88,32 @@ const BetForm: React.FC = () => {
         setDate(new Date(betToEdit.date + "T00:00:00"));
         setTipster(betToEdit.tipster);
         setType(betToEdit.type);
-        if (betToEdit.type === "Múltipla" && betToEdit.comboGames && betToEdit.comboGames.length > 0) {
+        if (
+          betToEdit.type === "Múltipla" &&
+          betToEdit.comboGames &&
+          betToEdit.comboGames.length > 0
+        ) {
           setGames([
-            { competition: betToEdit.competition, homeTeam: betToEdit.homeTeam, awayTeam: betToEdit.awayTeam },
-            ...(betToEdit.comboGames.map((game) => ({
-              competition: game.competition || "", // Garante que competition seja carregada
+            {
+              competition: betToEdit.competition,
+              homeTeam: betToEdit.homeTeam,
+              awayTeam: betToEdit.awayTeam,
+            },
+            ...betToEdit.comboGames.map((game) => ({
+              competition: game.competition || "",
               homeTeam: game.homeTeam,
               awayTeam: game.awayTeam,
-            }))),
+            })),
           ]);
           setCompetition("");
         } else {
-          setGames([{ competition: betToEdit.competition, homeTeam: betToEdit.homeTeam, awayTeam: betToEdit.awayTeam }]);
+          setGames([
+            {
+              competition: betToEdit.competition,
+              homeTeam: betToEdit.homeTeam,
+              awayTeam: betToEdit.awayTeam,
+            },
+          ]);
           setCompetition(betToEdit.competition);
         }
         setMarket(betToEdit.market);
@@ -117,13 +133,24 @@ const BetForm: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!tipster) newErrors.tipster = "Tipster é obrigatório";
-    if (type !== "Múltipla" && !competition) newErrors.competition = "Competição é obrigatória";
-    games.forEach((game, index) => {
-      if (type === "Múltipla" && !game.competition)
-        newErrors[`competition${index}`] = `Competição do Jogo ${index + 1} é obrigatória`;
-      if (!game.homeTeam) newErrors[`homeTeam${index}`] = `Time mandante do Jogo ${index + 1} é obrigatório`;
-      if (!game.awayTeam) newErrors[`awayTeam${index}`] = `Time visitante do Jogo ${index + 1} é obrigatório`;
-    });
+    if (type !== "Múltipla" && type !== "Bingo Múltipla" && !competition)
+      newErrors.competition = "Competição é obrigatória";
+    if (type !== "Bingo Múltipla") {
+      games.forEach((game, index) => {
+        if (type === "Múltipla" && !game.competition)
+          newErrors[`competition${index}`] = `Competição do Jogo ${
+            index + 1
+          } é obrigatória`;
+        if (!game.homeTeam)
+          newErrors[`homeTeam${index}`] = `Time mandante do Jogo ${
+            index + 1
+          } é obrigatório`;
+        if (!game.awayTeam)
+          newErrors[`awayTeam${index}`] = `Time visitante do Jogo ${
+            index + 1
+          } é obrigatório`;
+      });
+    }
     if (!market) newErrors.market = "Mercado é obrigatório";
     if (!bookmaker) newErrors.bookmaker = "Casa de apostas é obrigatória";
     if (!entry) newErrors.entry = "Entrada é obrigatória";
@@ -239,7 +266,7 @@ const BetForm: React.FC = () => {
                   </p>
                 )}
               </div>
-              {type !== "Múltipla" && (
+              {type !== "Múltipla" && type !== "Bingo Múltipla" && (
                 <div className="space-y-2">
                   <Label htmlFor="competition">Competição</Label>
                   <SearchableSelect
@@ -270,20 +297,29 @@ const BetForm: React.FC = () => {
                     <SelectItem value="Pré">Pré</SelectItem>
                     <SelectItem value="Live">Live</SelectItem>
                     <SelectItem value="Múltipla">Múltipla</SelectItem>
-                    <SelectItem value="Outros">Outros</SelectItem>
+                    <SelectItem value="Bingo Múltipla">
+                      Bingo Múltipla
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {type === "Múltipla" ? (
                 <div className="col-span-1 md:col-span-3 space-y-4">
                   {games.map((game, index) => (
-                    <div key={index} className="space-y-2 border p-4 rounded-md">
+                    <div
+                      key={index}
+                      className="space-y-2 border p-4 rounded-md"
+                    >
                       <h4 className="font-medium">Jogo {index + 1}</h4>
                       <div className="space-y-2">
-                        <Label htmlFor={`competition${index}`}>Competição</Label>
+                        <Label htmlFor={`competition${index}`}>
+                          Competição
+                        </Label>
                         <SearchableSelect
                           value={game.competition}
-                          onValueChange={(value) => handleGameChange(index, "competition", value)}
+                          onValueChange={(value) =>
+                            handleGameChange(index, "competition", value)
+                          }
                           options={competitions}
                           placeholder="Selecione a competição"
                           error={errors[`competition${index}`]}
@@ -296,10 +332,14 @@ const BetForm: React.FC = () => {
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor={`homeTeam${index}`}>Time Mandante</Label>
+                        <Label htmlFor={`homeTeam${index}`}>
+                          Time Mandante
+                        </Label>
                         <SearchableSelect
                           value={game.homeTeam}
-                          onValueChange={(value) => handleGameChange(index, "homeTeam", value)}
+                          onValueChange={(value) =>
+                            handleGameChange(index, "homeTeam", value)
+                          }
                           options={teams}
                           placeholder="Selecione o time mandante"
                           error={errors[`homeTeam${index}`]}
@@ -312,10 +352,14 @@ const BetForm: React.FC = () => {
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor={`awayTeam${index}`}>Time Visitante</Label>
+                        <Label htmlFor={`awayTeam${index}`}>
+                          Time Visitante
+                        </Label>
                         <SearchableSelect
                           value={game.awayTeam}
-                          onValueChange={(value) => handleGameChange(index, "awayTeam", value)}
+                          onValueChange={(value) =>
+                            handleGameChange(index, "awayTeam", value)
+                          }
                           options={teams}
                           placeholder="Selecione o time visitante"
                           error={errors[`awayTeam${index}`]}
@@ -339,13 +383,25 @@ const BetForm: React.FC = () => {
                     Adicionar Jogo
                   </Button>
                 </div>
+              ) : type === "Bingo Múltipla" ? (
+                <div className="col-span-1 md:col-span-3 space-y-2">
+                  <Label htmlFor="bingo">Bingo</Label>
+                  <Input
+                    id="bingo"
+                    value={`${games[0].homeTeam} vs ${games[0].awayTeam}` || ""}
+                    disabled
+                    placeholder="Os times serão preenchidos automaticamente"
+                  />
+                </div>
               ) : (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="homeTeam">Time Mandante</Label>
                     <SearchableSelect
                       value={games[0].homeTeam}
-                      onValueChange={(value) => handleGameChange(0, "homeTeam", value)}
+                      onValueChange={(value) =>
+                        handleGameChange(0, "homeTeam", value)
+                      }
                       options={teams}
                       placeholder="Selecione o time mandante"
                       error={errors.homeTeam0}
@@ -361,7 +417,9 @@ const BetForm: React.FC = () => {
                     <Label htmlFor="awayTeam">Time Visitante</Label>
                     <SearchableSelect
                       value={games[0].awayTeam}
-                      onValueChange={(value) => handleGameChange(0, "awayTeam", value)}
+                      onValueChange={(value) =>
+                        handleGameChange(0, "awayTeam", value)
+                      }
                       options={teams}
                       placeholder="Selecione o time visitante"
                       error={errors.awayTeam0}
