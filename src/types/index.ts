@@ -1,6 +1,6 @@
 export type BetResult = "GREEN" | "RED" | "REEMBOLSO" | null;
 
-export type BetType = "Pré" | "Live" | "Múltipla" | "Outros";
+export type BetType = "Pré" | "Live" | "Múltipla" | "Bingo Múltipla";
 
 export interface Bet {
   id: string;
@@ -21,7 +21,7 @@ export interface Bet {
   result: BetResult;
   profitCurrency: number;
   profitUnits: number;
-  comboGames?: { homeTeam: string; awayTeam: string, competition: string }[];
+  comboGames?: { homeTeam: string; awayTeam: string; competition: string }[];
 }
 
 export interface DashboardStats {
