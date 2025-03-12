@@ -24,7 +24,7 @@ import { Bet, BetResult, BetType } from "@/types";
 import { format } from "date-fns";
 import { AlertCircle, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
 
@@ -37,6 +37,7 @@ interface Game {
 const BetForm: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     bets,
     addBet,
@@ -74,6 +75,9 @@ const BetForm: React.FC = () => {
 
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Pegar o viewMode da navegação anterior, se existir
+  const initialViewMode = location.state?.viewMode || "table";
 
   useEffect(() => {
     if (!isEditing && tipsters.length === 1 && !tipster) {
@@ -125,10 +129,10 @@ const BetForm: React.FC = () => {
         setResult(betToEdit.result);
       } else {
         toast.error("Aposta não encontrada");
-        navigate("/apostas");
+        navigate("/apostas", { state: { viewMode: initialViewMode } });
       }
     }
-  }, [isEditing, id, bets, navigate]);
+  }, [isEditing, id, bets, navigate, initialViewMode]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -218,7 +222,7 @@ const BetForm: React.FC = () => {
     } else {
       addBet(betData);
     }
-    navigate("/apostas");
+    navigate("/apostas", { state: { viewMode: initialViewMode } });
   };
 
   return (
@@ -589,7 +593,9 @@ const BetForm: React.FC = () => {
             <Button
               variant="outline"
               type="button"
-              onClick={() => navigate("/apostas")}
+              onClick={() =>
+                navigate("/apostas", { state: { viewMode: initialViewMode } })
+              }
             >
               Cancelar
             </Button>

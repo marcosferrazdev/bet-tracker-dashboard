@@ -50,10 +50,22 @@ import {
   Trash2,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
+  const location = useLocation();
+
+  // Função para recuperar estados do sessionStorage
+  const getStoredState = <T,>(key: string, defaultValue: T): T => {
+    const stored = sessionStorage.getItem(key);
+    return stored ? JSON.parse(stored) : defaultValue;
+  };
+
+  // Função para salvar estados no sessionStorage
+  const saveState = <T,>(key: string, value: T) => {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  };
 
   // Estados de busca e paginação
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,13 +96,26 @@ const BetList: React.FC = () => {
   const [tempEndDate, setTempEndDate] = useState<Date | undefined>(undefined);
 
   // Estado para o modo de visualização (tabela ou card)
-  const [viewMode, setViewMode] = useState<"table" | "card">("table");
+  const [viewMode, setViewMode] = useState<"table" | "card">(() =>
+    getStoredState(
+      "betListViewMode",
+      window.innerWidth < 768 ? "card" : "table"
+    )
+  );
 
-  // Definir o modo inicial apenas na montagem do componente
+  // Restaurar viewMode vindo da navegação, se existir
   useEffect(() => {
-    const initialMode = window.innerWidth < 768 ? "card" : "table";
-    setViewMode(initialMode);
-  }, []); // Executa apenas uma vez na montagem
+    const state = location.state as { viewMode?: "table" | "card" } | undefined;
+    if (state?.viewMode) {
+      setViewMode(state.viewMode);
+      saveState("betListViewMode", state.viewMode);
+    }
+  }, [location.state]);
+
+  // Salvar viewMode no sessionStorage quando mudar
+  useEffect(() => {
+    saveState("betListViewMode", viewMode);
+  }, [viewMode]);
 
   // Função para alternar o modo de visualização
   const toggleViewMode = () => {
