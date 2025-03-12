@@ -1,3 +1,4 @@
+import FilterModal from "@/components/FilterModal";
 import PageHeader from "@/components/PageHeader";
 import {
   AlertDialog,
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -35,17 +35,8 @@ import {
 } from "@/lib/bet-utils";
 import { Bet, BetResult } from "@/types";
 import { PopoverClose } from "@radix-ui/react-popover";
+import { endOfDay, isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
 import {
-  endOfDay,
-  format,
-  isAfter,
-  isBefore,
-  isSameDay,
-  startOfDay,
-} from "date-fns";
-import { ptBR } from "date-fns/locale";
-import {
-  Calendar,
   ChevronLeft,
   ChevronRight,
   Copy,
@@ -355,7 +346,7 @@ const BetList: React.FC = () => {
               <Filter className="h-4 w-4" />
             </Button>
             {(selectedResults.length < 4 || (startDate && endDate)) && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />
             )}
           </div>
           {/* Botão de alternância de layout */}
@@ -754,132 +745,23 @@ const BetList: React.FC = () => {
         </>
       )}
 
-      {/* Modal de Filtro */}
-      <AlertDialog open={showFilterModal} onOpenChange={setShowFilterModal}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Filtrar Apostas</AlertDialogTitle>
-            <AlertDialogDescription>
-              Selecione os critérios para filtrar suas apostas:
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex flex-col gap-6 my-4">
-            {/* Filtros de Resultado */}
-            <div>
-              <h3 className="text-sm font-medium mb-2">Resultados</h3>
-              <div className="flex flex-col gap-3">
-                {["GREEN", "RED", "REEMBOLSO", "Pendente"].map((status) => (
-                  <div key={status} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={tempSelectedResults.includes(status)}
-                      onChange={() => toggleFilter(status)}
-                      id={status}
-                      className="form-checkbox h-4 w-4 text-primary-600"
-                    />
-                    <label htmlFor={status} className="text-sm cursor-pointer">
-                      {status}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Filtros de Data */}
-            <div>
-              <h3 className="text-sm font-medium mb-2">Período</h3>
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label htmlFor="startDate" className="text-sm mb-1 block">
-                      Data Inicial
-                    </label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          id="startDate"
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {tempStartDate
-                            ? format(tempStartDate, "dd/MM/yyyy", {
-                                locale: ptBR,
-                              })
-                            : "Selecione a data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <CalendarComponent
-                          mode="single"
-                          selected={tempStartDate}
-                          onSelect={setTempStartDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="flex-1">
-                    <label htmlFor="endDate" className="text-sm mb-1 block">
-                      Data Final
-                    </label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          {tempEndDate
-                            ? format(tempEndDate, "dd/MM/yyyy", {
-                                locale: ptBR,
-                              })
-                            : "Selecione a data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <CalendarComponent
-                          mode="single"
-                          selected={tempEndDate}
-                          onSelect={setTempEndDate}
-                          initialFocus
-                          disabled={(date) =>
-                            tempStartDate
-                              ? isBefore(date, tempStartDate)
-                              : false
-                          }
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                {(tempStartDate || tempEndDate) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearDateFilters}
-                    className="w-full"
-                  >
-                    Limpar datas
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel asChild>
-              <Button variant="outline" onClick={cancelFilters}>
-                Cancelar
-              </Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button onClick={applyFilters} disabled={isApplyDisabled()}>
-                Aplicar
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Modal de Filtro usando o componente FilterModal */}
+      <FilterModal
+        open={showFilterModal}
+        onOpenChange={setShowFilterModal}
+        selectedResults={selectedResults}
+        tempSelectedResults={tempSelectedResults}
+        setTempSelectedResults={setTempSelectedResults}
+        startDate={startDate}
+        endDate={endDate}
+        tempStartDate={tempStartDate}
+        tempEndDate={tempEndDate}
+        setTempStartDate={setTempStartDate}
+        setTempEndDate={setTempEndDate}
+        onApply={applyFilters}
+        onCancel={cancelFilters}
+        isApplyDisabled={isApplyDisabled}
+      />
 
       {/* Modal de confirmação de exclusão */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
