@@ -60,9 +60,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Topo do sidebar */}
         <div className="flex items-center justify-between py-6 px-4 border-b">
           {!collapsed && (
-            <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
-              Bet Tracker
-            </h1>
+            <div className="flex items-center">
+              <img src="/logo.png" alt="Logo" className="h-8 w-8 mr-2" />
+              <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                Bet Tracker
+              </h1>
+            </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
