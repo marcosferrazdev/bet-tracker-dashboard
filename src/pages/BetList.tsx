@@ -56,26 +56,22 @@ const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
   const location = useLocation();
 
-  // Função para recuperar estados do sessionStorage
+  // Recupera e salva estado no sessionStorage
   const getStoredState = <T,>(key: string, defaultValue: T): T => {
     const stored = sessionStorage.getItem(key);
     return stored ? JSON.parse(stored) : defaultValue;
   };
-
-  // Função para salvar estados no sessionStorage
   const saveState = <T,>(key: string, value: T) => {
     sessionStorage.setItem(key, JSON.stringify(value));
   };
 
-  // Estados de busca e paginação
+  // Estados de busca, paginação e filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Estado para exclusão de aposta
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  // Estados para a modal de filtros
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedResults, setSelectedResults] = useState<string[]>([
     "GREEN",
@@ -87,7 +83,6 @@ const BetList: React.FC = () => {
     ...selectedResults,
   ]);
 
-  // Estados para filtro de data
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [tempStartDate, setTempStartDate] = useState<Date | undefined>(
@@ -95,7 +90,7 @@ const BetList: React.FC = () => {
   );
   const [tempEndDate, setTempEndDate] = useState<Date | undefined>(undefined);
 
-  // Estado para o modo de visualização (tabela ou card)
+  // Modo de visualização (tabela ou card)
   const [viewMode, setViewMode] = useState<"table" | "card">(() =>
     getStoredState(
       "betListViewMode",
@@ -103,7 +98,6 @@ const BetList: React.FC = () => {
     )
   );
 
-  // Restaurar viewMode vindo da navegação, se existir
   useEffect(() => {
     const state = location.state as { viewMode?: "table" | "card" } | undefined;
     if (state?.viewMode) {
@@ -112,23 +106,22 @@ const BetList: React.FC = () => {
     }
   }, [location.state]);
 
-  // Salvar viewMode no sessionStorage quando mudar
   useEffect(() => {
     saveState("betListViewMode", viewMode);
   }, [viewMode]);
 
-  // Função para alternar o modo de visualização
   const toggleViewMode = () => {
     setViewMode((prevMode) => (prevMode === "table" ? "card" : "table"));
   };
 
-  // Função para normalizar data considerando o fuso horário local
+  // Normaliza a data para o fuso local
   const normalizeDate = (date: Date | string) => {
     const d = new Date(date);
     const localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
     return startOfDay(localDate);
   };
 
+  // Filtragem das apostas
   const filteredBets = bets.filter((bet) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
@@ -173,6 +166,7 @@ const BetList: React.FC = () => {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  // Paginação
   const totalPages = Math.ceil(sortedBets.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -182,6 +176,7 @@ const BetList: React.FC = () => {
     setCurrentPage(pageNumber);
   };
 
+  // Exclusão de aposta
   const handleDeleteClick = (id: string) => {
     setDeleteId(id);
   };
@@ -197,6 +192,7 @@ const BetList: React.FC = () => {
     setDeleteId(null);
   };
 
+  // Resolução de aposta
   const handleResolveBet = (bet: Bet, newResult: BetResult | null) => {
     let updatedProfit = 0;
     let updatedUnits = 0;
@@ -219,6 +215,7 @@ const BetList: React.FC = () => {
     updateBet(updatedBet);
   };
 
+  // Renderiza o badge do resultado
   const renderResultBadge = (result: BetResult) => {
     if (result === "GREEN") {
       return (
@@ -248,6 +245,7 @@ const BetList: React.FC = () => {
     );
   };
 
+  // Copia a aposta
   const handleCopyBet = (bet: Bet) => {
     const newBet: Bet = {
       ...bet,
@@ -259,6 +257,7 @@ const BetList: React.FC = () => {
     addBet(newBet);
   };
 
+  // Filtros
   const toggleFilter = (value: string) => {
     if (tempSelectedResults.includes(value)) {
       setTempSelectedResults(tempSelectedResults.filter((v) => v !== value));
@@ -288,11 +287,6 @@ const BetList: React.FC = () => {
     setShowFilterModal(false);
   };
 
-  const clearDateFilters = () => {
-    setTempStartDate(undefined);
-    setTempEndDate(undefined);
-  };
-
   const isApplyDisabled = () => {
     if ((tempStartDate && !tempEndDate) || (!tempStartDate && tempEndDate)) {
       return true;
@@ -303,6 +297,7 @@ const BetList: React.FC = () => {
     return false;
   };
 
+  // Renderiza os detalhes do jogo
   const renderGameDetails = (bet: Bet) => {
     const games = [
       {
@@ -332,445 +327,443 @@ const BetList: React.FC = () => {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="Apostas"
-        subtitle="Gerencie suas apostas"
-        breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Apostas" }]}
-      />
-
-      {/* Barra superior com pesquisa, ícone de filtro, botão de alternância e botão Nova Aposta */}
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <div className="relative w-full sm:w-60 md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <Input
-            placeholder="Pesquisar apostas..."
-            className="pl-10 pr-10 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
-              onClick={() => setSearchTerm("")}
-            >
-              <span className="text-xl leading-none">×</span>
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
+    <div className="flex flex-col min-h-screen bg-neutral-50">
+      {/* Cabeçalho fixo */}
+      <div className="sticky top-0 z-10 bg-neutral-50">
+        <PageHeader
+          title="Apostas"
+          subtitle="Gerencie suas apostas"
+          breadcrumbs={[
+            { label: "Dashboard", href: "/" },
+            { label: "Apostas" },
+          ]}
+        />
+        <div className="flex items-center justify-between px-4 pb-4 border-b gap-4">
+          <div className="relative w-full sm:w-60 md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Pesquisar apostas..."
+              className="pl-10 pr-10 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                onClick={() => setSearchTerm("")}
+              >
+                <span className="text-xl leading-none">×</span>
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowFilterModal(true)}
+                className="relative"
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+              {(selectedResults.length < 4 || (startDate && endDate)) && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />
+              )}
+            </div>
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setShowFilterModal(true)}
+              onClick={toggleViewMode}
               className="relative"
             >
-              <Filter className="h-4 w-4" />
+              {viewMode === "table" ? (
+                <LayoutGrid className="h-4 w-4" />
+              ) : (
+                <Table className="h-4 w-4" />
+              )}
             </Button>
-            {(selectedResults.length < 4 || (startDate && endDate)) && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />
-            )}
+            <Link to="/nova-aposta">
+              <Button
+                size="icon"
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
-          {/* Botão de alternância de layout */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleViewMode}
-            className="relative"
-          >
-            {viewMode === "table" ? (
-              <LayoutGrid className="h-4 w-4" />
-            ) : (
-              <Table className="h-4 w-4" />
-            )}
-          </Button>
-          <Link to="/nova-aposta">
-            <Button
-              size="icon"
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              <PlusCircle className="h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </div>
 
-      {sortedBets.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-neutral-100">
-          <h3 className="text-lg font-medium text-neutral-800 mb-2">
-            Nenhuma aposta encontrada
-          </h3>
-          <p className="text-neutral-600 mb-6">
-            Comece adicionando sua primeira aposta ou ajuste os filtros.
-          </p>
-          <Link to="/nova-aposta">
-            <Button className="bg-blue-500 hover:bg-blue-600">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Adicionar Aposta
-            </Button>
-          </Link>
-        </div>
-      ) : (
-        <>
-          {/* Tabela para visualização em modo "table" */}
-          {viewMode === "table" && (
-            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden mb-6">
-              <div className="overflow-x-auto">
-                <TableComponent>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Ações</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Jogo</TableHead>
-                      <TableHead>Mercado</TableHead>
-                      <TableHead>Odd</TableHead>
-                      <TableHead>Valor</TableHead>
-                      <TableHead>Casa</TableHead>
-                      <TableHead>Resultado</TableHead>
-                      <TableHead className="text-right">Lucro</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentItems.map((bet) => (
-                      <TableRow key={bet.id}>
-                        <TableCell className="text-center">
-                          {/* Condição para exibir botões ou pop-up baseado no tamanho da tela */}
-                          {window.innerWidth >= 768 ? (
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleCopyBet(bet)}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Link to={`/editar-aposta/${bet.id}`}>
-                                <Button variant="outline" size="sm">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteClick(bet.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-danger-500" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent align="end" className="w-36">
+      {/* Conteúdo principal */}
+      <div className="flex-1 px-4 py-4">
+        {sortedBets.length === 0 ? (
+          <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-neutral-100">
+            <h3 className="text-lg font-medium text-neutral-800 mb-2">
+              Nenhuma aposta encontrada
+            </h3>
+            <p className="text-neutral-600 mb-6">
+              Comece adicionando sua primeira aposta ou ajuste os filtros.
+            </p>
+            <Link to="/nova-aposta">
+              <Button className="bg-blue-500 hover:bg-blue-600">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Adicionar Aposta
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            {viewMode === "table" && (
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 mb-6">
+                {/* Container da tabela com rolagem horizontal sempre visível no PC */}
+                <div className="overflow-x-scroll md:max-h-[calc(100vh-250px)] overflow-auto">
+                  <TableComponent>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Ações</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Jogo</TableHead>
+                        <TableHead>Mercado</TableHead>
+                        <TableHead>Odd</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead>Casa</TableHead>
+                        <TableHead>Resultado</TableHead>
+                        <TableHead className="text-right">Lucro</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentItems.map((bet) => (
+                        <TableRow key={bet.id}>
+                          <TableCell className="text-center">
+                            {window.innerWidth >= 768 ? (
+                              <div className="flex gap-2 justify-center">
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  className="w-full justify-start"
                                   onClick={() => handleCopyBet(bet)}
                                 >
-                                  <Copy className="h-4 w-4 mr-2" /> Copiar
+                                  <Copy className="h-4 w-4" />
                                 </Button>
                                 <Link to={`/editar-aposta/${bet.id}`}>
+                                  <Button variant="outline" size="sm">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </Link>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(bet.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-danger-500" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="end" className="w-36">
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     className="w-full justify-start"
+                                    onClick={() => handleCopyBet(bet)}
                                   >
-                                    <Edit className="h-4 w-4 mr-2" /> Editar
+                                    <Copy className="h-4 w-4 mr-2" /> Copiar
                                   </Button>
-                                </Link>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full justify-start text-danger-500"
-                                  onClick={() => handleDeleteClick(bet.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" /> Excluir
-                                </Button>
+                                  <Link to={`/editar-aposta/${bet.id}`}>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="w-full justify-start"
+                                    >
+                                      <Edit className="h-4 w-4 mr-2" /> Editar
+                                    </Button>
+                                  </Link>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-danger-500"
+                                    onClick={() => handleDeleteClick(bet.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                                  </Button>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatDate(bet.date)}
+                          </TableCell>
+                          <TableCell>{renderGameDetails(bet)}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span>{bet.entry}</span>
+                              <span className="text-xs text-neutral-500">
+                                {bet.market}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{bet.odds.toFixed(2)}</TableCell>
+                          <TableCell>{formatCurrency(bet.stake)}</TableCell>
+                          <TableCell>{bet.bookmaker}</TableCell>
+                          <TableCell>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <div className="cursor-pointer">
+                                  {renderResultBadge(bet.result)}
+                                </div>
+                              </PopoverTrigger>
+                              <PopoverContent className="p-2 flex flex-col gap-1">
+                                <PopoverClose asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleResolveBet(bet, "GREEN")
+                                    }
+                                  >
+                                    Green
+                                  </Button>
+                                </PopoverClose>
+                                <PopoverClose asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleResolveBet(bet, "RED")}
+                                  >
+                                    Red
+                                  </Button>
+                                </PopoverClose>
+                                <PopoverClose asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleResolveBet(bet, "REEMBOLSO")
+                                    }
+                                  >
+                                    Reembolso
+                                  </Button>
+                                </PopoverClose>
+                                <PopoverClose asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleResolveBet(bet, null)}
+                                  >
+                                    Pendente
+                                  </Button>
+                                </PopoverClose>
                               </PopoverContent>
                             </Popover>
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {formatDate(bet.date)}
-                        </TableCell>
-                        <TableCell>{renderGameDetails(bet)}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span>{bet.entry}</span>
-                            <span className="text-xs text-neutral-500">
-                              {bet.market}
-                            </span>
+                          </TableCell>
+                          <TableCell
+                            className={`${getProfitColorClass(
+                              bet.result
+                            )} text-right`}
+                          >
+                            {formatCurrency(bet.profitCurrency)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </TableComponent>
+                </div>
+                {/* Paginação simplificada sempre visível no PC (modo tabela) */}
+                {totalPages > 1 && (
+                  <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm font-medium mx-3">
+                      {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {viewMode === "card" && (
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 mb-6">
+                <div className="p-4 space-y-4 md:max-h-[calc(100vh-250px)] overflow-auto">
+                  {currentItems.map((bet) => (
+                    <div
+                      key={bet.id}
+                      className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium">
+                            {formatDate(bet.date)}
                           </div>
-                        </TableCell>
-                        <TableCell>{bet.odds.toFixed(2)}</TableCell>
-                        <TableCell>{formatCurrency(bet.stake)}</TableCell>
-                        <TableCell>{bet.bookmaker}</TableCell>
-                        <TableCell>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <div className="cursor-pointer">
-                                {renderResultBadge(bet.result)}
-                              </div>
-                            </PopoverTrigger>
-                            <PopoverContent className="p-2 flex flex-col gap-1">
-                              <PopoverClose asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleResolveBet(bet, "GREEN")}
-                                >
-                                  Green
-                                </Button>
-                              </PopoverClose>
-                              <PopoverClose asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleResolveBet(bet, "RED")}
-                                >
-                                  Red
-                                </Button>
-                              </PopoverClose>
-                              <PopoverClose asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleResolveBet(bet, "REEMBOLSO")
-                                  }
-                                >
-                                  Reembolso
-                                </Button>
-                              </PopoverClose>
-                              <PopoverClose asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleResolveBet(bet, null)}
-                                >
-                                  Pendente
-                                </Button>
-                              </PopoverClose>
-                            </PopoverContent>
-                          </Popover>
-                        </TableCell>
-                        <TableCell
+                          <div className="text-sm text-neutral-500">
+                            {bet.bookmaker}
+                          </div>
+                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-36">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start"
+                              onClick={() => handleCopyBet(bet)}
+                            >
+                              <Copy className="h-4 w-4 mr-2" /> Copiar
+                            </Button>
+                            <Link to={`/editar-aposta/${bet.id}`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start"
+                              >
+                                <Edit className="h-4 w-4 mr-2" /> Editar
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start text-danger-500"
+                              onClick={() => handleDeleteClick(bet.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                            </Button>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="mt-2">{renderGameDetails(bet)}</div>
+                      <div className="mt-2">
+                        <span className="font-medium">{bet.entry}</span>
+                        <span className="text-xs text-neutral-500 ml-2">
+                          {bet.market}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex justify-between">
+                        <div>
+                          <span>Odd: </span>
+                          <span className="font-medium">
+                            {bet.odds.toFixed(2)}
+                          </span>
+                        </div>
+                        <div>
+                          <span>Valor: </span>
+                          <span className="font-medium">
+                            {formatCurrency(bet.stake)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex justify-between items-center">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <div className="cursor-pointer">
+                              {renderResultBadge(bet.result)}
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-2 flex flex-col gap-1">
+                            <PopoverClose asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, "GREEN")}
+                              >
+                                Green
+                              </Button>
+                            </PopoverClose>
+                            <PopoverClose asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, "RED")}
+                              >
+                                Red
+                              </Button>
+                            </PopoverClose>
+                            <PopoverClose asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleResolveBet(bet, "REEMBOLSO")
+                                }
+                              >
+                                Reembolso
+                              </Button>
+                            </PopoverClose>
+                            <PopoverClose asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResolveBet(bet, null)}
+                              >
+                                Pendente
+                              </Button>
+                            </PopoverClose>
+                          </PopoverContent>
+                        </Popover>
+                        <div
                           className={`${getProfitColorClass(
                             bet.result
-                          )} text-right`}
+                          )} font-medium`}
                         >
                           {formatCurrency(bet.profitCurrency)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </TableComponent>
-              </div>
-            </div>
-          )}
-
-          {/* Lista para visualização em modo "card" */}
-          {viewMode === "card" && (
-            <div className="space-y-4 mb-6">
-              {currentItems.map((bet) => (
-                <div
-                  key={bet.id}
-                  className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium">{formatDate(bet.date)}</div>
-                      <div className="text-sm text-neutral-500">
-                        {bet.bookmaker}
+                        </div>
                       </div>
                     </div>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent align="end" className="w-36">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start"
-                          onClick={() => handleCopyBet(bet)}
-                        >
-                          <Copy className="h-4 w-4 mr-2" /> Copiar
-                        </Button>
-                        <Link to={`/editar-aposta/${bet.id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start"
-                          >
-                            <Edit className="h-4 w-4 mr-2" /> Editar
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-danger-500"
-                          onClick={() => handleDeleteClick(bet.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" /> Excluir
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="mt-2">{renderGameDetails(bet)}</div>
-                  <div className="mt-2">
-                    <span className="font-medium">{bet.entry}</span>
-                    <span className="text-xs text-neutral-500 ml-2">
-                      {bet.market}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex justify-between">
-                    <div>
-                      <span>Odd: </span>
-                      <span className="font-medium">{bet.odds.toFixed(2)}</span>
-                    </div>
-                    <div>
-                      <span>Valor: </span>
-                      <span className="font-medium">
-                        {formatCurrency(bet.stake)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-2 flex justify-between items-center">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <div className="cursor-pointer">
-                          {renderResultBadge(bet.result)}
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent className="p-2 flex flex-col gap-1">
-                        <PopoverClose asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleResolveBet(bet, "GREEN")}
-                          >
-                            Green
-                          </Button>
-                        </PopoverClose>
-                        <PopoverClose asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleResolveBet(bet, "RED")}
-                          >
-                            Red
-                          </Button>
-                        </PopoverClose>
-                        <PopoverClose asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleResolveBet(bet, "REEMBOLSO")}
-                          >
-                            Reembolso
-                          </Button>
-                        </PopoverClose>
-                        <PopoverClose asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleResolveBet(bet, null)}
-                          >
-                            Pendente
-                          </Button>
-                        </PopoverClose>
-                      </PopoverContent>
-                    </Popover>
-                    <div
-                      className={`${getProfitColorClass(
-                        bet.result
-                      )} font-medium`}
+                  ))}
+                </div>
+                {/* Paginação simplificada para cards */}
+                {totalPages > 1 && (
+                  <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
                     >
-                      {formatCurrency(bet.profitCurrency)}
-                    </div>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm font-medium mx-3">
+                      {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mb-8">
-              {/* Paginação para modo "table" */}
-              {viewMode === "table" && (
-                <div className="hidden md:flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <Button
-                        key={page}
-                        variant={page === currentPage ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </Button>
-                    )
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Paginação para modo "card" ou mobile */}
-              {(viewMode === "card" || window.innerWidth < 768) && (
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium">
-                    {currentPage} de {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Modal de Filtro usando o componente FilterModal */}
+      {/* Modal de Filtro */}
       <FilterModal
         open={showFilterModal}
         onOpenChange={setShowFilterModal}
@@ -788,7 +781,7 @@ const BetList: React.FC = () => {
         isApplyDisabled={isApplyDisabled}
       />
 
-      {/* Modal de confirmação de exclusão */}
+      {/* Modal de Confirmação de Exclusão */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
