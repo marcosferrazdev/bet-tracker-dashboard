@@ -13,7 +13,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumbs = [],
 }) => {
   return (
-    <div className="mb-8 animate-fade-in">
+    <div className="mb-8 animate-fade-in mt-2">
       {/* Breadcrumbs */}
       {breadcrumbs.length > 0 && (
         <div className="flex items-center text-sm text-neutral-500 mb-3">
