@@ -63,6 +63,7 @@ const ShareBetImage: React.FC<ShareBetImageProps> = ({ bet, onClose }) => {
     generateImage();
   }, [hideValues]); // Regenera a imagem quando hideValues mudar
 
+  // Preparar a lista de jogos (principal + combinados)
   const games = [
     { homeTeam: bet.homeTeam, awayTeam: bet.awayTeam },
     ...(bet.comboGames || []),
@@ -89,12 +90,12 @@ const ShareBetImage: React.FC<ShareBetImageProps> = ({ bet, onClose }) => {
               Minha Aposta
             </h2>
             <div className="flex flex-col gap-3 text-neutral-800">
-              <p className="text-base">
+              <p className="text-lg">
                 <strong className="font-bold text-blue-700">Data:</strong>{" "}
                 <span className="font-medium">{formatDate(bet.date)}</span>
               </p>
               {games.length === 1 ? (
-                <p className="text-base">
+                <p className="text-lg">
                   <strong className="font-bold text-blue-700">Jogo:</strong>{" "}
                   <span className="font-medium">
                     {bet.homeTeam} x {bet.awayTeam}
@@ -102,13 +103,13 @@ const ShareBetImage: React.FC<ShareBetImageProps> = ({ bet, onClose }) => {
                 </p>
               ) : (
                 <>
-                  <p className="text-base">
+                  <p className="text-lg">
                     <strong className="font-bold text-blue-700">
                       Múltipla:
                     </strong>
                   </p>
                   {games.map((game, index) => (
-                    <p key={index} className="text-base ml-4">
+                    <p key={index} className="text-lg ml-4">
                       <strong className="font-bold text-blue-700">
                         Jogo {index + 1}:
                       </strong>{" "}
@@ -119,34 +120,34 @@ const ShareBetImage: React.FC<ShareBetImageProps> = ({ bet, onClose }) => {
                   ))}
                 </>
               )}
-              <p className="text-base">
+              <p className="text-lg">
                 <strong className="font-bold text-blue-700">Mercado:</strong>{" "}
                 <span className="font-medium">
                   {bet.market} - {bet.entry}
                 </span>
               </p>
-              <p className="text-base">
+              <p className="text-lg">
                 <strong className="font-bold text-blue-700">Odd:</strong>{" "}
                 <span className="font-medium">{bet.odds.toFixed(2)}</span>
               </p>
               {!hideValues && (
-                <p className="text-base">
+                <p className="text-lg">
                   <strong className="font-bold text-blue-700">Valor:</strong>{" "}
                   <span className="font-medium">
                     {formatCurrency(bet.stake)}
                   </span>
                 </p>
               )}
-              <p className="text-base">
+              <p className="text-lg">
                 <strong className="font-bold text-blue-700">Casa:</strong>{" "}
                 <span className="font-medium">{bet.bookmaker}</span>
               </p>
-              <p className="text-base">
+              <p className="text-lg">
                 <strong className="font-bold text-blue-700">Resultado:</strong>{" "}
                 <span className="font-medium">{bet.result || "Pendente"}</span>
               </p>
               {!hideValues && (
-                <p className="text-base">
+                <p className="text-lg">
                   <strong className="font-bold text-blue-700">Lucro:</strong>{" "}
                   <span className="font-medium">
                     {formatCurrency(bet.profitCurrency)}
