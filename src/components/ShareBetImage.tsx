@@ -63,6 +63,11 @@ const ShareBetImage: React.FC<ShareBetImageProps> = ({ bet, onClose }) => {
     generateImage();
   }, [hideValues]); // Regenera a imagem quando hideValues mudar
 
+  const games = [
+    { homeTeam: bet.homeTeam, awayTeam: bet.awayTeam },
+    ...(bet.comboGames || []),
+  ];
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
@@ -88,25 +93,31 @@ const ShareBetImage: React.FC<ShareBetImageProps> = ({ bet, onClose }) => {
                 <strong className="font-bold text-blue-700">Data:</strong>{" "}
                 <span className="font-medium">{formatDate(bet.date)}</span>
               </p>
-              <p className="text-base">
-                <strong className="font-bold text-blue-700">Jogo:</strong>{" "}
-                <span className="font-medium">
-                  {bet.homeTeam} x {bet.awayTeam}
-                </span>
-              </p>
-              {bet.comboGames && bet.comboGames.length > 0 && (
-                <div className="text-base">
-                  <strong className="font-bold text-blue-700">
-                    Jogos Combinados:
-                  </strong>
-                  <div className="ml-4 mt-1">
-                    {bet.comboGames.map((game, index) => (
-                      <p key={index} className="font-medium">
+              {games.length === 1 ? (
+                <p className="text-base">
+                  <strong className="font-bold text-blue-700">Jogo:</strong>{" "}
+                  <span className="font-medium">
+                    {bet.homeTeam} x {bet.awayTeam}
+                  </span>
+                </p>
+              ) : (
+                <>
+                  <p className="text-base">
+                    <strong className="font-bold text-blue-700">
+                      Múltipla:
+                    </strong>
+                  </p>
+                  {games.map((game, index) => (
+                    <p key={index} className="text-base ml-4">
+                      <strong className="font-bold text-blue-700">
+                        Jogo {index + 1}:
+                      </strong>{" "}
+                      <span className="font-medium">
                         {game.homeTeam} x {game.awayTeam}
-                      </p>
-                    ))}
-                  </div>
-                </div>
+                      </span>
+                    </p>
+                  ))}
+                </>
               )}
               <p className="text-base">
                 <strong className="font-bold text-blue-700">Mercado:</strong>{" "}
