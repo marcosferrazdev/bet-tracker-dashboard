@@ -1,5 +1,6 @@
 import FilterModal from "@/components/FilterModal";
 import PageHeader from "@/components/PageHeader";
+import ShareBetImage from "@/components/ShareBetImage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,7 @@ import {
   MoreVertical,
   PlusCircle,
   Search,
+  Share2,
   Table,
   Trash2,
 } from "lucide-react";
@@ -71,6 +73,7 @@ const BetList: React.FC = () => {
   const itemsPerPage = 10;
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [shareBet, setShareBet] = useState<Bet | null>(null); // Estado para controlar o compartilhamento
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedResults, setSelectedResults] = useState<string[]>([
@@ -257,6 +260,11 @@ const BetList: React.FC = () => {
     addBet(newBet);
   };
 
+  // Função para abrir o modal de compartilhamento
+  const handleShareBet = (bet: Bet) => {
+    setShareBet(bet);
+  };
+
   // Filtros
   const toggleFilter = (value: string) => {
     if (tempSelectedResults.includes(value)) {
@@ -417,7 +425,6 @@ const BetList: React.FC = () => {
           <>
             {viewMode === "table" && (
               <div className="bg-white rounded-xl shadow-sm border border-neutral-100 mb-6">
-                {/* Container da tabela com rolagem horizontal sempre visível no PC */}
                 <div className="overflow-x-scroll md:max-h-[calc(100vh-250px)] overflow-auto">
                   <TableComponent>
                     <TableHeader>
@@ -454,6 +461,13 @@ const BetList: React.FC = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  onClick={() => handleShareBet(bet)} // Adicionada ação de compartilhar
+                                >
+                                  <Share2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => handleDeleteClick(bet.id)}
                                 >
                                   <Trash2 className="h-4 w-4 text-danger-500" />
@@ -484,6 +498,15 @@ const BetList: React.FC = () => {
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </Button>
                                   </Link>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start"
+                                    onClick={() => handleShareBet(bet)} // Adicionada ação de compartilhar
+                                  >
+                                    <Share2 className="h-4 w-4 mr-2" />{" "}
+                                    Compartilhar
+                                  </Button>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -574,7 +597,6 @@ const BetList: React.FC = () => {
                     </TableBody>
                   </TableComponent>
                 </div>
-                {/* Paginação simplificada sempre visível no PC (modo tabela) */}
                 {totalPages > 1 && (
                   <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
                     <Button
@@ -624,11 +646,12 @@ const BetList: React.FC = () => {
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent align="end" className="w-36">
+                          <PopoverContent align="end" className="w-40 p-2">
+                            {" "}
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="w-full justify-start"
+                              className="w-full justify-start text-sm py-2"
                               onClick={() => handleCopyBet(bet)}
                             >
                               <Copy className="h-4 w-4 mr-2" /> Copiar
@@ -637,7 +660,7 @@ const BetList: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="w-full justify-start"
+                                className="w-full justify-start text-sm py-2"
                               >
                                 <Edit className="h-4 w-4 mr-2" /> Editar
                               </Button>
@@ -645,7 +668,15 @@ const BetList: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="w-full justify-start text-danger-500"
+                              className="w-full justify-start text-sm py-2"
+                              onClick={() => handleShareBet(bet)}
+                            >
+                              <Share2 className="h-4 w-4 mr-2" /> Compartilhar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start text-danger-500 text-sm py-2"
                               onClick={() => handleDeleteClick(bet.id)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" /> Excluir
@@ -733,7 +764,6 @@ const BetList: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                {/* Paginação simplificada para cards */}
                 {totalPages > 1 && (
                   <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
                     <Button
@@ -804,6 +834,11 @@ const BetList: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de Compartilhamento */}
+      {shareBet && (
+        <ShareBetImage bet={shareBet} onClose={() => setShareBet(null)} />
+      )}
     </div>
   );
 };
