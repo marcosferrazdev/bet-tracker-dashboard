@@ -21,7 +21,7 @@ import { useBets } from "@/context/BetContext";
 import { calculateProfit, calculateUnits, generateId } from "@/lib/bet-utils";
 import { Bet, BetResult, BetType } from "@/types";
 import { format } from "date-fns";
-import { AlertCircle, PlusCircle } from "lucide-react";
+import { AlertCircle, Clock, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -53,6 +53,7 @@ const BetForm: React.FC = () => {
 
   // Form state
   const [date, setDate] = useState<Date>(new Date());
+  const [time, setTime] = useState<string>("");
   const [tipster, setTipster] = useState("");
   const [competition, setCompetition] = useState("");
   const [type, setType] = useState<BetType>("Pré");
@@ -75,7 +76,6 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Pegar o viewMode da navegação anterior, se existir
   const initialViewMode = location.state?.viewMode || "table";
 
   useEffect(() => {
@@ -88,7 +88,9 @@ const BetForm: React.FC = () => {
     if (isEditing && id) {
       const betToEdit = bets.find((bet) => bet.id === id);
       if (betToEdit) {
-        setDate(new Date(betToEdit.date + "T00:00:00"));
+        const betDate = new Date(betToEdit.date);
+        setDate(betDate);
+        setTime(betDate.toTimeString().slice(0, 5));
         setTipster(betToEdit.tipster);
         setType(betToEdit.type);
         if (
@@ -161,6 +163,7 @@ const BetForm: React.FC = () => {
     if (odds < 1) newErrors.odds = "Odd deve ser maior que 1";
     if (!stake) newErrors.stake = "Valor da aposta é obrigatório";
     if (stake <= 0) newErrors.stake = "Valor da aposta deve ser maior que 0";
+    if (!time) newErrors.time = "Horário é obrigatório";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -187,9 +190,12 @@ const BetForm: React.FC = () => {
       toast.error("Por favor, corrija os erros no formulário");
       return;
     }
+    const dateTime = time
+      ? `${format(date, "yyyy-MM-dd")}T${time}:00`
+      : format(date, "yyyy-MM-dd");
     const betData: Bet = {
       id: isEditing && id ? id : generateId(),
-      date: format(date, "yyyy-MM-dd"),
+      date: dateTime,
       tipster,
       competition: type === "Múltipla" ? games[0].competition : competition,
       type,
@@ -248,10 +254,43 @@ const BetForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="date">Data</Label>
-                <DatePicker
-                  date={date}
-                  onDateChange={(newDate) => setDate(newDate)}
-                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <DatePicker
+                      date={date}
+                      onDateChange={(newDate) => setDate(newDate)}
+                    />
+                  </div>
+                  <div className="relative flex-1">
+                    <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                    <Input
+                      id="time"
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className={`pl-11 text-sm ${errors.time ? "border-danger-500" : ""}`} // Adicionado text-sm para reduzir a fonte
+                      style={{
+                        WebkitAppearance: "none",
+                        MozAppearance: "none",
+                        appearance: "none",
+                      }}
+                    />
+                    <style>{`
+                      input[type="time"]::-webkit-calendar-picker-indicator {
+                        display: none;
+                      }
+                      input[type="time"]::-webkit-clear-button {
+                        display: none;
+                      }
+                    `}</style>
+                  </div>
+                </div>
+                {errors.time && (
+                  <p className="text-danger-500 text-sm flex items-center mt-1">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.time}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tipster">Tipster</Label>
