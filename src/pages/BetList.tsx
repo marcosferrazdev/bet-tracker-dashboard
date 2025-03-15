@@ -54,6 +54,13 @@ import {
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+const normalizeText = (text: string) => {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+};
+
 const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
   const location = useLocation();
@@ -117,48 +124,48 @@ const BetList: React.FC = () => {
     setViewMode((prevMode) => (prevMode === "table" ? "card" : "table"));
   };
 
-// Normaliza a data para o fuso local e início do dia
-const normalizeDate = (date: Date | string) => {
-  const parsedDate = typeof date === "string" ? parseISO(date) : date;
-  return startOfDay(parsedDate);
-};
+  // Normaliza a data para o fuso local e início do dia
+  const normalizeDate = (date: Date | string) => {
+    const parsedDate = typeof date === "string" ? parseISO(date) : date;
+    return startOfDay(parsedDate);
+  };
 
-// Filtragem das apostas
-const filteredBets = bets.filter((bet) => {
-  const searchLower = searchTerm.toLowerCase();
-  const matchesSearch =
-    bet.tipster.toLowerCase().includes(searchLower) ||
-    bet.competition.toLowerCase().includes(searchLower) ||
-    bet.homeTeam.toLowerCase().includes(searchLower) ||
-    bet.awayTeam.toLowerCase().includes(searchLower) ||
-    bet.market.toLowerCase().includes(searchLower) ||
-    bet.bookmaker.toLowerCase().includes(searchLower) ||
-    bet.entry.toLowerCase().includes(searchLower) ||
-    (bet.comboGames &&
-      bet.comboGames.some(
-        (game) =>
-          game.homeTeam.toLowerCase().includes(searchLower) ||
-          game.awayTeam.toLowerCase().includes(searchLower)
-      ));
+  // Filtragem das apostas
+  const filteredBets = bets.filter((bet) => {
+    const normalizedSearchTerm = normalizeText(searchTerm);
+    const matchesSearch =
+      normalizeText(bet.tipster).includes(normalizedSearchTerm) ||
+      normalizeText(bet.competition).includes(normalizedSearchTerm) ||
+      normalizeText(bet.homeTeam).includes(normalizedSearchTerm) ||
+      normalizeText(bet.awayTeam).includes(normalizedSearchTerm) ||
+      normalizeText(bet.market).includes(normalizedSearchTerm) ||
+      normalizeText(bet.bookmaker).includes(normalizedSearchTerm) ||
+      normalizeText(bet.entry).includes(normalizedSearchTerm) ||
+      (bet.comboGames &&
+        bet.comboGames.some(
+          (game) =>
+            normalizeText(game.homeTeam).includes(normalizedSearchTerm) ||
+            normalizeText(game.awayTeam).includes(normalizedSearchTerm)
+        ));
 
-  const matchesResult =
-    selectedResults.length === 0 ||
-    (selectedResults.includes("Pendente") && bet.result === null) ||
-    (bet.result !== null && selectedResults.includes(bet.result));
+    const matchesResult =
+      selectedResults.length === 0 ||
+      (selectedResults.includes("Pendente") && bet.result === null) ||
+      (bet.result !== null && selectedResults.includes(bet.result));
 
-  const betDate = normalizeDate(bet.date); // Normaliza a data da aposta
-  const adjustedStartDate = startDate ? normalizeDate(startDate) : undefined;
-  const adjustedEndDate = endDate ? endOfDay(normalizeDate(endDate)) : undefined;
+    const betDate = normalizeDate(bet.date); // Normaliza a data da aposta
+    const adjustedStartDate = startDate ? normalizeDate(startDate) : undefined;
+    const adjustedEndDate = endDate ? endOfDay(normalizeDate(endDate)) : undefined;
 
-  let matchesDate = true;
-  if (adjustedStartDate && adjustedEndDate) {
-    matchesDate =
-      (isSameDay(betDate, adjustedStartDate) || isAfter(betDate, adjustedStartDate)) &&
-      (isSameDay(betDate, adjustedEndDate) || isBefore(betDate, adjustedEndDate));
-  }
+    let matchesDate = true;
+    if (adjustedStartDate && adjustedEndDate) {
+      matchesDate =
+        (isSameDay(betDate, adjustedStartDate) || isAfter(betDate, adjustedStartDate)) &&
+        (isSameDay(betDate, adjustedEndDate) || isBefore(betDate, adjustedEndDate));
+    }
 
-  return matchesSearch && matchesResult && matchesDate;
-});
+    return matchesSearch && matchesResult && matchesDate;
+  });
 
   const sortedBets = [...filteredBets].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -409,7 +416,7 @@ const filteredBets = bets.filter((bet) => {
             <p className="text-neutral-600 mb-6">
               Comece adicionando sua primeira aposta ou ajuste os filtros.
             </p>
-            <Link to="/nova-aposta" state={{ viewMode }}>
+            <Link to="/nova-aposta" state={{ viewMode}}>
               <Button className="bg-blue-500 hover:bg-blue-600">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Adicionar Aposta
@@ -438,7 +445,7 @@ const filteredBets = bets.filter((bet) => {
                     <TableBody>
                       {currentItems.map((bet) => (
                         <TableRow key={bet.id}>
-                         <TableCell className="text-center">
+                          <TableCell className="text-center">
                             <Popover>
                               <PopoverTrigger asChild>
                                 <Button variant="outline" size="sm">
