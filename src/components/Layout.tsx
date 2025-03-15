@@ -16,6 +16,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+
   const [collapsed, setCollapsed] = useState(false);
 
   const links = [
@@ -47,13 +48,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-neutral-50">
+    <div className="flex h-screen bg-neutral-50">
       {/* Sidebar (desktop) */}
       <aside
         className={`
           hidden md:flex flex-col bg-white shadow-sm border-r
-          transition-all duration-300 fixed top-0 left-0 z-20
-          ${collapsed ? "w-16" : "w-64"} h-screen
+          transition-all duration-300
+          ${collapsed ? "w-16" : "w-64"}
         `}
       >
         {/* Topo do sidebar */}
@@ -76,7 +77,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         {/* Links */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1">
           {links.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -84,20 +85,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 key={link.path}
                 to={link.path}
                 className={`
-                  flex items-center rounded-xl transition-all duration-300
-                  ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2"}
-                  ${
-                    isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-neutral-700 hover:bg-neutral-100"
-                  }
-                `}
+                flex items-center rounded-xl transition-all duration-300
+                ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2"}
+                ${
+                  isActive
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-neutral-700 hover:bg-neutral-100"
+                }
+              `}
               >
+                {/* Ícone com tamanho consistente */}
                 {React.cloneElement(link.icon, {
                   className: `h-5 w-5 ${
                     isActive ? "text-blue-600" : "text-neutral-700"
                   }`,
                 })}
+
+                {/* Texto condicional */}
                 {!collapsed && (
                   <span className="ml-3 font-medium">{link.name}</span>
                 )}
@@ -110,7 +114,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {!collapsed && (
           <div className="p-4 border-t">
             <div className="text-xs text-neutral-500 text-center">
-              Bet Tracker © {new Date().getFullYear()}
+              Bet Tracker &copy; {new Date().getFullYear()}
             </div>
           </div>
         )}
@@ -137,13 +141,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </div>
 
       {/* Main content */}
-      <main
-        className={`
-          flex-1 overflow-y-auto
-          ${collapsed ? "ml-16" : "ml-64"} transition-all duration-300
-        `}
-      >
-        <div className="container py-4 px-4 md:px-6 max-w-screen-xl mx-auto min-h-screen">
+      <main className="flex-1 overflow-auto">
+        <div className="container py-8 px-4 md:px-6 max-w-screen-xl mx-auto">
           {children}
         </div>
       </main>
