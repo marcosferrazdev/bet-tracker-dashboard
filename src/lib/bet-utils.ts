@@ -157,7 +157,7 @@ export const fillMissingDays = (dailyStats: DailyStats[]): DailyStats[] => {
 // Format date in Brazilian format
 export const formatDate = (dateString: string): string => {
   const date = parseISO(dateString);
-  return format(date, 'dd/MM/yyyy', { locale: ptBR });
+  return format(date, "dd/MM/yyyy HH:mm", { locale: ptBR });
 };
 
 // Format result class for styling
