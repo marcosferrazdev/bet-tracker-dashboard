@@ -20,9 +20,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Table as TableComponent,
   TableBody,
   TableCell,
+  Table as TableComponent,
   TableHead,
   TableHeader,
   TableRow,
@@ -51,7 +51,7 @@ import {
   Table,
   Trash2,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const BetList: React.FC = () => {
@@ -392,7 +392,7 @@ const BetList: React.FC = () => {
                 <Table className="h-4 w-4" />
               )}
             </Button>
-            <Link to="/nova-aposta">
+            <Link to="/nova-aposta" state={{ viewMode }}>
               <Button
                 size="icon"
                 className="bg-blue-500 hover:bg-blue-600 text-white"
@@ -414,7 +414,7 @@ const BetList: React.FC = () => {
             <p className="text-neutral-600 mb-6">
               Comece adicionando sua primeira aposta ou ajuste os filtros.
             </p>
-            <Link to="/nova-aposta">
+            <Link to="/nova-aposta" state={{ viewMode }}>
               <Button className="bg-blue-500 hover:bg-blue-600">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Adicionar Aposta
@@ -453,7 +453,7 @@ const BetList: React.FC = () => {
                                 >
                                   <Copy className="h-4 w-4" />
                                 </Button>
-                                <Link to={`/editar-aposta/${bet.id}`}>
+                                <Link to={`/editar-aposta/${bet.id}`} state={{ viewMode }}>
                                   <Button variant="outline" size="sm">
                                     <Edit className="h-4 w-4" />
                                   </Button>
@@ -461,7 +461,7 @@ const BetList: React.FC = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleShareBet(bet)} // Adicionada ação de compartilhar
+                                  onClick={() => handleShareBet(bet)}
                                 >
                                   <Share2 className="h-4 w-4" />
                                 </Button>
@@ -480,7 +480,7 @@ const BetList: React.FC = () => {
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </PopoverTrigger>
-                                <PopoverContent align="end" className="w-36">
+                                <PopoverContent align="end" className="w-40 p-2">
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -489,7 +489,7 @@ const BetList: React.FC = () => {
                                   >
                                     <Copy className="h-4 w-4 mr-2" /> Copiar
                                   </Button>
-                                  <Link to={`/editar-aposta/${bet.id}`}>
+                                  <Link to={`/editar-aposta/${bet.id}`} state={{ viewMode }}>
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -502,10 +502,9 @@ const BetList: React.FC = () => {
                                     variant="ghost"
                                     size="sm"
                                     className="w-full justify-start"
-                                    onClick={() => handleShareBet(bet)} // Adicionada ação de compartilhar
+                                    onClick={() => handleShareBet(bet)}
                                   >
-                                    <Share2 className="h-4 w-4 mr-2" />{" "}
-                                    Compartilhar
+                                    <Share2 className="h-4 w-4 mr-2" /> Compartilhar
                                   </Button>
                                   <Button
                                     variant="ghost"
@@ -647,7 +646,6 @@ const BetList: React.FC = () => {
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent align="end" className="w-40 p-2">
-                            {" "}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -656,7 +654,7 @@ const BetList: React.FC = () => {
                             >
                               <Copy className="h-4 w-4 mr-2" /> Copiar
                             </Button>
-                            <Link to={`/editar-aposta/${bet.id}`}>
+                            <Link to={`/editar-aposta/${bet.id}`} state={{ viewMode }}>
                               <Button
                                 variant="ghost"
                                 size="sm"

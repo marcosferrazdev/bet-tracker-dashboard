@@ -1,4 +1,3 @@
-// src/pages/BetForm.tsx
 import DatePicker from "@/components/DataPicker";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,7 @@ import { Bet, BetResult, BetType } from "@/types";
 import { format } from "date-fns";
 import { AlertCircle, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
 
@@ -392,7 +391,11 @@ const BetForm: React.FC = () => {
                   <Label htmlFor="bingo">Bingo</Label>
                   <Input
                     id="bingo"
-                    value={`${games[0].homeTeam} vs ${games[0].awayTeam}` || ""}
+                    value={
+                      games[0].homeTeam && games[0].awayTeam
+                        ? `${games[0].homeTeam} vs ${games[0].awayTeam}`
+                        : ""
+                    }
                     disabled
                     placeholder="Os times serão preenchidos automaticamente"
                   />
