@@ -90,7 +90,7 @@ const BetForm: React.FC = () => {
       if (betToEdit) {
         const betDate = new Date(betToEdit.date);
         setDate(betDate);
-        setTime(betDate.toTimeString().slice(0, 5));
+        setTime(betDate.toTimeString().slice(0, 5)); // Extrai "HH:MM" se existir
         setTipster(betToEdit.tipster);
         setType(betToEdit.type);
         if (
@@ -163,7 +163,8 @@ const BetForm: React.FC = () => {
     if (odds < 1) newErrors.odds = "Odd deve ser maior que 1";
     if (!stake) newErrors.stake = "Valor da aposta é obrigatório";
     if (stake <= 0) newErrors.stake = "Valor da aposta deve ser maior que 0";
-    if (!time) newErrors.time = "Horário é obrigatório";
+    // Horário é obrigatório apenas se o tipo não for "Bingo Múltipla"
+    if (type !== "Bingo Múltipla" && !time) newErrors.time = "Horário é obrigatório";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -190,9 +191,11 @@ const BetForm: React.FC = () => {
       toast.error("Por favor, corrija os erros no formulário");
       return;
     }
-    const dateTime = time
+    // Combinar data e horário apenas se o horário for preenchido
+    const dateTime = time && type !== "Bingo Múltipla"
       ? `${format(date, "yyyy-MM-dd")}T${time}:00`
       : format(date, "yyyy-MM-dd");
+
     const betData: Bet = {
       id: isEditing && id ? id : generateId(),
       date: dateTime,
@@ -268,12 +271,13 @@ const BetForm: React.FC = () => {
                       type="time"
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
-                      className={`pl-11 text-sm ${errors.time ? "border-danger-500" : ""}`} // Adicionado text-sm para reduzir a fonte
+                      className={`pl-11 text-sm ${errors.time ? "border-danger-500" : ""}`}
                       style={{
                         WebkitAppearance: "none",
                         MozAppearance: "none",
                         appearance: "none",
                       }}
+                      disabled={type === "Bingo Múltipla"} // Desativa o campo de horário para Bingo Múltipla
                     />
                     <style>{`
                       input[type="time"]::-webkit-calendar-picker-indicator {
