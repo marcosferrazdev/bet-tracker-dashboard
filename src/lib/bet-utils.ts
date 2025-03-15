@@ -68,7 +68,8 @@ export const calculateDailyStats = (bets: Bet[]): DailyStats[] => {
   const dailyMap = new Map<string, DailyStats>();
   
   bets.forEach(bet => {
-    const dateKey = bet.date;
+    const betDate = parseISO(bet.date); // Converte a string ISO para Date
+    const dateKey = format(betDate, "yyyy-MM-dd"); // Extrai apenas a data (ignora o horário)
     const existing = dailyMap.get(dateKey) || { 
       date: dateKey, 
       bets: 0, 
@@ -84,7 +85,6 @@ export const calculateDailyStats = (bets: Bet[]): DailyStats[] => {
     });
   });
   
-  // Convert to array and sort by date
   return Array.from(dailyMap.values())
     .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
 };
@@ -138,18 +138,29 @@ export const getCurrentMonthRange = () => {
 
 // Fill in missing days in the current month with zero values
 export const fillMissingDays = (dailyStats: DailyStats[]): DailyStats[] => {
+  if (!dailyStats || dailyStats.length === 0) {
+    const { start, end } = getCurrentMonthRange();
+    const allDays = eachDayOfInterval({ start, end });
+    return allDays.map(day => ({
+      date: format(day, "yyyy-MM-dd"),
+      bets: 0,
+      profitCurrency: 0,
+      profitUnits: 0,
+    }));
+  }
+
   const { start, end } = getCurrentMonthRange();
   
   const allDays = eachDayOfInterval({ start, end });
   const existingDaysMap = new Map(dailyStats.map(stat => [stat.date, stat]));
   
   return allDays.map(day => {
-    const dateKey = format(day, 'yyyy-MM-dd');
+    const dateKey = format(day, "yyyy-MM-dd");
     return existingDaysMap.get(dateKey) || {
       date: dateKey,
       bets: 0,
       profitCurrency: 0,
-      profitUnits: 0
+      profitUnits: 0,
     };
   });
 };
