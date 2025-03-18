@@ -1,4 +1,3 @@
-// src/pages/BetForm.tsx
 import DatePicker from "@/components/DataPicker";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -22,9 +21,9 @@ import { useBets } from "@/context/BetContext";
 import { calculateProfit, calculateUnits, generateId } from "@/lib/bet-utils";
 import { Bet, BetResult, BetType } from "@/types";
 import { format } from "date-fns";
-import { AlertCircle, PlusCircle } from "lucide-react";
+import { AlertCircle, Clock, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
 
@@ -54,6 +53,7 @@ const BetForm: React.FC = () => {
 
   // Form state
   const [date, setDate] = useState<Date>(new Date());
+  const [time, setTime] = useState<string>("");
   const [tipster, setTipster] = useState("");
   const [competition, setCompetition] = useState("");
   const [type, setType] = useState<BetType>("Pré");
@@ -76,7 +76,6 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Pegar o viewMode da navegação anterior, se existir
   const initialViewMode = location.state?.viewMode || "table";
 
   useEffect(() => {
@@ -169,6 +168,8 @@ const BetForm: React.FC = () => {
     if (odds < 1) newErrors.odds = "Odd deve ser maior que 1";
     if (!stake) newErrors.stake = "Valor da aposta é obrigatório";
     if (stake <= 0) newErrors.stake = "Valor da aposta deve ser maior que 0";
+    // Horário é obrigatório apenas se o tipo não for "Bingo Múltipla"
+    if (type !== "Bingo Múltipla" && !time) newErrors.time = "Horário é obrigatório";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -195,9 +196,14 @@ const BetForm: React.FC = () => {
       toast.error("Por favor, corrija os erros no formulário");
       return;
     }
+    // Combinar data e horário apenas se o horário for preenchido
+    const dateTime = time && type !== "Bingo Múltipla"
+      ? `${format(date, "yyyy-MM-dd")}T${time}:00`
+      : format(date, "yyyy-MM-dd");
+
     const betData: Bet = {
       id: isEditing && id ? id : generateId(),
-      date: format(date, "yyyy-MM-dd"),
+      date: dateTime,
       tipster,
       competition: type === "Múltipla" ? games[0].competition : competition,
       type,
@@ -256,10 +262,44 @@ const BetForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="date">Data</Label>
-                <DatePicker
-                  date={date}
-                  onDateChange={(newDate) => setDate(newDate)}
-                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <DatePicker
+                      date={date}
+                      onDateChange={(newDate) => setDate(newDate)}
+                    />
+                  </div>
+                  <div className="relative flex-1">
+                    <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                    <Input
+                      id="time"
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className={`pl-11 text-sm ${errors.time ? "border-danger-500" : ""}`}
+                      style={{
+                        WebkitAppearance: "none",
+                        MozAppearance: "none",
+                        appearance: "none",
+                      }}
+                      disabled={type === "Bingo Múltipla"} // Desativa o campo de horário para Bingo Múltipla
+                    />
+                    <style>{`
+                      input[type="time"]::-webkit-calendar-picker-indicator {
+                        display: none;
+                      }
+                      input[type="time"]::-webkit-clear-button {
+                        display: none;
+                      }
+                    `}</style>
+                  </div>
+                </div>
+                {errors.time && (
+                  <p className="text-danger-500 text-sm flex items-center mt-1">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.time}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tipster">Tipster</Label>
@@ -399,7 +439,11 @@ const BetForm: React.FC = () => {
                   <Label htmlFor="bingo">Bingo</Label>
                   <Input
                     id="bingo"
-                    value={`${games[0].homeTeam} vs ${games[0].awayTeam}` || ""}
+                    value={
+                      games[0].homeTeam && games[0].awayTeam
+                        ? `${games[0].homeTeam} vs ${games[0].awayTeam}`
+                        : ""
+                    }
                     disabled
                     placeholder="Os times serão preenchidos automaticamente"
                   />
