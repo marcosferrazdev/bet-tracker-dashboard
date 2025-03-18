@@ -72,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen bg-neutral-50">
+    <div className="flex h-screen bg-neutral-50 overflow-hidden">
       {/* Sidebar (desktop) */}
       <aside
         className={`
@@ -176,8 +176,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </aside>
 
+      {/* Main content */}
+      <main className="flex-1 relative">
+        <div className="absolute inset-0 overflow-auto">
+          <div className="container py-8 px-4 md:px-6 max-w-screen-xl mx-auto pb-24">
+            {children}
+          </div>
+        </div>
+      </main>
+
       {/* Mobile header */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 md:hidden bg-white border-t">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t">
         <div className="flex justify-between items-center px-2">
           {links.map((link) => (
             <Link
@@ -206,13 +215,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
       </div>
-
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="container py-8 px-4 md:px-6 max-w-screen-xl mx-auto pb-20 md:pb-8">
-          {children}
-        </div>
-      </main>
     </div>
   );
 };
