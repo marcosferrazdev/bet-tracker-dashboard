@@ -88,10 +88,13 @@ const BetForm: React.FC = () => {
     if (isEditing && id) {
       const betToEdit = bets.find((bet) => bet.id === id);
       if (betToEdit) {
-        // Garantindo que a data seja válida
+        // Garantindo que a data seja válida e extraindo o horário
         const betDate = new Date(betToEdit.date);
         if (!isNaN(betDate.getTime())) {
           setDate(betDate);
+          // Extrai o horário no formato "HH:mm" e atualiza o state "time"
+          const formattedTime = format(betDate, "HH:mm");
+          setTime(formattedTime);
         } else {
           setDate(new Date());
         }
@@ -148,17 +151,11 @@ const BetForm: React.FC = () => {
     if (type !== "Bingo Múltipla") {
       games.forEach((game, index) => {
         if (type === "Múltipla" && !game.competition)
-          newErrors[`competition${index}`] = `Competição do Jogo ${
-            index + 1
-          } é obrigatória`;
+          newErrors[`competition${index}`] = `Competição do Jogo ${index + 1} é obrigatória`;
         if (!game.homeTeam)
-          newErrors[`homeTeam${index}`] = `Time mandante do Jogo ${
-            index + 1
-          } é obrigatório`;
+          newErrors[`homeTeam${index}`] = `Time mandante do Jogo ${index + 1} é obrigatório`;
         if (!game.awayTeam)
-          newErrors[`awayTeam${index}`] = `Time visitante do Jogo ${
-            index + 1
-          } é obrigatório`;
+          newErrors[`awayTeam${index}`] = `Time visitante do Jogo ${index + 1} é obrigatório`;
       });
     }
     if (!market) newErrors.market = "Mercado é obrigatório";
