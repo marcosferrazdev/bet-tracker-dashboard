@@ -443,81 +443,49 @@ const BetList: React.FC = () => {
                     <TableBody>
                       {currentItems.map((bet) => (
                         <TableRow key={bet.id}>
-                          <TableCell className="text-center">
-                            {window.innerWidth >= 768 ? (
-                              <div className="flex gap-2 justify-center">
+                          <TableCell>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-40 p-2">
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
+                                  className="w-full justify-start"
                                   onClick={() => handleCopyBet(bet)}
                                 >
-                                  <Copy className="h-4 w-4" />
+                                  <Copy className="h-4 w-4 mr-2" /> Copiar
                                 </Button>
                                 <Link to={`/editar-aposta/${bet.id}`}>
-                                  <Button variant="outline" size="sm">
-                                    <Edit className="h-4 w-4" />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" /> Editar
                                   </Button>
                                 </Link>
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
-                                  onClick={() => handleShareBet(bet)} // Adicionada ação de compartilhar
+                                  className="w-full justify-start"
+                                  onClick={() => handleShareBet(bet)}
                                 >
-                                  <Share2 className="h-4 w-4" />
+                                  <Share2 className="h-4 w-4 mr-2" /> Compartilhar
                                 </Button>
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
+                                  className="w-full justify-start text-danger-500"
                                   onClick={() => handleDeleteClick(bet.id)}
                                 >
-                                  <Trash2 className="h-4 w-4 text-danger-500" />
+                                  <Trash2 className="h-4 w-4 mr-2" /> Excluir
                                 </Button>
-                              </div>
-                            ) : (
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="end" className="w-36">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start"
-                                    onClick={() => handleCopyBet(bet)}
-                                  >
-                                    <Copy className="h-4 w-4 mr-2" /> Copiar
-                                  </Button>
-                                  <Link to={`/editar-aposta/${bet.id}`}>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="w-full justify-start"
-                                    >
-                                      <Edit className="h-4 w-4 mr-2" /> Editar
-                                    </Button>
-                                  </Link>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start"
-                                    onClick={() => handleShareBet(bet)} // Adicionada ação de compartilhar
-                                  >
-                                    <Share2 className="h-4 w-4 mr-2" />{" "}
-                                    Compartilhar
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start text-danger-500"
-                                    onClick={() => handleDeleteClick(bet.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" /> Excluir
-                                  </Button>
-                                </PopoverContent>
-                              </Popover>
-                            )}
+                              </PopoverContent>
+                            </Popover>
                           </TableCell>
                           <TableCell className="font-medium">
                             {formatDate(bet.date)}
@@ -546,9 +514,7 @@ const BetList: React.FC = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      handleResolveBet(bet, "GREEN")
-                                    }
+                                    onClick={() => handleResolveBet(bet, "GREEN")}
                                   >
                                     Green
                                   </Button>
@@ -566,9 +532,7 @@ const BetList: React.FC = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      handleResolveBet(bet, "REEMBOLSO")
-                                    }
+                                    onClick={() => handleResolveBet(bet, "REEMBOLSO")}
                                   >
                                     Reembolso
                                   </Button>
@@ -585,12 +549,10 @@ const BetList: React.FC = () => {
                               </PopoverContent>
                             </Popover>
                           </TableCell>
-                          <TableCell
-                            className={`${getProfitColorClass(
-                              bet.result
-                            )} text-right`}
-                          >
-                            {formatCurrency(bet.profitCurrency)}
+                          <TableCell className="text-right">
+                            <div className={`font-medium ${getProfitColorClass(bet.result)}`}>
+                              {formatCurrency(bet.profitCurrency)}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -735,9 +697,7 @@ const BetList: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() =>
-                                  handleResolveBet(bet, "REEMBOLSO")
-                                }
+                                onClick={() => handleResolveBet(bet, "REEMBOLSO")}
                               >
                                 Reembolso
                               </Button>

@@ -89,7 +89,14 @@ const BetForm: React.FC = () => {
     if (isEditing && id) {
       const betToEdit = bets.find((bet) => bet.id === id);
       if (betToEdit) {
-        setDate(new Date(betToEdit.date + "T00:00:00"));
+        // Garantindo que a data seja válida
+        const betDate = new Date(betToEdit.date);
+        if (!isNaN(betDate.getTime())) {
+          setDate(betDate);
+        } else {
+          setDate(new Date());
+        }
+        
         setTipster(betToEdit.tipster);
         setType(betToEdit.type);
         if (
