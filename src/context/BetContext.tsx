@@ -1,11 +1,4 @@
-import { competitions } from "@/data/competitions";
-import {
-  calculateDailyStats,
-  calculateDashboardStats,
-  calculateMonthlyStats,
-  fillMissingDays,
-} from "@/lib/bet-utils";
-import { supabase } from "@/services/supabaseClient";
+import { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import {
   Bet,
   Bookmaker,
@@ -16,9 +9,17 @@ import {
   MonthlyStats,
   Team,
   Tipster,
-} from "@/types";
-import React, { createContext, useContext, useEffect, useState } from "react";
+} from "../types";
 import { toast } from "sonner";
+import { supabase } from "../services/supabaseClient";
+import { useNavigate } from "react-router-dom";
+import { competitions } from "../data/competitions";
+import {
+  calculateDailyStats,
+  calculateDashboardStats,
+  calculateMonthlyStats,
+  fillMissingDays,
+} from "../lib/bet-utils";
 
 // Interface para os dados brutos retornados do Supabase (snake_case)
 interface SupabaseBet {
@@ -40,6 +41,7 @@ interface SupabaseBet {
   result: string | null;
   profit_currency: number;
   profit_units: number;
+  user_id: string;
 }
 
 interface SupabaseComboGame {
@@ -48,6 +50,7 @@ interface SupabaseComboGame {
   competition: string;
   home_team: string;
   away_team: string;
+  user_id: string;
 }
 
 interface BetContextType {
@@ -60,7 +63,7 @@ interface BetContextType {
   monthlyStats: MonthlyStats[];
   isLoading: boolean;
   unitValue: number;
-  setUnitValue: (value: number) => void;
+  setUnitValue: (value: number) => Promise<void>;
   tipsters: Tipster[];
   addTipster: (tipster: Tipster) => Promise<void>;
   updateTipster: (tipster: Tipster) => Promise<void>;
@@ -75,6 +78,9 @@ interface BetContextType {
   deleteBookmaker: (id: string) => Promise<void>;
   competitions: Competition[];
   teams: Team[];
+  addTeam: (team: Team) => Promise<void>;
+  updateTeam: (team: Team) => Promise<void>;
+  deleteTeam: (id: string) => Promise<void>;
 }
 
 const BetContext = createContext<BetContextType | undefined>(undefined);
@@ -105,142 +111,231 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [bookmakers, setBookmakers] = useState<Bookmaker[]>([]);
   const [competitionsList] = useState<Competition[]>(competitions);
 
-  // Carrega apostas e comboGames do Supabase
+  // Verifica mudanças no estado de autenticação e recarrega os dados
   useEffect(() => {
-    const loadBets = async () => {
-      try {
-        const { data: betsData, error: betsError } = await supabase
-          .from("bets")
-          .select("*");
-        if (betsError) {
-          console.error("Erro ao buscar bets no Supabase:", betsError);
-          toast.error("Erro ao carregar apostas do Supabase!");
-          return;
-        }
-
-        const { data: comboData, error: comboError } = await supabase
-          .from("combo_games")
-          .select("*");
-        if (comboError) {
-          console.error("Erro ao buscar combo_games no Supabase:", comboError);
-          toast.error("Erro ao carregar jogos adicionais do Supabase!");
-          return;
-        }
-
-        const mappedBets = betsData.map((row: SupabaseBet) => {
-          const comboGames = comboData
-            .filter((combo: SupabaseComboGame) => combo.bet_id === row.id)
-            .map((combo: SupabaseComboGame) => ({
-              competition: combo.competition,
-              homeTeam: combo.home_team,
-              awayTeam: combo.away_team,
-            }));
-
-          return {
-            id: row.id,
-            date: row.date,
-            tipster: row.tipster,
-            competition: row.competition,
-            type: row.bet_type as Bet["type"],
-            homeTeam: row.home_team,
-            awayTeam: row.away_team,
-            market: row.market,
-            bookmaker: row.bookmaker,
-            entry: row.entry,
-            odds: row.odds,
-            stake: row.stake,
-            unitValue: row.unit_value,
-            stakeUnits: row.stake_units,
-            commission: row.commission ?? undefined,
-            result: row.result as Bet["result"],
-            profitCurrency: row.profit_currency,
-            profitUnits: row.profit_units,
-            ...(comboGames.length > 0 && { comboGames }),
-          };
-        });
-
-        setBets(mappedBets);
-      } catch (err) {
-        console.error("Erro inesperado ao carregar bets:", err);
-        toast.error("Erro inesperado ao carregar dados do Supabase!");
-      } finally {
-        setIsLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Quando o estado da autenticação mudar, recarregar os dados
+      if (session) {
+        // Usuário autenticado, carrega os dados
+        loadAllData();
+      } else {
+        // Usuário deslogado, limpa os dados
+        setBets([]);
+        setTipsters([]);
+        setMarkets([]);
+        setTeamsList([]);
+        setBookmakers([]);
       }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    loadBets();
   }, []);
 
-  // Carrega tipsters do Supabase
-  useEffect(() => {
-    const loadTipsters = async () => {
-      try {
-        const { data, error } = await supabase.from("tipsters").select("*");
-        if (error) throw error;
-        setTipsters(data as Tipster[]);
-      } catch (err) {
-        console.error("Erro ao carregar tipsters:", err);
-        toast.error("Erro ao carregar tipsters do Supabase!");
-      }
-    };
-    loadTipsters();
-  }, []);
-
-  // Carrega markets do Supabase
-  useEffect(() => {
-    const loadMarkets = async () => {
-      try {
-        const { data, error } = await supabase.from("markets").select("*");
-        if (error) throw error;
-        setMarkets(data as Market[]);
-      } catch (err) {
-        console.error("Erro ao carregar markets:", err);
-        toast.error("Erro ao carregar mercados do Supabase!");
-      }
-    };
-    loadMarkets();
-  }, []);
-
-  // Carrega teams do Supabase
-  useEffect(() => {
-    const loadTeams = async () => {
-      try {
-        const { data, error } = await supabase.from("teams").select("*");
-        if (error) throw error;
-        setTeamsList(data as Team[]);
-      } catch (err) {
-        console.error("Erro ao carregar teams:", err);
-        toast.error("Erro ao carregar times do Supabase!");
-      }
-    };
-    loadTeams();
-  }, []);
-
-  // Carrega bookmakers do Supabase
-  useEffect(() => {
-    const loadBookmakers = async () => {
-      try {
-        const { data, error } = await supabase.from("bookmakers").select("*");
-        if (error) throw error;
-        setBookmakers(data as Bookmaker[]);
-      } catch (err) {
-        console.error("Erro ao carregar bookmakers:", err);
-        toast.error("Erro ao carregar casas de apostas do Supabase!");
-      }
-    };
-    loadBookmakers();
-  }, []);
-
-  // Carrega unitValue do localStorage
-  useEffect(() => {
+  // Função para carregar todos os dados do usuário
+  const loadAllData = async () => {
+    setIsLoading(true);
     try {
-      const savedUnitValue = localStorage.getItem("unitValue");
-      if (savedUnitValue) {
-        setUnitValueState(parseFloat(savedUnitValue));
+      // Obtém o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("Usuário não autenticado ao carregar dados");
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error("Erro ao carregar unitValue do localStorage:", error);
-      toast.error("Erro ao carregar dados locais!");
+      
+      // Carrega apostas
+      await loadBets(user.id);
+      
+      // Carrega tipsters
+      await loadTipsters(user.id);
+      
+      // Carrega markets
+      await loadMarkets(user.id);
+      
+      // Carrega teams
+      await loadTeams(user.id);
+      
+      // Carrega bookmakers
+      await loadBookmakers(user.id);
+
+      // Carrega unit_values
+      await loadUnitValue(user.id);
+    } catch (err) {
+      console.error("Erro ao carregar dados:", err);
+      toast.error("Erro ao carregar dados do Supabase!");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Função para carregar apostas
+  const loadBets = async (userId: string) => {
+    try {
+      const { data: betsData, error: betsError } = await supabase
+        .from("bets")
+        .select("*")
+        .eq("user_id", userId);
+        
+      if (betsError) {
+        console.error("Erro ao buscar bets no Supabase:", betsError);
+        toast.error("Erro ao carregar apostas do Supabase!");
+        return;
+      }
+
+      const { data: comboData, error: comboError } = await supabase
+        .from("combo_games")
+        .select("*")
+        .eq("user_id", userId);
+        
+      if (comboError) {
+        console.error("Erro ao buscar combo_games no Supabase:", comboError);
+        toast.error("Erro ao carregar jogos adicionais do Supabase!");
+        return;
+      }
+
+      const mappedBets = betsData.map((row: SupabaseBet) => {
+        const comboGames = comboData
+          .filter((combo: SupabaseComboGame) => combo.bet_id === row.id)
+          .map((combo: SupabaseComboGame) => ({
+            competition: combo.competition,
+            homeTeam: combo.home_team,
+            awayTeam: combo.away_team,
+          }));
+
+        return {
+          id: row.id,
+          date: row.date,
+          tipster: row.tipster,
+          competition: row.competition,
+          type: row.bet_type as Bet["type"],
+          homeTeam: row.home_team,
+          awayTeam: row.away_team,
+          market: row.market,
+          bookmaker: row.bookmaker,
+          entry: row.entry,
+          odds: row.odds,
+          stake: row.stake,
+          unitValue: row.unit_value,
+          stakeUnits: row.stake_units,
+          commission: row.commission ?? undefined,
+          result: row.result as Bet["result"],
+          profitCurrency: row.profit_currency,
+          profitUnits: row.profit_units,
+          userId: row.user_id,
+          ...(comboGames.length > 0 && { comboGames }),
+        };
+      });
+
+      setBets(mappedBets);
+    } catch (err) {
+      console.error("Erro inesperado ao carregar bets:", err);
+      toast.error("Erro inesperado ao carregar apostas!");
+    }
+  };
+
+  // Função para carregar tipsters
+  const loadTipsters = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("tipsters")
+        .select("*")
+        .eq("user_id", userId);
+        
+      if (error) throw error;
+      setTipsters(data as Tipster[]);
+    } catch (err) {
+      console.error("Erro ao carregar tipsters:", err);
+      toast.error("Erro ao carregar tipsters!");
+    }
+  };
+
+  // Função para carregar markets
+  const loadMarkets = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("markets")
+        .select("*")
+        .eq("user_id", userId);
+        
+      if (error) throw error;
+      setMarkets(data as Market[]);
+    } catch (err) {
+      console.error("Erro ao carregar markets:", err);
+      toast.error("Erro ao carregar mercados!");
+    }
+  };
+
+  // Função para carregar teams
+  const loadTeams = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("user_id", userId);
+        
+      if (error) throw error;
+      setTeamsList(data as Team[]);
+    } catch (err) {
+      console.error("Erro ao carregar teams:", err);
+      toast.error("Erro ao carregar times!");
+    }
+  };
+
+  // Função para carregar bookmakers
+  const loadBookmakers = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("bookmakers")
+        .select("*")
+        .eq("user_id", userId);
+        
+      if (error) throw error;
+      setBookmakers(data as Bookmaker[]);
+    } catch (err) {
+      console.error("Erro ao carregar bookmakers:", err);
+      toast.error("Erro ao carregar casas de apostas!");
+    }
+  };
+
+  // Função para carregar unit_values
+  const loadUnitValue = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("unit_values")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+        
+      if (error) throw error;
+      
+      if (data) {
+        setUnitValueState(data.value);
+      } else {
+        // Tenta carregar do localStorage se não encontrar no Supabase
+        try {
+          const savedUnitValue = localStorage.getItem("unitValue");
+          if (savedUnitValue) {
+            setUnitValueState(parseFloat(savedUnitValue));
+          }
+        } catch (error) {
+          console.error("Erro ao carregar unitValue do localStorage:", error);
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao carregar unitValue:", err);
+      toast.error("Erro ao carregar valor da unidade!");
+    }
+  };
+
+  // Carrega dados apenas ao iniciar o aplicativo 
+  // (substitui os useEffects individuais)
+  useEffect(() => {
+    loadAllData();
   }, []);
 
   // Recalcula estatísticas quando bets mudam
@@ -255,6 +350,59 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [bets, isLoading]);
 
+  // Função para atualizar unitValue
+  const setUnitValue = async (value: number) => {
+    setUnitValueState(value);
+    
+    try {
+      // Obtém o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("Usuário não autenticado ao atualizar unitValue");
+        return;
+      }
+      
+      // Verifica se já existe um registro para este usuário
+      const { data, error: selectError } = await supabase
+        .from("unit_values")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+        
+      if (selectError) throw selectError;
+      
+      if (data) {
+        // Atualiza o registro existente
+        const { error: updateError } = await supabase
+          .from("unit_values")
+          .update({ value, user_id: user.id })
+          .eq("id", data.id);
+          
+        if (updateError) throw updateError;
+      } else {
+        // Cria um novo registro
+        const { error: insertError } = await supabase
+          .from("unit_values")
+          .insert({ 
+            id: crypto.randomUUID(), 
+            value, 
+            user_id: user.id 
+          });
+          if (insertError) {
+            console.error('Erro ao inserir unitValue:', insertError);
+            throw insertError;
+          }
+      }
+      
+      // Salva também no localStorage como backup
+      localStorage.setItem("unitValue", value.toString());
+    } catch (error) {
+      console.error("Erro ao salvar unitValue:", error);
+      toast.error("Erro ao salvar valor da unidade!");
+    }
+  };
+
   // Salva unitValue no localStorage
   useEffect(() => {
     if (!isLoading) {
@@ -264,6 +412,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Funções CRUD para Bets
   const addBet = async (bet: Bet) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     const supabaseBet = {
       id: bet.id,
       date: bet.date,
@@ -279,10 +435,11 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
       stake: bet.stake,
       unit_value: bet.unitValue,
       stake_units: bet.stakeUnits,
-      commission: bet.commission ?? null,
+      commission: bet.commission ?? undefined,
       result: bet.result,
       profit_currency: bet.profitCurrency,
       profit_units: bet.profitUnits,
+      user_id: user.id, // Adiciona user_id do usuário autenticado
     };
 
     try {
@@ -299,6 +456,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
           competition: game.competition,
           home_team: game.homeTeam,
           away_team: game.awayTeam,
+          user_id: user.id, // Adiciona user_id do usuário autenticado
         }));
         const { error: comboError } = await supabase
           .from("combo_games")
@@ -315,6 +473,14 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateBet = async (updatedBet: Bet) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     const supabaseBet = {
       date: updatedBet.date,
       tipster: updatedBet.tipster,
@@ -329,10 +495,11 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
       stake: updatedBet.stake,
       unit_value: updatedBet.unitValue,
       stake_units: updatedBet.stakeUnits,
-      commission: updatedBet.commission ?? null,
+      commission: updatedBet.commission ?? undefined,
       result: updatedBet.result,
       profit_currency: updatedBet.profitCurrency,
       profit_units: updatedBet.profitUnits,
+      user_id: user.id, // Adiciona/atualiza user_id do usuário autenticado
     };
 
     try {
@@ -357,6 +524,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
           competition: game.competition,
           home_team: game.homeTeam,
           away_team: game.awayTeam,
+          user_id: user.id, // Adiciona user_id do usuário autenticado
         }));
         const { error: comboError } = await supabase
           .from("combo_games")
@@ -397,15 +565,21 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Função para atualizar unitValue
-  const setUnitValue = (value: number) => {
-    setUnitValueState(value);
-  };
-
   // Funções CRUD para Tipsters
   const addTipster = async (tipster: Tipster) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     try {
-      const { error } = await supabase.from("tipsters").insert(tipster);
+      const { error } = await supabase.from("tipsters").insert({
+        ...tipster,
+        user_id: user.id, // Adiciona user_id do usuário autenticado
+      });
       if (error) throw error;
       setTipsters((prev) => [...prev, tipster]);
       toast.success("Tipster adicionado com sucesso!");
@@ -415,15 +589,26 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const updateTipster = async (updatedTipster: Tipster) => {
+  const updateTipster = async (tipster: Tipster) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from("tipsters")
-        .update({ name: updatedTipster.name })
-        .eq("id", updatedTipster.id);
+        .update({
+          ...tipster,
+          user_id: user.id, // Adiciona/atualiza user_id do usuário autenticado
+        })
+        .eq("id", tipster.id);
       if (error) throw error;
       setTipsters((prev) =>
-        prev.map((t) => (t.id === updatedTipster.id ? updatedTipster : t))
+        prev.map((t) => (t.id === tipster.id ? tipster : t))
       );
       toast.success("Tipster atualizado com sucesso!");
     } catch (error) {
@@ -446,8 +631,19 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Funções CRUD para Markets
   const addMarket = async (market: Market) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     try {
-      const { error } = await supabase.from("markets").insert(market);
+      const { error } = await supabase.from("markets").insert({
+        ...market,
+        user_id: user.id, // Adiciona user_id do usuário autenticado
+      });
       if (error) throw error;
       setMarkets((prev) => [...prev, market]);
       toast.success("Mercado adicionado com sucesso!");
@@ -457,15 +653,26 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const updateMarket = async (updatedMarket: Market) => {
+  const updateMarket = async (market: Market) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from("markets")
-        .update({ name: updatedMarket.name })
-        .eq("id", updatedMarket.id);
+        .update({
+          ...market,
+          user_id: user.id, // Adiciona/atualiza user_id do usuário autenticado
+        })
+        .eq("id", market.id);
       if (error) throw error;
       setMarkets((prev) =>
-        prev.map((m) => (m.id === updatedMarket.id ? updatedMarket : m))
+        prev.map((m) => (m.id === market.id ? market : m))
       );
       toast.success("Mercado atualizado com sucesso!");
     } catch (error) {
@@ -489,7 +696,19 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   // Funções CRUD para Bookmakers
   const refetchBookmakers = async () => {
     try {
-      const { data, error } = await supabase.from("bookmakers").select("*");
+      // Obtém o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("Usuário não autenticado ao recarregar bookmakers");
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from("bookmakers")
+        .select("*")
+        .eq("user_id", user.id);  // Filtra apenas bookmakers do usuário atual
+        
       if (error) throw error;
       setBookmakers(data as Bookmaker[]);
     } catch (error) {
@@ -499,22 +718,71 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addBookmaker = async (bookmaker: Bookmaker) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     try {
-      const { error } = await supabase.from("bookmakers").insert(bookmaker);
-      if (error) throw error;
+      // Verifica se já existe uma casa com o mesmo nome para este usuário
+      const { data: existingBookmaker, error: checkError } = await supabase
+        .from("bookmakers")
+        .select("id")
+        .eq("name", bookmaker.name)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingBookmaker) {
+        throw new Error('Já existe uma casa de apostas com este nome');
+      }
+
+      const { error: insertError } = await supabase.from("bookmakers").insert({
+        id: bookmaker.id,
+        name: bookmaker.name,
+        user_id: user.id,
+      });
+
+      if (insertError) {
+        console.error('Erro ao adicionar casa de apostas:', insertError);
+        throw insertError;
+      }
+
       await refetchBookmakers();
       toast.success("Casa de apostas adicionada com sucesso!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao adicionar casa de apostas:", error);
-      toast.error("Erro ao adicionar casa de apostas!");
+      if (error.message === 'Já existe uma casa de apostas com este nome') {
+        toast.error(error.message);
+      } else {
+        toast.error("Erro ao adicionar casa de apostas!");
+      }
+      throw error;
     }
   };
 
   const updateBookmaker = async (bookmaker: Bookmaker) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from("bookmakers")
-        .update({ name: bookmaker.name })
+        .update({
+          ...bookmaker,
+          user_id: user.id, // Adiciona/atualiza user_id do usuário autenticado
+        })
         .eq("id", bookmaker.id);
       if (error) throw error;
       await refetchBookmakers();
@@ -534,6 +802,91 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error("Erro ao remover casa de apostas:", error);
       toast.error("Erro ao remover casa de apostas!");
+    }
+  };
+
+  // Funções CRUD para Teams
+  const refetchTeams = async () => {
+    try {
+      // Obtém o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("Usuário não autenticado ao recarregar times");
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("user_id", user.id);  // Filtra apenas times do usuário atual
+        
+      if (error) throw error;
+      setTeamsList(data as Team[]);
+    } catch (error) {
+      console.error("Erro ao recarregar times:", error);
+      toast.error("Erro ao atualizar lista de times!");
+    }
+  };
+
+  const addTeam = async (team: Team) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.from("teams").insert({
+        ...team,
+        user_id: user.id, // Adiciona user_id do usuário autenticado
+      });
+      if (error) throw error;
+      await refetchTeams();
+      toast.success("Time adicionado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao adicionar time:", error);
+      toast.error("Erro ao adicionar time!");
+    }
+  };
+
+  const updateTeam = async (team: Team) => {
+    // Obtém o usuário atual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("Usuário não autenticado!");
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from("teams")
+        .update({
+          ...team,
+          user_id: user.id, // Adiciona/atualiza user_id do usuário autenticado
+        })
+        .eq("id", team.id);
+      if (error) throw error;
+      await refetchTeams();
+      toast.success("Time atualizado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao atualizar time:", error);
+      toast.error("Erro ao atualizar time!");
+    }
+  };
+
+  const deleteTeam = async (id: string) => {
+    try {
+      const { error } = await supabase.from("teams").delete().eq("id", id);
+      if (error) throw error;
+      await refetchTeams();
+      toast.success("Time removido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao remover time:", error);
+      toast.error("Erro ao remover time!");
     }
   };
 
@@ -564,6 +917,9 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
         deleteBookmaker,
         competitions: competitionsList,
         teams: teamsList,
+        addTeam,
+        updateTeam,
+        deleteTeam,
       }}
     >
       {children}

@@ -3,12 +3,18 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
+  LogOut,
   PieChart,
   PlusCircle,
   Settings,
+  User,
 } from "lucide-react";
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +22,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
 
@@ -46,6 +54,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       icon: <Settings className="h-5 w-5" />,
     },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Logout realizado com sucesso");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Erro ao fazer logout");
+    }
+  };
+
+  // Get user initials for avatar fallback
+  const getUserInitials = () => {
+    if (!user || !user.email) return "U";
+    return user.email.charAt(0).toUpperCase();
+  };
 
   return (
     <div className="flex h-screen bg-neutral-50">
@@ -110,14 +134,46 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           })}
         </nav>
 
-        {/* Rodapé do sidebar */}
-        {!collapsed && (
-          <div className="p-4 border-t">
-            <div className="text-xs text-neutral-500 text-center">
-              Bet Tracker &copy; {new Date().getFullYear()}
+        {/* User info and logout */}
+        <div className="p-4 border-t">
+          {!collapsed ? (
+            <div className="flex flex-col space-y-3">
+              <div className="flex items-center space-x-3">
+                <Avatar>
+                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                  <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm truncate max-w-[12rem]">
+                    {user?.email}
+                  </span>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSignOut}
+                className="flex items-center w-full"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="flex flex-col items-center space-y-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback>{getUserInitials()}</AvatarFallback>
+              </Avatar>
+              <button
+                onClick={handleSignOut}
+                className="text-neutral-500 hover:text-neutral-700"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+        </div>
       </aside>
 
       {/* Mobile header */}
@@ -137,6 +193,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <span className="text-xs mt-1">{link.name}</span>
             </Link>
           ))}
+          <button
+            onClick={handleSignOut}
+            className="flex flex-1 flex-col items-center justify-center py-3 text-neutral-700"
+          >
+            <LogOut className="h-5 w-5" />
+            <span className="text-xs mt-1">Sair</span>
+          </button>
         </div>
       </div>
 

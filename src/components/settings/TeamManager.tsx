@@ -2,19 +2,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/services/supabaseClient';
+import { useBets } from '@/context/BetContext';
+import { Team } from '@/types';
 import { AlertCircle, Edit, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-interface Team {
-  id: string;
-  name: string;
-  country: string;
-}
-
 const TeamManager: React.FC = () => {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const { teams, addTeam, updateTeam, deleteTeam } = useBets();
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamCountry, setNewTeamCountry] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,24 +17,6 @@ const TeamManager: React.FC = () => {
   const [visibleCount, setVisibleCount] = useState<number>(10);
   const [editMode, setEditMode] = useState(false);
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
-
-  // Carrega times do banco de dados
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  const fetchTeams = async () => {
-    const { data, error } = await supabase
-      .from('teams')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (error) {
-      toast.error('Erro ao carregar times');
-      return;
-    }
-    setTeams(data);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,45 +27,43 @@ const TeamManager: React.FC = () => {
       return;
     }
 
-    if (editMode && currentTeamId) {
-      // Atualiza o time existente
-      const { error } = await supabase
-        .from('teams')
-        .update({ name: newTeamName, country: newTeamCountry })
-        .eq('id', currentTeamId);
-      if (error) {
-        toast.error('Erro ao atualizar time');
-        return;
-      }
-      toast.success('Time atualizado com sucesso!');
-    } else {
-      // Verifica se o time já existe
-      const teamExists = teams.some(
-        (team) =>
-          team.name.toLowerCase() === newTeamName.toLowerCase() &&
-          team.country.toLowerCase() === newTeamCountry.toLowerCase()
-      );
+    try {
+      if (editMode && currentTeamId) {
+        // Atualiza o time existente
+        await updateTeam({
+          id: currentTeamId,
+          name: newTeamName,
+          country: newTeamCountry
+        });
+      } else {
+        // Verifica se o time já existe
+        const teamExists = teams.some(
+          (team) =>
+            team.name.toLowerCase() === newTeamName.toLowerCase() &&
+            team.country.toLowerCase() === newTeamCountry.toLowerCase()
+        );
 
-      if (teamExists) {
-        setError('Este time já existe');
-        return;
+        if (teamExists) {
+          setError('Este time já existe');
+          return;
+        }
+
+        // Cria um novo time com ID gerado
+        await addTeam({
+          id: crypto.randomUUID(),
+          name: newTeamName,
+          country: newTeamCountry
+        });
       }
 
-      const { error } = await supabase
-        .from('teams')
-        .insert([{ name: newTeamName, country: newTeamCountry }]);
-      if (error) {
-        toast.error('Erro ao adicionar time');
-        return;
-      }
-      toast.success('Time adicionado com sucesso!');
+      setNewTeamName('');
+      setNewTeamCountry('');
+      setEditMode(false);
+      setCurrentTeamId(null);
+    } catch (error) {
+      console.error("Erro ao manipular time:", error);
+      toast.error('Erro ao salvar time');
     }
-
-    setNewTeamName('');
-    setNewTeamCountry('');
-    setEditMode(false);
-    setCurrentTeamId(null);
-    fetchTeams();
   };
 
   const handleEditTeam = (team: Team) => {
@@ -99,13 +74,12 @@ const TeamManager: React.FC = () => {
   };
 
   const handleDeleteTeam = async (id: string) => {
-    const { error } = await supabase.from('teams').delete().eq('id', id);
-    if (error) {
+    try {
+      await deleteTeam(id);
+    } catch (error) {
+      console.error("Erro ao excluir time:", error);
       toast.error('Erro ao excluir time');
-      return;
     }
-    toast.success('Time excluído com sucesso!');
-    fetchTeams();
   };
 
   const handleShowMore = () => {

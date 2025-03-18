@@ -21,6 +21,7 @@ export interface Bet {
   result: BetResult;
   profitCurrency: number;
   profitUnits: number;
+  userId?: string;
   comboGames?: { homeTeam: string; awayTeam: string; competition: string }[];
 }
 
@@ -53,11 +54,13 @@ export interface MonthlyStats {
 export interface Tipster {
   id: string;
   name: string;
+  userId?: string;
 }
 
 export interface Market {
   id: string;
   name: string;
+  userId?: string;
 }
 
 export interface Competition {
@@ -70,11 +73,13 @@ export interface Team {
   id: string;
   name: string;
   country: string;
+  userId?: string;
 }
 
 export interface Bookmaker {
   id: string;
   name: string;
+  userId?: string;
 }
 
 export interface SelectOption {

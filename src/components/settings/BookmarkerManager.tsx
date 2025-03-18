@@ -6,51 +6,95 @@ import { useBets } from '@/context/BetContext';
 import { Bookmaker } from '@/types';
 import { Edit, Loader2, Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { AlertCircle } from 'lucide-react';
 
-const BookmakerManager: React.FC = () => {
+const BookmarkerManager: React.FC = () => {
   const { bookmakers, addBookmaker, updateBookmaker, deleteBookmaker } = useBets();
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentId, setCurrentId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [visibleCount, setVisibleCount] = useState<number>(10);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!name.trim()) {
-      setError('O nome da casa é obrigatório');
+      setError('O nome da casa de apostas é obrigatório');
       return;
     }
 
     setLoading(true);
     try {
-      if (editMode && currentId) {
-        await updateBookmaker({ id: currentId, name: name.trim() });
+      // Verifica se já existe uma casa com o mesmo nome para o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Usuário não autenticado!');
+        return;
+      }
+
+      // Verifica se já existe uma casa com o mesmo nome para este usuário
+      const { data: existingBookmaker, error: checkError } = await supabase
+        .from('bookmakers')
+        .select('id')
+        .eq('name', name.trim())
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingBookmaker) {
+        setError('Já existe uma casa de apostas com este nome');
+        return;
+      }
+
+      if (editMode && editingId) {
+        await updateBookmaker({
+          id: editingId,
+          name: name.trim(),
+        });
+        toast.success('Casa de apostas atualizada com sucesso!');
       } else {
-        await addBookmaker({ id: crypto.randomUUID(), name: name.trim() } as Bookmaker);
+        await addBookmaker({
+          id: crypto.randomUUID(),
+          name: name.trim(),
+        });
+        toast.success('Casa de apostas adicionada com sucesso!');
+      }
+      setName('');
+      setEditMode(false);
+      setEditingId(null);
+    } catch (error: any) {
+      console.error('Erro ao salvar casa de apostas:', error);
+      if (error.code === '23505') {
+        setError('Já existe uma casa de apostas com este nome');
+      } else {
+        toast.error('Erro ao salvar casa de apostas');
+        setError('Erro ao salvar casa de apostas');
       }
     } finally {
       setLoading(false);
-      setName('');
-      setEditMode(false);
-      setCurrentId(null);
     }
   };
 
-  const handleEdit = (bookmaker: Bookmaker) => {
+  const handleEdit = (bookmaker: { id: string; name: string }) => {
     setName(bookmaker.name);
-    setCurrentId(bookmaker.id);
     setEditMode(true);
+    setEditingId(bookmaker.id);
   };
 
   const handleCancel = () => {
     setName('');
     setEditMode(false);
-    setCurrentId(null);
+    setEditingId(null);
     setError(null);
   };
 
@@ -58,8 +102,11 @@ const BookmakerManager: React.FC = () => {
     setLoading(true);
     try {
       await deleteBookmaker(id);
-      // Limpa o campo de pesquisa após a exclusão
+      toast.success('Casa de apostas removida com sucesso!');
       setSearchQuery('');
+    } catch (error) {
+      console.error('Erro ao remover casa de apostas:', error);
+      toast.error('Erro ao remover casa de apostas');
     } finally {
       setLoading(false);
     }
@@ -109,67 +156,65 @@ const BookmakerManager: React.FC = () => {
             </div>
             {error && (
               <p className="text-danger-500 text-sm flex items-center mt-1">
+                <AlertCircle className="h-3 w-3 mr-1" />
                 {error}
               </p>
             )}
           </div>
         </form>
 
-        <div className="mt-6">
-          <Label htmlFor="searchBookmaker">Pesquisar</Label>
-          <Input
-            id="searchBookmaker"
-            placeholder="Pesquisar casas..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-4"
-          />
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center space-x-2">
+            <Input
+              placeholder="Buscar casa de apostas..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
 
-          <h3 className="font-medium mb-3">Casas Cadastradas</h3>
-          {loading ? (
-            <div className="flex justify-center items-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-neutral-600" />
-              <span className="ml-2 text-neutral-600">Carregando casas...</span>
-            </div>
-          ) : filteredBookmakers.length === 0 ? (
-            <p className="text-muted-foreground">Nenhuma casa encontrada</p>
-          ) : (
-            <ul className="space-y-2">
-              {filteredBookmakers.slice(0, visibleCount).map((bookmaker) => (
-                <li
-                  key={bookmaker.id}
-                  className="flex items-center justify-between p-3 bg-muted rounded-md"
-                >
-                  <span>{bookmaker.name}</span>
-                  <div className="flex space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(bookmaker)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(bookmaker.id)}
-                      className="text-danger-500 hover:text-danger-700 hover:bg-danger-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-          {visibleCount < filteredBookmakers.length && (
-            <div className="mt-4">
-              <Button variant="outline" onClick={handleShowMore}>
-                Ver mais
-              </Button>
-            </div>
+          <div className="space-y-2">
+            {filteredBookmakers.slice(0, visibleCount).map((bookmaker) => (
+              <div
+                key={bookmaker.id}
+                className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+              >
+                <span>{bookmaker.name}</span>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(bookmaker)}
+                    disabled={loading}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(bookmaker.id)}
+                    disabled={loading}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredBookmakers.length > visibleCount && (
+            <Button
+              variant="outline"
+              onClick={handleShowMore}
+              className="w-full"
+            >
+              Mostrar mais
+            </Button>
           )}
         </div>
       </CardContent>
-      <CardFooter />
     </Card>
   );
 };
 
-export default BookmakerManager;
+export default BookmarkerManager;
