@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
-import { competitions } from "../data/competitions";
 import {
   calculateDailyStats,
   calculateDashboardStats,
@@ -109,7 +108,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
   const [markets, setMarkets] = useState<Market[]>([]);
   const [teamsList, setTeamsList] = useState<Team[]>([]);
   const [bookmakers, setBookmakers] = useState<Bookmaker[]>([]);
-  const [competitionsList] = useState<Competition[]>(competitions);
+  const [competitionsList, setCompetitionsList] = useState<Competition[]>([]);
 
   // Verifica mudanças no estado de autenticação e recarrega os dados
   useEffect(() => {

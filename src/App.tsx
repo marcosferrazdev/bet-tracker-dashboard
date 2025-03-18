@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BetProvider } from "@/context/BetContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { CompetitionProvider } from "@/context/CompetitionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import BetForm from "@/pages/BetForm";
 import BetList from "@/pages/BetList";
@@ -24,39 +25,41 @@ const App = () => (
     <TooltipProvider>
       <BetProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <Router>
-            <Routes>
-              {/* Auth routes */}
-              <Route path="/" element={
-                <AuthLayout>
-                  <Outlet />
-                </AuthLayout>
-              }>
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-              </Route>
-              
-              {/* Protected routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route element={
-                  <Layout>
+          <CompetitionProvider>
+            <Toaster />
+            <Sonner />
+            <Router>
+              <Routes>
+                {/* Auth routes */}
+                <Route path="/" element={
+                  <AuthLayout>
                     <Outlet />
-                  </Layout>
+                  </AuthLayout>
                 }>
-                  <Route index element={<Dashboard />} />
-                  <Route path="apostas" element={<BetList />} />
-                  <Route path="nova-aposta" element={<BetForm />} />
-                  <Route path="editar-aposta/:id" element={<BetForm />} />
-                  <Route path="analise" element={<AnalysisTab />} />
-                  <Route path="configuracoes" element={<Settings />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="register" element={<Register />} />
                 </Route>
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
+                
+                {/* Protected routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route element={
+                    <Layout>
+                      <Outlet />
+                    </Layout>
+                  }>
+                    <Route index element={<Dashboard />} />
+                    <Route path="apostas" element={<BetList />} />
+                    <Route path="nova-aposta" element={<BetForm />} />
+                    <Route path="editar-aposta/:id" element={<BetForm />} />
+                    <Route path="analise" element={<AnalysisTab />} />
+                    <Route path="configuracoes" element={<Settings />} />
+                  </Route>
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </CompetitionProvider>
         </AuthProvider>
       </BetProvider>
     </TooltipProvider>

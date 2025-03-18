@@ -13,6 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import BookmakerManager from '../components/settings/BookmarkerManager';
 import TeamManager from '../components/settings/TeamManager';
+import { CompetitionSettings } from "@/components/settings/CompetitionSettings";
 
 const Settings: React.FC = () => {
   const { unitValue, setUnitValue } = useBets();
@@ -117,12 +118,13 @@ const Settings: React.FC = () => {
       />
       
       <Tabs defaultValue="general" className="mb-8">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex flex-wrap gap-2">
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="tipsters">Tipsters</TabsTrigger>
           <TabsTrigger value="markets">Mercados</TabsTrigger>
           <TabsTrigger value="teams">Times</TabsTrigger>
           <TabsTrigger value="bookmakers">Casas</TabsTrigger>
+          <TabsTrigger value="competitions">Competições</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general">
@@ -176,8 +178,21 @@ const Settings: React.FC = () => {
         <TabsContent value="bookmakers">
           <BookmakerManager />
         </TabsContent>
+
+        <TabsContent value="competitions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Competições</CardTitle>
+              <CardDescription>
+                Gerencie as competições disponíveis para suas apostas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CompetitionSettings />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
-      
     </div>
   );
 };
