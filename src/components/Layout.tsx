@@ -178,34 +178,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Mobile header */}
       <div className="fixed bottom-0 left-0 right-0 z-10 md:hidden bg-white border-t">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center px-2">
           {links.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`flex flex-1 flex-col items-center justify-center py-3 ${
+              className={`flex flex-1 flex-col items-center justify-center py-2 px-1 ${
                 location.pathname === link.path
                   ? "text-blue-600"
                   : "text-neutral-700"
               }`}
             >
-              {link.icon}
-              <span className="text-xs mt-1">{link.name}</span>
+              {React.cloneElement(link.icon, {
+                className: `h-5 w-5 ${
+                  location.pathname === link.path ? "text-blue-600" : "text-neutral-700"
+                }`,
+              })}
+              <span className="text-[10px] mt-1 text-center">{link.name}</span>
             </Link>
           ))}
           <button
             onClick={handleSignOut}
-            className="flex flex-1 flex-col items-center justify-center py-3 text-neutral-700"
+            className="flex flex-1 flex-col items-center justify-center py-2 px-1 text-neutral-700"
           >
             <LogOut className="h-5 w-5" />
-            <span className="text-xs mt-1">Sair</span>
+            <span className="text-[10px] mt-1">Sair</span>
           </button>
         </div>
       </div>
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="container py-8 px-4 md:px-6 max-w-screen-xl mx-auto">
+        <div className="container py-8 px-4 md:px-6 max-w-screen-xl mx-auto pb-20 md:pb-8">
           {children}
         </div>
       </main>
