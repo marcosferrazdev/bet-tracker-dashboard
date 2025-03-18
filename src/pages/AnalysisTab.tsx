@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useBets } from "@/context/BetContext";
+import { formatCurrency } from "@/lib/bet-utils";
 import { Bet } from "@/types";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -27,6 +28,7 @@ interface GroupedData {
   REEMBOLSO: number;
   Pendente: number;
   total: number;
+  profit: number;
 }
 
 const groupOptions = [
@@ -68,6 +70,7 @@ const AnalysisTab: React.FC = () => {
           REEMBOLSO: 0,
           Pendente: 0,
           total: 0,
+          profit: 0,
         };
       }
       groups[key].total += 1;
@@ -75,6 +78,8 @@ const AnalysisTab: React.FC = () => {
       else if (bet.result === "RED") groups[key].RED += 1;
       else if (bet.result === "REEMBOLSO") groups[key].REEMBOLSO += 1;
       else groups[key].Pendente += 1;
+
+      groups[key].profit += bet.profitCurrency || 0;
     });
     return Object.values(groups);
   }, [bets, groupBy]);
@@ -108,13 +113,18 @@ const AnalysisTab: React.FC = () => {
     return sorted;
   }, [groupedData, sortConfig]);
 
+  const getProfitColorClass = (profit: number) => {
+    if (profit > 0) return "text-green-600";
+    if (profit < 0) return "text-red-600";
+    return "text-neutral-600";
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Análise de Apostas</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Se desejar, aqui pode ser adicionado um select para escolher o agrupamento */}
         <div className="mb-4">
           <Label htmlFor="groupBy" className="block mb-1">
             Agrupar por:
@@ -165,6 +175,19 @@ const AnalysisTab: React.FC = () => {
                   )}
                 </TableHead>
               ))}
+              <TableHead
+                className="cursor-pointer text-right"
+                onClick={() => handleSort("profit")}
+              >
+                Lucro/Prejuízo
+                {sortConfig.key === "profit" && (
+                  sortConfig.direction === "asc" ? (
+                    <ChevronUp className="inline-block ml-1 h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="inline-block ml-1 h-4 w-4" />
+                  )
+                )}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -176,6 +199,11 @@ const AnalysisTab: React.FC = () => {
                 <TableCell>{group.REEMBOLSO}</TableCell>
                 <TableCell>{group.Pendente}</TableCell>
                 <TableCell>{group.total}</TableCell>
+                <TableCell
+                  className={`text-right ${getProfitColorClass(group.profit)}`}
+                >
+                  {formatCurrency(group.profit)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
