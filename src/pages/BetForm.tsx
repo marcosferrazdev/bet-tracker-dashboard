@@ -26,6 +26,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
+import { useCompetitions } from "@/context/CompetitionContext";
 
 interface Game {
   competition: string;
@@ -45,9 +46,9 @@ const BetForm: React.FC = () => {
     tipsters,
     markets,
     bookmakers,
-    competitions,
     teams,
   } = useBets();
+  const { competitions } = useCompetitions();
 
   const isEditing = !!id;
 
@@ -56,7 +57,7 @@ const BetForm: React.FC = () => {
   const [time, setTime] = useState<string>("");
   const [tipster, setTipster] = useState("");
   const [competition, setCompetition] = useState("");
-  const [type, setType] = useState<BetType>("Pré");
+  const [type, setType] = useState<"Pré" | "Live" | "Múltipla" | "Bingo Múltipla">("Pré");
   const [games, setGames] = useState<Game[]>([
     { competition: "", homeTeam: "", awayTeam: "" },
   ]);
@@ -235,6 +236,10 @@ const BetForm: React.FC = () => {
     navigate("/apostas", { state: { viewMode: initialViewMode } });
   };
 
+  const isCompetitionDisabled = (betType: BetType) => {
+    return betType === "Bingo Múltipla" || betType === "Múltipla";
+  };
+
   return (
     <div>
       <PageHeader
@@ -336,7 +341,7 @@ const BetForm: React.FC = () => {
                 <Label htmlFor="type">Tipo</Label>
                 <Select
                   value={type}
-                  onValueChange={(value) => setType(value as BetType)}
+                  onValueChange={(value) => setType(value as "Pré" | "Live" | "Múltipla" | "Bingo Múltipla")}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
