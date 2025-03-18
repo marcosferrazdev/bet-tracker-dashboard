@@ -1,6 +1,5 @@
-
 import { Bet, BetResult, DailyStats, DashboardStats, MonthlyStats } from "@/types";
-import { eachDayOfInterval, endOfMonth, format, parseISO, startOfMonth } from "date-fns";
+import { eachDayOfInterval, endOfMonth, format, parseISO, startOfMonth, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Generate a unique ID
@@ -63,12 +62,17 @@ export const calculateDashboardStats = (bets: Bet[]): DashboardStats => {
   };
 };
 
+// Normaliza a data removendo o horário
+export const normalizeDate = (dateString: string): string => {
+  return format(parseISO(dateString), "yyyy-MM-dd");
+};
+
 // Group bets by day and calculate daily stats
 export const calculateDailyStats = (bets: Bet[]): DailyStats[] => {
   const dailyMap = new Map<string, DailyStats>();
   
   bets.forEach(bet => {
-    const dateKey = bet.date;
+    const dateKey = normalizeDate(bet.date);
     const existing = dailyMap.get(dateKey) || { 
       date: dateKey, 
       bets: 0, 
