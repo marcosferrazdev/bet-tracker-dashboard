@@ -15,6 +15,16 @@ import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   const links = [
     {
@@ -55,7 +66,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     },
   ];
 
-  const handleSignOut = async () => {
+  const confirmLogout = async () => {
     try {
       await signOut();
       toast.success("Logout realizado com sucesso");
@@ -63,9 +74,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     } catch (error) {
       toast.error("Erro ao fazer logout");
     }
+    setLogoutModalOpen(false);
   };
 
-  // Get user initials for avatar fallback
+  const cancelLogout = () => {
+    setLogoutModalOpen(false);
+  };
+
+  // Obtém iniciais do usuário para o fallback do Avatar
   const getUserInitials = () => {
     if (!user || !user.email) return "U";
     return user.email.charAt(0).toUpperCase();
@@ -109,23 +125,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 key={link.path}
                 to={link.path}
                 className={`
-                flex items-center rounded-xl transition-all duration-300
-                ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2"}
-                ${
-                  isActive
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-neutral-700 hover:bg-neutral-100"
-                }
-              `}
+                  flex items-center rounded-xl transition-all duration-300
+                  ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2"}
+                  ${
+                    isActive
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-neutral-700 hover:bg-neutral-100"
+                  }
+                `}
               >
-                {/* Ícone com tamanho consistente */}
                 {React.cloneElement(link.icon, {
                   className: `h-5 w-5 ${
                     isActive ? "text-blue-600" : "text-neutral-700"
                   }`,
                 })}
 
-                {/* Texto condicional */}
                 {!collapsed && (
                   <span className="ml-3 font-medium">{link.name}</span>
                 )}
@@ -134,7 +148,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           })}
         </nav>
 
-        {/* User info and logout */}
+        {/* Informações do usuário e logout */}
         <div className="p-4 border-t">
           {!collapsed ? (
             <div className="flex flex-col space-y-3">
@@ -149,10 +163,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </span>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleSignOut}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLogoutModalOpen(true)}
                 className="flex items-center w-full"
               >
                 <LogOut className="mr-2 h-4 w-4" />
@@ -166,7 +180,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <AvatarFallback>{getUserInitials()}</AvatarFallback>
               </Avatar>
               <button
-                onClick={handleSignOut}
+                onClick={() => setLogoutModalOpen(true)}
                 className="text-neutral-500 hover:text-neutral-700"
               >
                 <LogOut className="h-5 w-5" />
@@ -176,7 +190,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Conteúdo principal */}
       <main className="flex-1 relative">
         <div className="absolute inset-0 overflow-auto">
           <div className="container py-8 px-4 md:px-6 max-w-screen-xl mx-auto pb-24">
@@ -185,7 +199,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {/* Mobile header */}
+      {/* Cabeçalho mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t">
         <div className="flex justify-between items-center px-2">
           {links.map((link) => (
@@ -207,7 +221,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
           ))}
           <button
-            onClick={handleSignOut}
+            onClick={() => setLogoutModalOpen(true)}
             className="flex flex-1 flex-col items-center justify-center py-2 px-1 text-neutral-700"
           >
             <LogOut className="h-5 w-5" />
@@ -215,6 +229,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
       </div>
+
+      {/* Modal de Confirmação de Logout */}
+      <AlertDialog open={logoutModalOpen} onOpenChange={setLogoutModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja sair? Você será redirecionado para a tela de login.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelLogout}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmLogout}
+              className="bg-danger-500 hover:bg-danger-600 text-white"
+            >
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
