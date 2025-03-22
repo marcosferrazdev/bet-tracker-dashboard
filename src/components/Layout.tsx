@@ -1,4 +1,22 @@
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useAuth } from "@/context/AuthContext";
+import {
   BarChart2,
   ChevronLeft,
   ChevronRight,
@@ -6,25 +24,12 @@ import {
   LogOut,
   PieChart,
   PlusCircle,
-  Settings,
-  User,
+  Settings
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "./ui/button";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+import { Button } from "./ui/button";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -81,10 +86,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setLogoutModalOpen(false);
   };
 
+  // Função para formatar o nome do usuário
+  const formatUserName = () => {
+    const fullName = user?.user_metadata?.name || '';
+    if (!fullName) return user?.email || 'Usuário';
+
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length === 1) return nameParts[0];
+    
+    // Retorna o primeiro nome + último sobrenome
+    return `${nameParts[0]} ${nameParts[nameParts.length - 1]}`;
+  };
+
   // Obtém iniciais do usuário para o fallback do Avatar
   const getUserInitials = () => {
-    if (!user || !user.email) return "U";
-    return user.email.charAt(0).toUpperCase();
+    const name = user?.user_metadata?.name;
+    if (!name) return user?.email?.charAt(0).toUpperCase() || 'U';
+    
+    const nameParts = name.trim().split(' ');
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    
+    // Retorna as iniciais do primeiro e último nome
+    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
   return (
@@ -157,10 +180,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback>{getUserInitials()}</AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col">
-                  <span className="font-medium text-sm truncate max-w-[12rem]">
-                    {user?.email}
-                  </span>
+                <div className="flex flex-col min-w-0">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-medium text-sm truncate w-[140px]">
+                          {formatUserName()}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{user?.user_metadata?.name || user?.email}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
               <Button
