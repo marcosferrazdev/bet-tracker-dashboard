@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { useState } from 'react';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -112,6 +112,18 @@ export function LoginForm({ onLogin, onGoogleLogin, onRegister }: LoginFormProps
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
+              {!isRegistering && (
+                <div className="text-sm text-right">
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
+                    type="button"
+                    onClick={() => window.location.href = '/recuperar-senha'}
+                  >
+                    Esqueceu a senha?
+                  </Button>
+                </div>
+              )}
             </div>
             <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading && (
