@@ -1,6 +1,6 @@
 import { LoginForm } from '@/components/auth/LoginForm';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export function Login() {
@@ -29,6 +29,9 @@ export function Login() {
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            app_name: 'Bet Tracker'
+          }
         },
       });
 
