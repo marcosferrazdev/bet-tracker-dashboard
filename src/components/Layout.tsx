@@ -55,7 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       icon: <CircleDollarSign className="h-5 w-5" />,
     },
     {
-      name: "Nova Aposta",
+      name: <span className="font-extrabold">Nova Aposta</span>,
       path: "/nova-aposta",
       icon: <PlusCircle className="h-5 w-5" />,
     },
