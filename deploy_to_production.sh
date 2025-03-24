@@ -3,26 +3,37 @@
 # Sai do script se qualquer comando falhar
 set -e
 
-echo "=== 1. Garantindo que estamos na 'develop' ==="
+echo "=== Passo 1: Garantindo que estamos na 'develop' ==="
 git checkout develop
 git pull origin develop
 
-echo "=== 2. Indo para 'main' e atualizando ==="
+echo "=== Passo 2: Trocando para a branch 'main' e atualizando ==="
 git checkout main
 git pull origin main
 
-echo "=== 3. Fazendo merge da 'develop' na 'main' ==="
+echo "=== Passo 3: Fazendo merge da 'develop' na 'main' ==="
 git merge develop
 
-# Se houver conflitos, o script para aqui. Resolva manualmente, depois:
+# Se houver conflitos, o script para aqui. Resolva-os manualmente, depois:
 # git add .
 # git commit
+# E rode o script novamente ou continue daqui.
 
-echo "=== 4. (Opcional) Rodando build local para testar ==="
+echo "=== Passo 4 (opcional): Rodando build local para testar ==="
 npm install
 npm run build
 
-echo "=== 5. Fazendo push para a 'main' ==="
+# Se preferir Yarn, troque por:
+# yarn install
+# yarn build
+
+echo "=== Passo 5: Fazendo push para a 'main' ==="
 git push origin main
 
-echo "=== Deploy iniciado! Verifique a Vercel para acompanhar o build. ==="
+echo "=== Passo 6: Iniciando o deploy de produção na Vercel (manual) ==="
+# IMPORTANTE: para isso funcionar, você precisa ter o Vercel CLI instalado
+# e estar logado (via 'vercel login').
+vercel --prod
+
+echo "=== Deploy finalizado! ==="
+echo "Verifique no painel da Vercel se tudo correu bem."
