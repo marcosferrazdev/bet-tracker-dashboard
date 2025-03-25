@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { Bar, Pie } from "react-chartjs-2";
+import AiInsightsCard from "./AiInsightsCard";
 
 ChartJS.register(
   CategoryScale,
@@ -124,6 +125,20 @@ const AnalysisTab: React.FC = () => {
       pendingBets: filteredBets.filter(bet => !bet.result).length,
     };
 
+    // Calcular distribuição por mercados
+    const marketDistribution: Record<string, number> = {};
+    filteredBets.forEach(bet => {
+      const market = bet.market || "Não especificado";
+      marketDistribution[market] = (marketDistribution[market] || 0) + 1;
+    });
+
+    // Calcular distribuição por bookmakers
+    const bookmakerDistribution: Record<string, number> = {};
+    filteredBets.forEach(bet => {
+      const bookmaker = bet.bookmaker || "Não especificado";
+      bookmakerDistribution[bookmaker] = (bookmakerDistribution[bookmaker] || 0) + 1;
+    });
+
     return {
       bets: filteredBets,
       totalStake,
@@ -131,7 +146,9 @@ const AnalysisTab: React.FC = () => {
       avgStake,
       avgOdds,
       dailyProfits,
-      betDistribution
+      betDistribution,
+      marketDistribution,
+      bookmakerDistribution
     };
   }, [bets, selectedPeriod]);
 
@@ -155,6 +172,52 @@ const AnalysisTab: React.FC = () => {
         "rgba(34, 197, 94, 1)",
         "rgba(239, 68, 68, 1)",
         "rgba(59, 130, 246, 1)",
+        "rgba(168, 162, 158, 1)"
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  // Dados para o gráfico de distribuição de mercados
+  const marketDistributionData = {
+    labels: Object.keys(filteredData.marketDistribution).slice(0, 5),
+    datasets: [{
+      data: Object.values(filteredData.marketDistribution).slice(0, 5),
+      backgroundColor: [
+        "rgba(34, 197, 94, 0.8)",
+        "rgba(59, 130, 246, 0.8)",
+        "rgba(234, 179, 8, 0.8)",
+        "rgba(239, 68, 68, 0.8)",
+        "rgba(168, 162, 158, 0.8)"
+      ],
+      borderColor: [
+        "rgba(34, 197, 94, 1)",
+        "rgba(59, 130, 246, 1)",
+        "rgba(234, 179, 8, 1)",
+        "rgba(239, 68, 68, 1)",
+        "rgba(168, 162, 158, 1)"
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  // Dados para o gráfico de distribuição por casas de apostas
+  const bookmakerDistributionData = {
+    labels: Object.keys(filteredData.bookmakerDistribution).slice(0, 5),
+    datasets: [{
+      data: Object.values(filteredData.bookmakerDistribution).slice(0, 5),
+      backgroundColor: [
+        "rgba(124, 58, 237, 0.8)",
+        "rgba(236, 72, 153, 0.8)", 
+        "rgba(14, 165, 233, 0.8)",
+        "rgba(249, 115, 22, 0.8)",
+        "rgba(168, 162, 158, 0.8)"
+      ],
+      borderColor: [
+        "rgba(124, 58, 237, 1)",
+        "rgba(236, 72, 153, 1)", 
+        "rgba(14, 165, 233, 1)",
+        "rgba(249, 115, 22, 1)",
         "rgba(168, 162, 158, 1)"
       ],
       borderWidth: 1
@@ -423,22 +486,42 @@ const AnalysisTab: React.FC = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 lg:gap-6">
         {/* Gráfico de Pizza - Distribuição de Apostas */}
-        <Card className="p-6">
-          <h2 className="text-lg font-medium mb-4 flex items-center">
-            <PieChart className="h-5 w-5 mr-2 text-neutral-500" />
-            Distribuição de Apostas
-          </h2>
-          <div className="h-64">
-            <Pie data={betDistributionData} />
+        <Card className="p-6 overflow-hidden">
+          <div className="flex items-center gap-2 mb-4">
+            <PieChart className="h-5 w-5 text-neutral-500" />
+            <h2 className="text-lg font-medium">Distribuição de Apostas</h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium mb-2">Por Resultado</h3>
+              <div className="h-48">
+                <Pie data={betDistributionData} options={{ plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } } } }} />
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium mb-2">Por Mercado (Top 5)</h3>
+              <div className="h-48">
+                <Pie data={marketDistributionData} options={{ plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } } } }} />
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium mb-2">Por Casa de Apostas (Top 5)</h3>
+              <div className="h-48">
+                <Pie data={bookmakerDistributionData} options={{ plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } } } }} />
+              </div>
+            </div>
           </div>
         </Card>
 
         {/* Métricas Adicionais */}
-        <Card className="p-6 col-span-2">
+        <Card className="p-6 col-span-2 mt-6 lg:mt-0">
           <h2 className="text-lg font-medium mb-4">Métricas do Período</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="p-4 bg-neutral-50 rounded-lg">
               <p className="text-sm text-neutral-500">Volume Apostado</p>
               <p className="text-xl font-semibold mt-1">{formatCurrency(filteredData.totalStake)}</p>
@@ -462,6 +545,8 @@ const AnalysisTab: React.FC = () => {
               </p>
             </div>
           </div>
+          
+          <AiInsightsCard />
         </Card>
       </div>
 
