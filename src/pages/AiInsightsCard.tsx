@@ -1,7 +1,7 @@
 "use client"; // Se estiver usando Next.js 13 com app router
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { BrainCircuit, RefreshCw, ArrowRight, RotateCcw, X } from "lucide-react";
+import { BrainCircuit, RefreshCw, ArrowRight, RotateCcw, Globe } from "lucide-react";
 import { useBets } from "@/context/BetContext";
 import { formatCurrency } from "@/lib/bet-utils";
 import { format } from "date-fns";
@@ -125,6 +125,69 @@ const AiInsightsCard: React.FC = () => {
         .map(([dateKey, data]) => `- ${data.formattedDate}: ${formatCurrency(data.profit)}`)
         .join('\n');
 
+      // Calcular lucro por time
+      const teamProfits: { [key: string]: { profit: number, bets: number, wins: number, losses: number } } = {};
+      
+      // Processar todos os times (tanto mandante quanto visitante)
+      bets.forEach(bet => {
+        if (bet.profitCurrency !== undefined && bet.result !== null) {
+          // Processar time mandante (home)
+          if (bet.homeTeam) {
+            if (!teamProfits[bet.homeTeam]) {
+              teamProfits[bet.homeTeam] = { profit: 0, bets: 0, wins: 0, losses: 0 };
+            }
+            teamProfits[bet.homeTeam].profit += bet.profitCurrency;
+            teamProfits[bet.homeTeam].bets += 1;
+            if (bet.result === "GREEN") teamProfits[bet.homeTeam].wins += 1;
+            if (bet.result === "RED") teamProfits[bet.homeTeam].losses += 1;
+          }
+          
+          // Processar time visitante (away)
+          if (bet.awayTeam) {
+            if (!teamProfits[bet.awayTeam]) {
+              teamProfits[bet.awayTeam] = { profit: 0, bets: 0, wins: 0, losses: 0 };
+            }
+            teamProfits[bet.awayTeam].profit += bet.profitCurrency;
+            teamProfits[bet.awayTeam].bets += 1;
+            if (bet.result === "GREEN") teamProfits[bet.awayTeam].wins += 1;
+            if (bet.result === "RED") teamProfits[bet.awayTeam].losses += 1;
+          }
+        }
+      });
+      
+      // Formatar top 5 times mais lucrativos
+      const top5TeamsInfo = Object.entries(teamProfits)
+        .sort((a, b) => b[1].profit - a[1].profit)
+        .slice(0, 5)
+        .map(([team, data]) => {
+          const winRate = data.bets > 0 ? ((data.wins / data.bets) * 100).toFixed(1) : '0';
+          return `- ${team}: ${formatCurrency(data.profit)} (${data.bets} apostas, ${winRate}% de acerto)`;
+        })
+        .join('\n');
+      
+      // Formatar top 5 times menos lucrativos (prejuízo)
+      const worst5TeamsInfo = Object.entries(teamProfits)
+        .sort((a, b) => a[1].profit - b[1].profit)
+        .slice(0, 5)
+        .map(([team, data]) => {
+          const winRate = data.bets > 0 ? ((data.wins / data.bets) * 100).toFixed(1) : '0';
+          return `- ${team}: ${formatCurrency(data.profit)} (${data.bets} apostas, ${winRate}% de acerto)`;
+        })
+        .join('\n');
+
+      // Verificar se a pergunta é sobre informações externas
+      const isExternalQuestion = questionPrompt.toLowerCase().includes("próximo jogo") || 
+                                 questionPrompt.toLowerCase().includes("quando joga") ||
+                                 questionPrompt.toLowerCase().includes("resultado de") ||
+                                 questionPrompt.toLowerCase().includes("noticias") ||
+                                 questionPrompt.toLowerCase().includes("notícias");
+
+      if (isExternalQuestion) {
+        setAiResponse("No momento, não consigo acessar informações da internet em tempo real. Estou limitado a analisar apenas seus dados de apostas. Para informações sobre jogos futuros, resultados recentes ou notícias, por favor, consulte um site esportivo.");
+        setLoading(false);
+        return;
+      }
+
       const enrichedPrompt = `
 Contexto das minhas apostas:
 - Lucro Total: ${formatCurrency(stats.profitCurrency)}
@@ -150,6 +213,13 @@ ${top5DaysInfo}
 
 - Top 5 dias com maior prejuízo:
 ${worst5DaysInfo}
+
+Informações sobre times (inclui mandantes e visitantes):
+- Top 5 times que geraram mais lucro:
+${top5TeamsInfo}
+
+- Top 5 times que geraram mais prejuízo:
+${worst5TeamsInfo}
 
 Minha pergunta: ${questionPrompt}
 `;
@@ -186,6 +256,14 @@ Minha pergunta: ${questionPrompt}
   // Limpar a resposta e voltar para as sugestões
   const handleClearResponse = () => {
     setAiResponse("");
+  };
+
+  // Lidar com tecla pressionada
+  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // Prevenir quebra de linha
+      handleAskAi();
+    }
   };
 
   // Customize a pergunta baseada no contexto das apostas
@@ -233,6 +311,7 @@ Minha pergunta: ${questionPrompt}
         placeholder="Pergunte sobre estratégias de apostas, análise de desempenho..."
         value={userPrompt}
         onChange={(e) => setUserPrompt(e.target.value)}
+        onKeyPress={handleKeyPress}
         onFocus={() => {
           if (!userPrompt) {
             setUserPrompt(getDefaultPrompt());
@@ -286,7 +365,7 @@ Minha pergunta: ${questionPrompt}
             Tenho acesso a todos os dados das suas apostas e posso analisar seu desempenho, 
             identificar padrões e oferecer insights personalizados para melhorar seus resultados.
           </p>
-          <div className="space-y-2">
+          <div className="space-y-2 mb-3">
             <p className="text-sm font-medium text-neutral-500">Experimente perguntar:</p>
             {exampleQuestions.map((question, index) => (
               <div 
@@ -298,6 +377,10 @@ Minha pergunta: ${questionPrompt}
                 <span>{question}</span>
               </div>
             ))}
+          </div>
+          <div className="text-xs text-neutral-400 flex items-center gap-1 mt-2">
+            <Globe className="h-3 w-3" />
+            <span>Observação: Não consigo acessar informações da internet ou dados em tempo real.</span>
           </div>
         </div>
       )}
