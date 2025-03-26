@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const normalizeText = (text: string) => {
   return text
@@ -64,6 +65,8 @@ const normalizeText = (text: string) => {
 const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
   const location = useLocation();
+  const initialViewMode = location.state?.viewMode || "table";
+  const [viewMode, setViewMode] = useState<"table" | "card">(initialViewMode);
 
   // Recupera e salva estado no sessionStorage
   const getStoredState = <T,>(key: string, defaultValue: T): T => {
@@ -100,13 +103,7 @@ const BetList: React.FC = () => {
   );
   const [tempEndDate, setTempEndDate] = useState<Date | undefined>(undefined);
 
-  // Modo de visualização (tabela ou card)
-  const [viewMode, setViewMode] = useState<"table" | "card">(() =>
-    getStoredState(
-      "betListViewMode",
-      window.innerWidth < 768 ? "card" : "table"
-    )
-  );
+  const [lastDuplicatedBetId, setLastDuplicatedBetId] = useState<string | null>(null);
 
   useEffect(() => {
     const state = location.state as { viewMode?: "table" | "card" } | undefined;
@@ -260,6 +257,65 @@ const BetList: React.FC = () => {
       profitUnits: 0,
     };
     addBet(newBet);
+    setLastDuplicatedBetId(newBet.id);
+    
+    // Volta para a primeira página para mostrar a aposta duplicada
+    setCurrentPage(1);
+    
+    // Remove o ID após 2 segundos
+    setTimeout(() => {
+      setLastDuplicatedBetId(null);
+    }, 2000);
+
+    // Foca na aposta duplicada após um pequeno delay para garantir que ela foi renderizada
+    setTimeout(() => {
+      const element = document.getElementById(`bet-${newBet.id}`);
+      if (element) {
+        // Encontra o container de scroll mais próximo
+        const scrollContainer = viewMode === "card" 
+          ? element.closest('.overflow-auto')
+          : element.closest('.overflow-x-scroll');
+
+        if (scrollContainer) {
+          // Calcula a posição relativa do elemento dentro do container
+          const containerRect = scrollContainer.getBoundingClientRect();
+          const elementRect = element.getBoundingClientRect();
+          const relativeTop = elementRect.top - containerRect.top;
+          
+          // Rola o container para mostrar o elemento
+          scrollContainer.scrollTo({
+            top: scrollContainer.scrollTop + relativeTop - 20,
+            behavior: "smooth"
+          });
+        } else {
+          // Se não encontrar o container, usa scrollIntoView
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      } else {
+        // Se não encontrar o elemento, tenta novamente após um delay maior
+        setTimeout(() => {
+          const retryElement = document.getElementById(`bet-${newBet.id}`);
+          if (retryElement) {
+            const scrollContainer = viewMode === "card" 
+              ? retryElement.closest('.overflow-auto')
+              : retryElement.closest('.overflow-x-scroll');
+
+            if (scrollContainer) {
+              const containerRect = scrollContainer.getBoundingClientRect();
+              const elementRect = retryElement.getBoundingClientRect();
+              const relativeTop = elementRect.top - containerRect.top;
+              
+              scrollContainer.scrollTo({
+                top: scrollContainer.scrollTop + relativeTop - 20,
+                behavior: "smooth"
+              });
+            } else {
+              retryElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
+        }, 500);
+      }
+    }, 100);
   };
 
   // Função para abrir o modal de compartilhamento
@@ -426,25 +482,38 @@ const BetList: React.FC = () => {
         ) : (
           <>
             {viewMode === "table" && (
-              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 mb-6">
-                <div className="overflow-x-scroll md:max-h-[calc(100vh-250px)] overflow-auto">
-                  <TableComponent>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Ações</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Jogo</TableHead>
-                        <TableHead>Mercado</TableHead>
-                        <TableHead>Odd</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead>Casa</TableHead>
-                        <TableHead>Resultado</TableHead>
-                        <TableHead className="text-right">Lucro</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100">
+                <TableComponent>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ações</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Jogo</TableHead>
+                      <TableHead>Mercado</TableHead>
+                      <TableHead>Odd</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead>Casa</TableHead>
+                      <TableHead>Resultado</TableHead>
+                      <TableHead className="text-right">Lucro</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <AnimatePresence mode="wait">
                       {currentItems.map((bet) => (
-                        <TableRow key={bet.id}>
+                        <motion.tr
+                          key={bet.id}
+                          id={`bet-${bet.id}`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ 
+                            opacity: 1, 
+                            y: 0,
+                            backgroundColor: lastDuplicatedBetId === bet.id ? "#f0f9ff" : "white",
+                            transition: {
+                              backgroundColor: { duration: 0.3 }
+                            }
+                          }}
+                          exit={{ opacity: 0, y: -20 }}
+                        >
                           <TableCell className="text-center">
                             <Popover>
                               <PopoverTrigger asChild>
@@ -556,174 +625,164 @@ const BetList: React.FC = () => {
                               {formatCurrency(bet.profitCurrency)}
                             </div>
                           </TableCell>
-                        </TableRow>
+                        </motion.tr>
                       ))}
-                    </TableBody>
-                  </TableComponent>
-                </div>
-                {totalPages > 1 && (
-                  <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm font-medium mx-3">
-                      {currentPage} de {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                    </AnimatePresence>
+                  </TableBody>
+                </TableComponent>
               </div>
             )}
 
             {viewMode === "card" && (
               <div className="bg-white rounded-xl shadow-sm border border-neutral-100 mb-6">
                 <div className="p-4 space-y-4 md:max-h-[calc(100vh-250px)] overflow-auto">
-                  {currentItems.map((bet) => (
-                    <div
-                      key={bet.id}
-                      className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">
-                            {formatDate(bet.date)}
+                  <AnimatePresence mode="wait">
+                    {currentItems.map((bet) => (
+                      <motion.div
+                        key={bet.id}
+                        id={`bet-${bet.id}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ 
+                          opacity: 1, 
+                          y: 0,
+                          backgroundColor: lastDuplicatedBetId === bet.id ? "#f0f9ff" : "white",
+                          transition: {
+                            backgroundColor: { duration: 0.3 }
+                          }
+                        }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">
+                              {formatDate(bet.date)}
+                            </div>
+                            <div className="text-sm text-neutral-500">
+                              {bet.bookmaker}
+                            </div>
                           </div>
-                          <div className="text-sm text-neutral-500">
-                            {bet.bookmaker}
-                          </div>
-                        </div>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent align="end" className="w-40 p-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start text-sm py-2"
-                              onClick={() => handleCopyBet(bet)}
-                            >
-                              <Copy className="h-4 w-4 mr-2" /> Copiar
-                            </Button>
-                            <Link to={`/editar-aposta/${bet.id}`} state={{ viewMode }}>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-40 p-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="w-full justify-start text-sm py-2"
+                                onClick={() => handleCopyBet(bet)}
                               >
-                                <Edit className="h-4 w-4 mr-2" /> Editar
+                                <Copy className="h-4 w-4 mr-2" /> Copiar
                               </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start text-sm py-2"
-                              onClick={() => handleShareBet(bet)}
-                            >
-                              <Share2 className="h-4 w-4 mr-2" /> Compartilhar
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start text-danger-500 text-sm py-2"
-                              onClick={() => handleDeleteClick(bet.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" /> Excluir
-                            </Button>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div className="mt-2">{renderGameDetails(bet)}</div>
-                      <div className="mt-2">
-                        <span className="font-medium">{bet.entry}</span>
-                        <span className="text-xs text-neutral-500 ml-2">
-                          {bet.market}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex justify-between">
-                        <div>
-                          <span>Odd: </span>
-                          <span className="font-medium">
-                            {bet.odds.toFixed(2)}
+                              <Link to={`/editar-aposta/${bet.id}`} state={{ viewMode }}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start text-sm py-2"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" /> Editar
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start text-sm py-2"
+                                onClick={() => handleShareBet(bet)}
+                              >
+                                <Share2 className="h-4 w-4 mr-2" /> Compartilhar
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start text-danger-500 text-sm py-2"
+                                onClick={() => handleDeleteClick(bet.id)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                              </Button>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="mt-2">{renderGameDetails(bet)}</div>
+                        <div className="mt-2">
+                          <span className="font-medium">{bet.entry}</span>
+                          <span className="text-xs text-neutral-500 ml-2">
+                            {bet.market}
                           </span>
                         </div>
-                        <div>
-                          <span>Valor: </span>
-                          <span className="font-medium">
-                            {formatCurrency(bet.stake)}
-                          </span>
+                        <div className="mt-2 flex justify-between">
+                          <div>
+                            <span>Odd: </span>
+                            <span className="font-medium">
+                              {bet.odds.toFixed(2)}
+                            </span>
+                          </div>
+                          <div>
+                            <span>Valor: </span>
+                            <span className="font-medium">
+                              {formatCurrency(bet.stake)}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="mt-2 flex justify-between items-center">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="cursor-pointer">
-                              {renderResultBadge(bet.result)}
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="p-2 flex flex-col gap-1">
-                            <PopoverClose asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleResolveBet(bet, "GREEN")}
-                              >
-                                Green
-                              </Button>
-                            </PopoverClose>
-                            <PopoverClose asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleResolveBet(bet, "RED")}
-                              >
-                                Red
-                              </Button>
-                            </PopoverClose>
-                            <PopoverClose asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleResolveBet(bet, "REEMBOLSO")}
-                              >
-                                Reembolso
-                              </Button>
-                            </PopoverClose>
-                            <PopoverClose asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleResolveBet(bet, null)}
-                              >
-                                Pendente
-                              </Button>
-                            </PopoverClose>
-                          </PopoverContent>
-                        </Popover>
-                        <div
-                          className={`${getProfitColorClass(
-                            bet.result
-                          )} font-medium`}
-                        >
-                          {formatCurrency(bet.profitCurrency)}
+                        <div className="mt-2 flex justify-between items-center">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <div className="cursor-pointer">
+                                {renderResultBadge(bet.result)}
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-2 flex flex-col gap-1">
+                              <PopoverClose asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResolveBet(bet, "GREEN")}
+                                >
+                                  Green
+                                </Button>
+                              </PopoverClose>
+                              <PopoverClose asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResolveBet(bet, "RED")}
+                                >
+                                  Red
+                                </Button>
+                              </PopoverClose>
+                              <PopoverClose asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResolveBet(bet, "REEMBOLSO")}
+                                >
+                                  Reembolso
+                                </Button>
+                              </PopoverClose>
+                              <PopoverClose asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResolveBet(bet, null)}
+                                >
+                                  Pendente
+                                </Button>
+                              </PopoverClose>
+                            </PopoverContent>
+                          </Popover>
+                          <div
+                            className={`${getProfitColorClass(
+                              bet.result
+                            )} font-medium`}
+                          >
+                            {formatCurrency(bet.profitCurrency)}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
                 {totalPages > 1 && (
                   <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
