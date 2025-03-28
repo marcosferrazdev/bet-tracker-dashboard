@@ -542,7 +542,7 @@ const BetForm: React.FC = () => {
                 <Input
                   id="odds"
                   type="number"
-                  step="0.01"
+                  step="0.0001"
                   min="1"
                   value={odds || ""}
                   onChange={(e) => setOdds(parseFloat(e.target.value) || 0)}

@@ -273,7 +273,7 @@ const BetList: React.FC = () => {
       if (element) {
         // Encontra o container de scroll mais próximo
         const scrollContainer = viewMode === "card" 
-          ? element.closest('.overflow-auto')
+          ? element.closest('.md\\:max-h-\\[calc\\(100vh-250px\\)\\]')
           : element.closest('.overflow-x-scroll');
 
         if (scrollContainer) {
@@ -297,7 +297,7 @@ const BetList: React.FC = () => {
           const retryElement = document.getElementById(`bet-${newBet.id}`);
           if (retryElement) {
             const scrollContainer = viewMode === "card" 
-              ? retryElement.closest('.overflow-auto')
+              ? retryElement.closest('.md\\:max-h-\\[calc\\(100vh-250px\\)\\]')
               : retryElement.closest('.overflow-x-scroll');
 
             if (scrollContainer) {
