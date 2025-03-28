@@ -8,19 +8,18 @@ export const generateId = (): string => {
 };
 
 // Calculate units based on currency and unit value
-export const calculateUnits = (currencyValue: number, unitValue: number): number => {
-  if (!unitValue || unitValue === 0) return 0;
-  return Number((currencyValue / unitValue).toFixed(2));
+export const calculateUnits = (value: number, unitValue: number): number => {
+  return Number((value / unitValue).toFixed(4));
 };
 
 // Calculate profit based on stake, odds, and result
-export const calculateProfit = (stake: number, odds: number, result: BetResult): number => {
+export const calculateProfit = (stake: number, odds: number, result: BetResult | null): number => {
+  if (!result) return 0;
   if (result === "GREEN") {
-    return Number(((stake * odds) - stake).toFixed(2));
-  } else if (result === "RED") {
+    return Number((stake * odds - stake).toFixed(4));
+  }
+  if (result === "RED") {
     return -stake;
-  } else if (result === "REEMBOLSO") {
-    return 0;
   }
   return 0;
 };
