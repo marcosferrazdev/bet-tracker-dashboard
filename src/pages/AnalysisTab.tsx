@@ -16,14 +16,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBets } from "@/context/BetContext";
 import { formatCurrency } from "@/lib/bet-utils";
 import { Bet } from "@/types";
 import {
   BarElement,
   CategoryScale,
+  ChartData,
   Chart as ChartJS,
+  ChartOptions,
   Legend,
   LinearScale,
   Title,
@@ -31,16 +32,13 @@ import {
   TooltipItem,
   ArcElement,
 } from "chart.js";
-import { format, subDays, isWithinInterval, startOfDay } from "date-fns";
+import { format, subDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
-  ArrowDown, 
-  ArrowUp, 
   ChevronDown, 
   ChevronUp, 
   DollarSign, 
   Percent, 
-  Target, 
   TrendingUp,
   Calendar,
   PieChart,
@@ -89,7 +87,7 @@ interface SortConfig {
 }
 
 const AnalysisTab: React.FC = () => {
-  const { bets, stats } = useBets();
+  const { bets, dailyStats } = useBets();
   const [groupBy, setGroupBy] = useState<string>("homeTeam");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: "key", direction: "asc" });
   const [selectedPeriod, setSelectedPeriod] = useState("30");
@@ -111,10 +109,31 @@ const AnalysisTab: React.FC = () => {
     const avgOdds = filteredBets.reduce((sum, bet) => sum + bet.odds, 0) / filteredBets.length || 0;
 
     // Calcula lucro/prejuízo por dia
-    const dailyProfits: { [key: string]: number } = {};
+    const dailyProfitsByDate: { date: Date; profit: number; dateStr: string }[] = [];
     filteredBets.forEach(bet => {
-      const date = format(new Date(bet.date), 'dd/MM', { locale: ptBR });
-      dailyProfits[date] = (dailyProfits[date] || 0) + (bet.profitCurrency || 0);
+      const date = new Date(bet.date);
+      const dateStr = format(date, 'dd/MM', { locale: ptBR });
+      const existingDay = dailyProfitsByDate.find(d => d.dateStr === dateStr);
+      
+      if (existingDay) {
+        existingDay.profit += bet.profitCurrency || 0;
+      } else {
+        dailyProfitsByDate.push({
+          date,
+          dateStr,
+          profit: bet.profitCurrency || 0
+        });
+      }
+    });
+
+    // Ordena por data e pega os últimos 10 dias
+    dailyProfitsByDate.sort((a, b) => b.date.getTime() - a.date.getTime());
+    const last10Days = dailyProfitsByDate.slice(0, 10).reverse();
+    
+    // Converte para o formato original
+    const dailyProfits: { [key: string]: number } = {};
+    last10Days.forEach(({ dateStr, profit }) => {
+      dailyProfits[dateStr] = profit;
     });
 
     // Calcula distribuição de apostas do período
@@ -223,57 +242,34 @@ const AnalysisTab: React.FC = () => {
       borderWidth: 1
     }]
   };
-
   // Configuração do gráfico de desempenho diário
-  const dailyChartData = {
-    labels: Object.keys(filteredData.dailyProfits),
+  const dailyChartData: ChartData<"bar"> = {
+    labels: dailyStats.map((stat) => stat.date),
     datasets: [
       {
         label: "Lucro Diário",
-        data: Object.values(filteredData.dailyProfits),
-        backgroundColor: Object.values(filteredData.dailyProfits).map(profit =>
-          profit >= 0 ? "rgba(34, 197, 94, 0.8)" : "rgba(239, 68, 68, 0.8)"
+        data: dailyStats.map((stat) => stat.profitCurrency),
+        backgroundColor: dailyStats.map((stat) =>
+          stat.profitCurrency >= 0
+            ? "rgba(34, 197, 94, 0.7)"
+            : "rgba(239, 68, 68, 0.7)"
         ),
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: Object.values(filteredData.dailyProfits).map(profit =>
-          profit >= 0 ? "rgba(34, 197, 94, 1)" : "rgba(239, 68, 68, 1)"
-        ),
+        borderRadius: 4,
       },
     ],
   };
 
-  const chartOptions = {
+  const dailyChartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: {
-      duration: 1000,
-      easing: 'easeInOutQuart' as const
-    },
     plugins: {
       legend: {
         position: "top" as const,
-        labels: {
-          padding: 20,
-          font: {
-            size: 12,
-            weight: "normal" as const
-          }
-        }
       },
       title: {
         display: false,
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        padding: 12,
-        titleFont: {
-          size: 14,
-          weight: "bold" as const
-        },
-        bodyFont: {
-          size: 13
-        },
         callbacks: {
           label: function (context: TooltipItem<"bar">) {
             let label = context.dataset.label || "";
@@ -291,31 +287,12 @@ const AnalysisTab: React.FC = () => {
     scales: {
       y: {
         beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-          lineWidth: 0
-        },
         ticks: {
-          padding: 8,
-          font: {
-            size: 11
-          },
           callback: function (value: number) {
             return formatCurrency(value);
           },
         },
       },
-      x: {
-        grid: {
-          display: false
-        },
-        ticks: {
-          padding: 8,
-          font: {
-            size: 11
-          }
-        }
-      }
     },
   };
 
@@ -548,20 +525,16 @@ const AnalysisTab: React.FC = () => {
           
           <AiInsightsCard />
         </Card>
+      </div>      {/* Gráfico de Desempenho Diário */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-100 mb-8">
+        <h2 className="text-lg font-medium mb-4 flex items-center">
+          <BarChart2 className="h-5 w-5 mr-2 text-neutral-500" />
+          Desempenho Diário
+        </h2>
+        <div className="h-80">
+          <Bar data={dailyChartData} options={dailyChartOptions} />
+        </div>
       </div>
-
-      {/* Gráfico de Desempenho */}
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="text-lg font-medium mb-4 flex items-center">
-            <BarChart2 className="h-5 w-5 mr-2 text-neutral-500" />
-            Desempenho Diário
-          </h2>
-          <div className="h-80">
-            <Bar data={dailyChartData} options={chartOptions} />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Tabela de Análise */}
       <Card>
