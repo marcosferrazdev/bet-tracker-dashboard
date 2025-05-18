@@ -18,12 +18,15 @@ interface Bet {
   stake: number;
   profit: number;
   maxStake: number;
+  commission: number;
 }
 
 const SurebetCalculator: React.FC = () => {
-  const [investment, setInvestment] = useState<number>(1000);
-  const [bet1, setBet1] = useState<Bet>({ odds: 0, stake: 0, profit: 0, maxStake: 0 });
-  const [bet2, setBet2] = useState<Bet>({ odds: 0, stake: 0, profit: 0, maxStake: 0 });
+  const [bets, setBets] = useState<Bet[]>([
+    { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 },
+    { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }
+  ]);
+  const [investment, setInvestment] = useState<number>(0);
   const [totalInvestment, setTotalInvestment] = useState<number>(0);
   const [surebetPercentage, setSurebetPercentage] = useState<number>(0);
   const [guaranteedProfit, setGuaranteedProfit] = useState<number>(0);
@@ -49,14 +52,14 @@ const SurebetCalculator: React.FC = () => {
 
   // Atualiza cálculos quando a stake máxima da Aposta 1 muda
   const handleMaxStake1Change = (value: number) => {
-    const newBet1 = { ...bet1, maxStake: value };
-    setBet1(newBet1);
+    const newBet1 = { ...bets[0], maxStake: value };
+    setBets([newBet1, bets[1]]);
     
-    if (value > 0 && bet2.odds > 1) {
-      const result = calculateRequiredStake(newBet1, bet2);
+    if (value > 0 && bets[1].odds > 1) {
+      const result = calculateRequiredStake(newBet1, bets[1]);
       if (result) {
         setTotalInvestment(result.totalRequired);
-        setBet2({ ...bet2, stake: result.requiredStake });
+        setBets([newBet1, { ...bets[1], stake: result.requiredStake }]);
         setGuaranteedProfit(result.profit);
         setInvestment(result.totalRequired);
       }
@@ -65,82 +68,122 @@ const SurebetCalculator: React.FC = () => {
 
   // Atualiza cálculos quando a stake máxima da Aposta 2 muda
   const handleMaxStake2Change = (value: number) => {
-    const newBet2 = { ...bet2, maxStake: value };
-    setBet2(newBet2);
+    const newBet2 = { ...bets[1], maxStake: value };
+    setBets([bets[0], newBet2]);
     
-    if (value > 0 && bet1.odds > 1) {
-      const result = calculateRequiredStake(newBet2, bet1);
+    if (value > 0 && bets[0].odds > 1) {
+      const result = calculateRequiredStake(newBet2, bets[0]);
       if (result) {
         setTotalInvestment(result.totalRequired);
-        setBet1({ ...bet1, stake: result.requiredStake });
+        setBets([{ ...bets[0], stake: result.requiredStake }, newBet2]);
         setGuaranteedProfit(result.profit);
         setInvestment(result.totalRequired);
       }
     }
   };
 
+  // Calcula a odd efetiva considerando a comissão
+  const getEffectiveOdds = (odds: number, commission: number) => {
+    return odds * (1 - commission / 100);
+  };
+
   const calculateSurebet = () => {
     setError('');
     
-    if (bet1.odds <= 1 || bet2.odds <= 1) {
-      setError('As odds devem ser maiores que 1');
+    // Filtra apostas com odds inválidas
+    const validBets = bets.filter(bet => bet.odds > 1);
+    
+    if (validBets.length < 2) {
+      setError('São necessárias pelo menos duas apostas com odds maiores que 1');
       return;
     }
 
-    if (investment <= 0) {
-      setError('O investimento deve ser maior que 0');
-      return;
-    }
+    // Calcula a porcentagem de surebet considerando as comissões
+    const percentage = validBets.reduce((sum, bet) => {
+      const effectiveOdds = getEffectiveOdds(bet.odds, bet.commission);
+      return sum + (1 / effectiveOdds);
+    }, 0) * 100;
 
-    // Calcula a porcentagem de surebet
-    const percentage = (1 / bet1.odds + 1 / bet2.odds) * 100;
     setSurebetPercentage(percentage);
 
     if (percentage >= 100) {
       setError('Não há oportunidade de surebet. A soma das probabilidades é maior que 100%.');
       setGuaranteedProfit(0);
       setTotalInvestment(0);
-      setBet1({ ...bet1, stake: 0, profit: 0 });
-      setBet2({ ...bet2, stake: 0, profit: 0 });
+      setBets(bets.map(bet => ({ ...bet, stake: 0, profit: 0 })));
       return;
     }
 
-    setTotalInvestment(investment);    // Calcula as stakes ideais considerando os limites máximos
-    let stake1 = (investment * (1 / bet1.odds)) / (1 / bet1.odds + 1 / bet2.odds);
-    let stake2 = investment - stake1;
+    // Calcula o investimento necessário para cada R$1 de retorno
+    const baseInvestment = 1000; // Usamos um valor base para calcular as proporções
+    let stakes = validBets.map(bet => {
+      const effectiveOdds = getEffectiveOdds(bet.odds, bet.commission);
+      const stake = (baseInvestment * (1 / effectiveOdds)) / (percentage / 100);
+      return {
+        stake,
+        effectiveOdds,
+        maxStakeRatio: bet.maxStake > 0 ? bet.maxStake / stake : Infinity
+      };
+    });
 
-    // Ajusta as stakes se excederem os limites máximos
-    if (bet1.maxStake > 0 && stake1 > bet1.maxStake) {
-      // Se a stake1 exceder o máximo, ajusta para o máximo e recalcula a stake2
-      stake1 = bet1.maxStake;
-      // Calcula o novo investimento total necessário baseado na proporção
-      const totalRequired = stake1 * (1 + (bet1.odds / bet2.odds));
-      stake2 = totalRequired - stake1;
-    } else if (bet2.maxStake > 0 && stake2 > bet2.maxStake) {
-      // Se a stake2 exceder o máximo, ajusta para o máximo e recalcula a stake1
-      stake2 = bet2.maxStake;
-      // Calcula o novo investimento total necessário baseado na proporção
-      const totalRequired = stake2 * (1 + (bet2.odds / bet1.odds));
-      stake1 = totalRequired - stake2;
-    }
+    // Encontra o menor ratio de stake máxima para ajustar todas as stakes proporcionalmente
+    const minRatio = Math.min(...stakes.map(s => s.maxStakeRatio));
+    const finalInvestment = minRatio === Infinity ? baseInvestment : baseInvestment * minRatio;
 
-    // Atualiza o investimento total real
-    const realInvestment = stake1 + stake2;
-    setTotalInvestment(realInvestment);
+    // Ajusta as stakes para o investimento final
+    stakes = stakes.map(stake => ({
+      ...stake,
+      stake: (stake.stake * finalInvestment) / baseInvestment
+    }));
 
-    // Atualiza os estados com as stakes calculadas
-    setBet1({ ...bet1, stake: stake1, profit: stake1 * bet1.odds - realInvestment });
-    setBet2({ ...bet2, stake: stake2, profit: stake2 * bet2.odds - realInvestment });
+    // Calcula o investimento total
+    const totalInv = stakes.reduce((sum, stake) => sum + stake.stake, 0);
+    setTotalInvestment(totalInv);
+    setInvestment(totalInv);
 
-    // Calcula o lucro garantido
-    const profit = (stake1 * bet1.odds) - investment;
+    // Atualiza as stakes e lucros de todas as apostas
+    const updatedBets = bets.map((bet, index) => {
+      if (index < stakes.length) {
+        const stake = stakes[index];
+        const potentialReturn = stake.stake * stake.effectiveOdds;
+        return {
+          ...bet,
+          stake: stake.stake,
+          profit: potentialReturn - totalInv
+        };
+      }
+      return bet;
+    });
+    setBets(updatedBets);
+
+    // Calcula o lucro garantido usando a primeira aposta como referência
+    const profit = (stakes[0].stake * stakes[0].effectiveOdds) - totalInv;
     setGuaranteedProfit(profit);
+  };
+
+  const addNewBet = () => {
+    setBets([...bets, { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }]);
+  };
+
+  const removeBet = (index: number) => {
+    if (bets.length > 2) {
+      const newBets = [...bets];
+      newBets.splice(index, 1);
+      setBets(newBets);
+    }
+  };
+  const updateBet = (index: number, field: keyof Bet, value: number) => {
+    const newBets = [...bets];
+    // Quando o valor for vazio ou NaN, define como 0
+    newBets[index] = { ...newBets[index], [field]: value || 0 };
+    setBets(newBets);
   };
 
   const isSurebetOpportunity = surebetPercentage > 0 && surebetPercentage < 100;
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">      <PageHeader
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <PageHeader
         title="Calculadora de Surebet"
         subtitle="Calcule apostas com lucro garantido"
       />
@@ -152,186 +195,124 @@ const SurebetCalculator: React.FC = () => {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Aposta 1
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Insira a odd da primeira casa de apostas</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="odds1">Odd</Label>
-                <Input
-                  id="odds1"
-                  type="number"
-                  step="0.01"
-                  value={bet1.odds || ''}                  onChange={(e) => {
-                    const newBet1 = { ...bet1, odds: parseFloat(e.target.value) };
-                    setBet1(newBet1);
-                    if (bet2.maxStake > 0) {
-                      const result = calculateRequiredStake(bet2, newBet1);
-                      if (result) {
-                        setTotalInvestment(result.totalRequired);
-                        setBet1({ ...newBet1, stake: result.requiredStake });
-                        setGuaranteedProfit(result.profit);
-                        setInvestment(result.totalRequired);
-                      }
-                    }
-                  }}
-                  placeholder="Digite a odd"
-                  min="1.01"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxStake1" className="flex items-center gap-2">
-                  Stake Máxima
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Valor máximo permitido pela casa de apostas (opcional)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Label>
-                <Input
-                  id="maxStake1"
-                  type="number"
-                  step="0.01"                  value={bet1.maxStake || ''}
-                  onChange={(e) => handleMaxStake1Change(parseFloat(e.target.value))}
-                  placeholder="Stake máxima (opcional)"
-                  min="0"
-                />
-              </div>
-            </div>
-            {bet1.stake > 0 && (
-              <div className="space-y-2 p-4 bg-muted rounded-lg">
-                <Label>Stake Recomendada</Label>
-                <p className="text-lg font-semibold">R$ {bet1.stake.toFixed(2)}</p>
-                <Label>Retorno Potencial</Label>
-                <p className="text-lg font-semibold text-green-600">R$ {(bet1.stake * bet1.odds).toFixed(2)}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="flex justify-end mb-4">
+        <Button onClick={addNewBet} variant="outline">
+          Adicionar Aposta
+        </Button>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Aposta 2
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Insira a odd da segunda casa de apostas</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="odds2">Odd</Label>
-                <Input
-                  id="odds2"
-                  type="number"
-                  step="0.01"
-                  value={bet2.odds || ''}                  onChange={(e) => {
-                    const newBet2 = { ...bet2, odds: parseFloat(e.target.value) };
-                    setBet2(newBet2);
-                    if (bet1.maxStake > 0) {
-                      const result = calculateRequiredStake(bet1, newBet2);
-                      if (result) {
-                        setTotalInvestment(result.totalRequired);
-                        setBet2({ ...newBet2, stake: result.requiredStake });
-                        setGuaranteedProfit(result.profit);
-                        setInvestment(result.totalRequired);
-                      }
-                    }
-                  }}
-                  placeholder="Digite a odd"
-                  min="1.01"
-                />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {bets.map((bet, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Aposta {index + 1}
+                {index >= 2 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => removeBet(index)}
+                  >
+                    Remover
+                  </Button>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`odds${index}`}>Odd</Label>
+                  <Input
+                    id={`odds${index}`}
+                    type="number"
+                    step="0.01"
+                    value={bet.odds || ''}
+                    onChange={(e) => updateBet(index, 'odds', parseFloat(e.target.value))}
+                    placeholder="Digite a odd"
+                    min="1.01"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`maxStake${index}`} className="flex items-center gap-2">
+                    Stake Máxima
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Valor máximo permitido pela casa de apostas (opcional)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Label>
+                  <Input
+                    id={`maxStake${index}`}
+                    type="number"
+                    step="0.01"
+                    value={bet.maxStake || ''}
+                    onChange={(e) => updateBet(index, 'maxStake', parseFloat(e.target.value))}
+                    placeholder="Stake máxima (opcional)"
+                    min="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`commission${index}`} className="flex items-center gap-2">
+                    Comissão (%)
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Comissão cobrada pela casa de apostas (opcional)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Label>
+                  <Input
+                    id={`commission${index}`}
+                    type="number"
+                    step="0.01"                    value={bet.commission === 0 ? '' : bet.commission}
+                    onChange={(e) => updateBet(index, 'commission', parseFloat(e.target.value))}
+                    placeholder="Comissão (opcional)"
+                    min="0"
+                    max="100"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxStake2" className="flex items-center gap-2">
-                  Stake Máxima
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Valor máximo permitido pela casa de apostas (opcional)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Label>
-                <Input
-                  id="maxStake2"
-                  type="number"
-                  step="0.01"                  value={bet2.maxStake || ''}
-                  onChange={(e) => handleMaxStake2Change(parseFloat(e.target.value))}
-                  placeholder="Stake máxima (opcional)"
-                  min="0"
-                />
-              </div>
-            </div>
-            {bet2.stake > 0 && (
-              <div className="space-y-2 p-4 bg-muted rounded-lg">
-                <Label>Stake Recomendada</Label>
-                <p className="text-lg font-semibold">R$ {bet2.stake.toFixed(2)}</p>
-                <Label>Retorno Potencial</Label>
-                <p className="text-lg font-semibold text-green-600">R$ {(bet2.stake * bet2.odds).toFixed(2)}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              {bet.stake > 0 && (
+                <div className="space-y-2 p-4 bg-muted rounded-lg">
+                  <Label>Stake Recomendada</Label>
+                  <p className="text-lg font-semibold">R$ {bet.stake.toFixed(2)}</p>
+                  <Label>Retorno Potencial</Label>
+                  <p className="text-lg font-semibold text-green-600">
+                    R$ {(bet.stake * bet.odds * (1 - bet.commission / 100)).toFixed(2)}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
 
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Configurações e Resultados
+              Resultados
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
                     <HelpCircle className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Configure o investimento total e veja os resultados do cálculo</p>
+                    <p>Resultados do cálculo da surebet</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="investment">Investimento Total (R$)</Label>
-              <Input
-                id="investment"
-                type="number"
-                value={investment}
-                onChange={(e) => setInvestment(parseFloat(e.target.value))}
-                placeholder="Digite o valor total a investir"
-                min="0"
-              />
-            </div>
-
             <Button 
               onClick={calculateSurebet}
               className="w-full"
