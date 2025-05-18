@@ -82,15 +82,55 @@ const Dashboard: React.FC = () => {
         },
       },
     },
+  };  // Função auxiliar para extrair mês e ano da string
+  const getMonthAndYear = (monthString: string) => {
+    // Separa o mês e o ano (exemplo: "março 2025" -> ["março", "2025"])
+    const parts = monthString.split(' ');
+    const month = parts[0];
+    const year = parts[1];
+
+    const months = {
+      'Janeiro': 1,
+      'Fevereiro': 2,
+      'Março': 3,
+      'Abril': 4,
+      'Maio': 5,
+      'Junho': 6,
+      'Julho': 7,
+      'Agosto': 8,
+      'Setembro': 9,
+      'Outubro': 10,
+      'Novembro': 11,
+      'Dezembro': 12
+    };
+    
+    const monthNumber = months[month as keyof typeof months] || 1;
+    return {
+      month: monthNumber,
+      year: parseInt(year || new Date().getFullYear().toString(), 10)
+    };
   };
+
+  // Ordenar os dados mensais
+  const sortedMonthlyStats = [...monthlyStats].sort((a, b) => {
+    const dateA = getMonthAndYear(a.month);
+    const dateB = getMonthAndYear(b.month);
+    
+    // Primeiro compara o ano, depois o mês
+    const yearComparison = dateA.year - dateB.year;
+    if (yearComparison !== 0) {
+      return yearComparison;
+    }
+    return dateA.month - dateB.month;
+  });
 
   // Configuração do gráfico de desempenho mensal
   const barChartData: ChartData<"bar"> = {
-    labels: monthlyStats.map((stat) => stat.month),
+    labels: sortedMonthlyStats.map((stat) => stat.month),
     datasets: [
       {
         label: "Lucro Mensal",
-        data: monthlyStats.map((stat) => stat.profitCurrency),
+        data: sortedMonthlyStats.map((stat) => stat.profitCurrency),
         backgroundColor: "rgba(59, 130, 246, 0.7)",
         borderRadius: 4,
       },
