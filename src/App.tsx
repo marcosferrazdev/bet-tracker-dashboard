@@ -15,6 +15,7 @@ import { NewPassword } from '@/pages/NewPassword';
 import Register from "@/pages/Register";
 import { ResetPassword } from '@/pages/ResetPassword';
 import Settings from "@/pages/Settings";
+import SurebetCalculator from "@/pages/SurebetCalculator";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import AnalysisTab from "./pages/AnalysisTab";
@@ -56,6 +57,7 @@ const App = () => (
                     <Route path="nova-aposta" element={<BetForm />} />
                     <Route path="editar-aposta/:id" element={<BetForm />} />
                     <Route path="analise" element={<AnalysisTab />} />
+                    <Route path="calculadora-surebet" element={<SurebetCalculator />} />
                     <Route path="configuracoes" element={<Settings />} />
                   </Route>
                 </Route>
