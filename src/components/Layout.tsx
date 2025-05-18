@@ -1,30 +1,31 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/context/AuthContext";
 import {
-  BarChart2,
-  ChevronLeft,
-  ChevronRight,
-  CircleDollarSign,
-  LogOut,
-  PieChart,
-  PlusCircle,
-  Settings
+    BarChart2,
+    Calculator,
+    ChevronLeft,
+    ChevronRight,
+    CircleDollarSign,
+    LogOut,
+    PieChart,
+    PlusCircle,
+    Settings
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -63,6 +64,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Análise",
       path: "/analise",
       icon: <PieChart className="h-5 w-5" />,
+    },
+    {
+      name: "Calc. Surebet",
+      path: "/calculadora-surebet",
+      icon: <Calculator className="h-5 w-5" />,
     },
     {
       name: "Configurações",
