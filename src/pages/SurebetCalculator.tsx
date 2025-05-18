@@ -1,4 +1,5 @@
 import PageHeader from '@/components/PageHeader';
+import ResultsContent from '@/components/ResultsContent';
 import ShareSurebetImage from '@/components/ShareSurebetImage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -284,49 +285,13 @@ const SurebetCalculator: React.FC = () => {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-            </CardTitle>          </CardHeader>
-          <CardContent className="space-y-6">
-            {surebetPercentage > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    Porcentagem de Surebet
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Deve ser menor que 100% para existir oportunidade de surebet</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </Label>
-                  <p className={`text-lg font-semibold ${surebetPercentage < 100 ? 'text-green-600' : 'text-red-600'}`}>
-                    {surebetPercentage.toFixed(2)}%
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Investimento Total</Label>
-                  <p className="text-lg font-semibold">R$ {totalInvestment.toFixed(2)}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Lucro Garantido</Label>
-                  <p className={`text-lg font-semibold ${guaranteedProfit > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    R$ {guaranteedProfit.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {isSurebetOpportunity && (
-              <Alert className="bg-green-50 border-green-200">
-                <AlertCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-600">
-                  Oportunidade de surebet encontrada! Siga as stakes recomendadas para garantir o lucro.
-                </AlertDescription>
-              </Alert>
-            )}          </CardContent>
+            </CardTitle>          </CardHeader>          <CardContent className="space-y-6">
+            <ResultsContent
+              surebetPercentage={surebetPercentage}
+              totalInvestment={totalInvestment}
+              guaranteedProfit={guaranteedProfit}
+              isSurebetOpportunity={isSurebetOpportunity}
+            /></CardContent>
         </Card>
       </div>
 
