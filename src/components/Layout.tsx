@@ -8,6 +8,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Tooltip,
@@ -43,7 +50,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const [collapsed, setCollapsed] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-
   const links = [
     {
       name: "Dashboard",
@@ -54,15 +60,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Apostas",
       path: "/apostas",
       icon: <CircleDollarSign className="h-5 w-5" />,
-    },
-    {
+    },    {
       name: <span className="font-extrabold">Nova Aposta</span>,
       path: "/nova-aposta",
       icon: <PlusCircle className="h-5 w-5" />,
     },
     {
-      name: "Análise",
-      path: "/analise",
+      name: "Análise",      path: "/analise",
       icon: <PieChart className="h-5 w-5" />,
     },
     {
@@ -237,34 +241,66 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {/* Cabeçalho mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t">
-        <div className="flex justify-between items-center px-2">
-          {links.map((link) => (
+      {/* Menu mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="safe-area-bottom grid grid-cols-5 gap-0.5 px-1">
+          {links.slice(0, 4).map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`flex flex-1 flex-col items-center justify-center py-2 px-1 ${
-                location.pathname === link.path
-                  ? "text-blue-600"
-                  : "text-neutral-700"
-              }`}
+              className="flex flex-col items-center justify-center py-1.5 px-0.5 relative transition-colors duration-200"
+              data-active={location.pathname === link.path}
             >
-              {React.cloneElement(link.icon, {
-                className: `h-5 w-5 ${
-                  location.pathname === link.path ? "text-blue-600" : "text-neutral-700"
-                }`,
-              })}
-              <span className="text-[10px] mt-1 text-center">{link.name}</span>
+              <div className="flex flex-col items-center">
+                {React.cloneElement(link.icon, {
+                  className: `h-5 w-5 ${location.pathname === link.path ? "text-blue-600" : "text-neutral-600"}`,
+                })}
+                <span className="text-[0.65rem] font-medium mt-0.5 text-center leading-tight line-clamp-1">
+                  {link.name}
+                </span>
+                {location.pathname === link.path && (
+                  <div className="absolute inset-x-3 -top-px h-0.5 bg-blue-600 rounded-full" />
+                )}
+              </div>
             </Link>
           ))}
-          <button
-            onClick={() => setLogoutModalOpen(true)}
-            className="flex flex-1 flex-col items-center justify-center py-2 px-1 text-neutral-700"
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="text-[10px] mt-1">Sair</span>
-          </button>
+          {/* Botão Mais com dropdown */}
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex flex-col items-center justify-center py-1.5 px-0.5 relative w-full h-full text-neutral-600 hover:text-neutral-900"
+                >
+                  <Settings className="h-5 w-5" />
+                  <span className="text-[0.65rem] font-medium mt-0.5">Mais</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" alignOffset={-8} className="w-48 mb-2">
+                {links.slice(4).map((link) => (
+                  <DropdownMenuItem key={link.path} asChild>
+                    <Link 
+                      to={link.path}
+                      className={`flex items-center space-x-2 ${
+                        location.pathname === link.path ? "text-blue-600" : ""
+                      }`}
+                    >
+                      {React.cloneElement(link.icon, {
+                        className: "h-4 w-4",
+                      })}
+                      <span>{link.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLogoutModalOpen(true)} className="text-danger-500">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 
