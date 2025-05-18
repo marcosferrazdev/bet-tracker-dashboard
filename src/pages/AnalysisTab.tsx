@@ -537,18 +537,17 @@ const AnalysisTab: React.FC = () => {
       </div>
 
       {/* Tabela de Análise */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card>        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <CardTitle>Análise Detalhada</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               Visualize os resultados agrupados por diferentes critérios
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Label>Agrupar por:</Label>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Label className="whitespace-nowrap">Agrupar por:</Label>
             <Select value={groupBy} onValueChange={setGroupBy}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
@@ -561,8 +560,7 @@ const AnalysisTab: React.FC = () => {
             </Select>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
+        <CardContent>          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
