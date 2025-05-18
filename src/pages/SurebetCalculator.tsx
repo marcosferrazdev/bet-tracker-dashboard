@@ -1,4 +1,5 @@
 import PageHeader from '@/components/PageHeader';
+import ShareSurebetImage from '@/components/ShareSurebetImage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,8 +11,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { AlertCircle, HelpCircle } from 'lucide-react';
-import React, { useState } from 'react';
+import { AlertCircle, HelpCircle, Share2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface Bet {
   odds: number;
@@ -21,66 +22,30 @@ interface Bet {
   commission: number;
 }
 
+interface SurebetShare {
+  bets: Bet[];
+  surebetPercentage: number;
+  totalInvestment: number;
+  guaranteedProfit: number;
+  date: string;
+}
+
 const SurebetCalculator: React.FC = () => {
   const [bets, setBets] = useState<Bet[]>([
     { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 },
-    { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }
-  ]);
-  const [investment, setInvestment] = useState<number>(0);
+    { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }  ]);
+  const [shareData, setShareData] = useState<SurebetShare | null>(null);
   const [totalInvestment, setTotalInvestment] = useState<number>(0);
   const [surebetPercentage, setSurebetPercentage] = useState<number>(0);
-  const [guaranteedProfit, setGuaranteedProfit] = useState<number>(0);
-  const [error, setError] = useState<string>('');
+  const [guaranteedProfit, setGuaranteedProfit] = useState<number>(0);  const [error, setError] = useState<string>('');
 
-  // Calcula a stake necessária na outra aposta quando uma stake máxima é definida
-  const calculateRequiredStake = (bet: Bet, otherBet: Bet) => {
-    if (bet.odds <= 1 || otherBet.odds <= 1 || bet.maxStake <= 0) return null;
-
-    const percentage = (1 / bet.odds + 1 / otherBet.odds) * 100;
-    if (percentage >= 100) return null;
-
-    // Calcula o investimento total necessário baseado na proporção
-    const totalRequired = bet.maxStake * (1 + (bet.odds / otherBet.odds));
-    const requiredStake = totalRequired - bet.maxStake;
-
-    return {
-      requiredStake,
-      totalRequired,
-      profit: (bet.maxStake * bet.odds) - totalRequired
-    };
-  };
-
-  // Atualiza cálculos quando a stake máxima da Aposta 1 muda
-  const handleMaxStake1Change = (value: number) => {
-    const newBet1 = { ...bets[0], maxStake: value };
-    setBets([newBet1, bets[1]]);
-    
-    if (value > 0 && bets[1].odds > 1) {
-      const result = calculateRequiredStake(newBet1, bets[1]);
-      if (result) {
-        setTotalInvestment(result.totalRequired);
-        setBets([newBet1, { ...bets[1], stake: result.requiredStake }]);
-        setGuaranteedProfit(result.profit);
-        setInvestment(result.totalRequired);
-      }
+  // Calcula automaticamente quando houver alterações nas odds ou comissões
+  useEffect(() => {
+    const hasOdds = bets.some(bet => bet.odds > 1);
+    if (hasOdds) {
+      calculateSurebet();
     }
-  };
-
-  // Atualiza cálculos quando a stake máxima da Aposta 2 muda
-  const handleMaxStake2Change = (value: number) => {
-    const newBet2 = { ...bets[1], maxStake: value };
-    setBets([bets[0], newBet2]);
-    
-    if (value > 0 && bets[0].odds > 1) {
-      const result = calculateRequiredStake(newBet2, bets[0]);
-      if (result) {
-        setTotalInvestment(result.totalRequired);
-        setBets([{ ...bets[0], stake: result.requiredStake }, newBet2]);
-        setGuaranteedProfit(result.profit);
-        setInvestment(result.totalRequired);
-      }
-    }
-  };
+  }, [bets.map(bet => bet.odds).join(','), bets.map(bet => bet.commission).join(','), bets.map(bet => bet.maxStake).join(',')]);
 
   // Calcula a odd efetiva considerando a comissão
   const getEffectiveOdds = (odds: number, commission: number) => {
@@ -134,12 +99,9 @@ const SurebetCalculator: React.FC = () => {
     stakes = stakes.map(stake => ({
       ...stake,
       stake: (stake.stake * finalInvestment) / baseInvestment
-    }));
-
-    // Calcula o investimento total
+    }));    // Calcula o investimento total
     const totalInv = stakes.reduce((sum, stake) => sum + stake.stake, 0);
     setTotalInvestment(totalInv);
-    setInvestment(totalInv);
 
     // Atualiza as stakes e lucros de todas as apostas
     const updatedBets = bets.map((bet, index) => {
@@ -154,9 +116,7 @@ const SurebetCalculator: React.FC = () => {
       }
       return bet;
     });
-    setBets(updatedBets);
-
-    // Calcula o lucro garantido usando a primeira aposta como referência
+    setBets(updatedBets);    // Calcula o lucro garantido usando a primeira aposta como referência
     const profit = (stakes[0].stake * stakes[0].effectiveOdds) - totalInv;
     setGuaranteedProfit(profit);
   };
@@ -186,9 +146,7 @@ const SurebetCalculator: React.FC = () => {
       <PageHeader
         title="Calculadora de Surebet"
         subtitle="Calcule apostas com lucro garantido"
-      />
-
-      {error && (
+      />      {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
@@ -296,20 +254,36 @@ const SurebetCalculator: React.FC = () => {
           </Card>
         ))}
 
-        <Card className="md:col-span-2">
-          <CardHeader>
+        <Card className="md:col-span-2">          <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Resultados
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Resultados do cálculo da surebet</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <div>Resultados</div>
+              <div className="flex items-center gap-2">
+                {isSurebetOpportunity && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShareData({
+                      bets,
+                      surebetPercentage,
+                      totalInvestment,
+                      guaranteedProfit,
+                      date: new Date().toISOString(),
+                    })}
+                  >
+                    <Share2 className="h-4 w-4 mr-2" /> Compartilhar
+                  </Button>
+                )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Resultados do cálculo da surebet</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -362,10 +336,13 @@ const SurebetCalculator: React.FC = () => {
                   Oportunidade de surebet encontrada! Siga as stakes recomendadas para garantir o lucro.
                 </AlertDescription>
               </Alert>
-            )}
-          </CardContent>
+            )}          </CardContent>
         </Card>
       </div>
+
+      {shareData && (
+        <ShareSurebetImage data={shareData} onClose={() => setShareData(null)} />
+      )}
     </div>
   );
 };
