@@ -284,18 +284,8 @@ const SurebetCalculator: React.FC = () => {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-            </CardTitle>
-          </CardHeader>
+            </CardTitle>          </CardHeader>
           <CardContent className="space-y-6">
-            <Button 
-              onClick={calculateSurebet}
-              className="w-full"
-              size="lg"
-              variant={isSurebetOpportunity ? "default" : "secondary"}
-            >
-              Calcular Surebet
-            </Button>
-            
             {surebetPercentage > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
                 <div className="space-y-2">
