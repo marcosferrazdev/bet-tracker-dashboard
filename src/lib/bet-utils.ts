@@ -115,17 +115,13 @@ export const calculateMonthlyStats = (bets: Bet[]): MonthlyStats[] => {
     });
   });
   
-  // Convert to array and sort by month
+  // Convert to array and sort by date
   return Array.from(monthlyMap.values())
     .sort((a, b) => {
-      const monthA = a.month.split(' ');
-      const monthB = b.month.split(' ');
-      
-      if (monthA[1] !== monthB[1]) {
-        return parseInt(monthA[1]) - parseInt(monthB[1]);
-      }
-      
-      return a.month.localeCompare(b.month, 'pt-BR');
+      // Converte os nomes dos meses para datas para comparação
+      const dateA = new Date(a.month.replace(/(\w+)\s(\d+)/, '$2-$1-01'));
+      const dateB = new Date(b.month.replace(/(\w+)\s(\d+)/, '$2-$1-01'));
+      return dateA.getTime() - dateB.getTime();
     });
 };
 
