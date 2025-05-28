@@ -32,6 +32,8 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
     );
   }
 
+  const roi = (guaranteedProfit / totalInvestment) * 100;
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
@@ -61,6 +63,9 @@ const ResultsContent: React.FC<ResultsContentProps> = ({
           <Label>Lucro Garantido</Label>
           <p className={`text-lg font-semibold ${guaranteedProfit > 0 ? 'text-green-600' : 'text-red-600'}`}>
             R$ {guaranteedProfit.toFixed(2)}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            ROI: {roi.toFixed(2)}%
           </p>
         </div>
       </div>
