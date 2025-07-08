@@ -32,18 +32,47 @@ interface SurebetShare {
 }
 
 const SurebetCalculator: React.FC = () => {
-  const [bets, setBets] = useState<Bet[]>([
-    { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 },
-    { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }
-  ]);
+  const getInitialState = () => {
+    const saved = localStorage.getItem('surebet-calculator');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          bets: parsed.bets || [
+            { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 },
+            { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }
+          ],
+          desiredInvestment: parsed.desiredInvestment || 0
+        };
+      } catch {
+        // Se der erro, retorna padrão
+        return {
+          bets: [
+            { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 },
+            { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }
+          ],
+          desiredInvestment: 0
+        };
+      }
+    }
+    return {
+      bets: [
+        { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 },
+        { odds: 0, stake: 0, profit: 0, maxStake: 0, commission: 0 }
+      ],
+      desiredInvestment: 0
+    };
+  };
+  const initial = getInitialState();
+  const [bets, setBets] = useState<Bet[]>(initial.bets);
   const [shareData, setShareData] = useState<SurebetShare | null>(null);
   const [totalInvestment, setTotalInvestment] = useState<number>(0);
-  const [desiredInvestment, setDesiredInvestment] = useState<number>(0);
+  const [desiredInvestment, setDesiredInvestment] = useState<number>(initial.desiredInvestment);
   const [surebetPercentage, setSurebetPercentage] = useState<number>(0);
   const [guaranteedProfit, setGuaranteedProfit] = useState<number>(0);
   const [error, setError] = useState<string>('');
+  // Removido arredondamento
 
-  // Calcula automaticamente quando houver alterações nas odds ou comissões
   useEffect(() => {
     const hasOdds = bets.some(bet => bet.odds > 1);
     if (hasOdds) {
@@ -51,15 +80,19 @@ const SurebetCalculator: React.FC = () => {
     }
   }, [bets.map(bet => bet.odds).join(','), bets.map(bet => bet.commission).join(','), bets.map(bet => bet.maxStake).join(',')]);
 
-  // Calcula a odd efetiva considerando a comissão
+
+  useEffect(() => {
+    localStorage.setItem('surebet-calculator', JSON.stringify({ bets, desiredInvestment }));
+  }, [bets, desiredInvestment]);
+
   const getEffectiveOdds = (odds: number, commission: number) => {
     return odds * (1 - commission / 100);
   };
 
+
   const calculateSurebet = () => {
     setError('');
     
-    // Filtra apostas com odds inválidas
     const validBets = bets.filter(bet => bet.odds > 1);
     
     if (validBets.length < 2) {
@@ -67,7 +100,6 @@ const SurebetCalculator: React.FC = () => {
       return;
     }
 
-    // Calcula a porcentagem de surebet considerando as comissões
     const percentage = validBets.reduce((sum, bet) => {
       const effectiveOdds = getEffectiveOdds(bet.odds, bet.commission);
       return sum + (1 / effectiveOdds);
@@ -83,7 +115,6 @@ const SurebetCalculator: React.FC = () => {
       return;
     }
 
-    // Calcula o investimento necessário para cada R$1 de retorno
     const baseInvestment = 1000; // Usamos um valor base para calcular as proporções
     let stakes = validBets.map(bet => {
       const effectiveOdds = getEffectiveOdds(bet.odds, bet.commission);
@@ -95,31 +126,39 @@ const SurebetCalculator: React.FC = () => {
       };
     });
 
-    // Encontra o menor ratio de stake máxima para ajustar todas as stakes proporcionalmente
     const minRatio = Math.min(...stakes.map(s => s.maxStakeRatio));
     const finalInvestment = minRatio === Infinity ? baseInvestment : baseInvestment * minRatio;
 
-    // Ajusta as stakes para o investimento final
     stakes = stakes.map(stake => ({
       ...stake,
       stake: (stake.stake * finalInvestment) / baseInvestment
     }));
 
-    // Calcula o investimento total
     const totalInv = stakes.reduce((sum, stake) => sum + stake.stake, 0);
     setTotalInvestment(totalInv);
 
-    // Se houver um investimento desejado, ajusta as stakes proporcionalmente
-    if (desiredInvestment > 0) {
-      const ratio = desiredInvestment / totalInv;
-      stakes = stakes.map(stake => ({
-        ...stake,
-        stake: stake.stake * ratio
-      }));
-      setTotalInvestment(desiredInvestment);
+    if (desiredInvestment > 0 && totalInv > desiredInvestment) {
+      let adjustedStakes = stakes.map((stake, i) => {
+        const ratio = desiredInvestment / totalInv;
+        let newStake = stake.stake * ratio;
+        if (bets[i].maxStake > 0 && newStake > bets[i].maxStake) {
+          newStake = bets[i].maxStake;
+        }
+        return {
+          ...stake,
+          stake: newStake
+        };
+      });
+      let newTotal = adjustedStakes.reduce((sum, s) => sum + s.stake, 0);
+      if (newTotal < desiredInvestment - 0.01) {
+        setError('Não é possível distribuir o investimento desejado respeitando as stakes máximas.');
+      }
+      stakes = adjustedStakes;
+      setTotalInvestment(newTotal);
+    } else {
+      setTotalInvestment(totalInv);
     }
 
-    // Atualiza as stakes e lucros de todas as apostas
     const updatedBets = bets.map((bet, index) => {
       if (index < stakes.length) {
         const stake = stakes[index];
@@ -134,7 +173,6 @@ const SurebetCalculator: React.FC = () => {
     });
     setBets(updatedBets);
 
-    // Calcula o lucro garantido usando a primeira aposta como referência
     const profit = (stakes[0].stake * stakes[0].effectiveOdds) - (desiredInvestment > 0 ? desiredInvestment : totalInv);
     setGuaranteedProfit(profit);
   };
@@ -152,7 +190,6 @@ const SurebetCalculator: React.FC = () => {
   };
   const updateBet = (index: number, field: keyof Bet, value: number) => {
     const newBets = [...bets];
-    // Quando o valor for vazio ou NaN, define como 0
     newBets[index] = { ...newBets[index], [field]: value || 0 };
     setBets(newBets);
   };
@@ -170,6 +207,7 @@ const SurebetCalculator: React.FC = () => {
     setGuaranteedProfit(0);
     setError('');
     setShareData(null);
+    localStorage.removeItem('surebet-calculator');
   };
 
   return (
@@ -326,21 +364,31 @@ const SurebetCalculator: React.FC = () => {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="desiredInvestment">Investimento Total Desejado (R$)</Label>
-              <Input
-                id="desiredInvestment"
-                type="number"
-                step="0.01"
-                min="0"
-                value={desiredInvestment || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  setDesiredInvestment(value);
-                  if (value > 0) {
-                    calculateSurebet();
-                  }
-                }}
-                placeholder="Digite o valor total que deseja investir"
-              />
+              <div className="flex gap-2 items-center">
+                <Input
+                  id="desiredInvestment"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={desiredInvestment || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setDesiredInvestment(value);
+                  }}
+                  placeholder="Digite o valor total que deseja investir"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={calculateSurebet}
+                  disabled={desiredInvestment <= 0}
+                >
+                  Recalcular
+                </Button>
+              </div>
+              {desiredInvestment > 0 && (
+                <span className="text-xs text-muted-foreground">Após alterar o valor, clique em "Recalcular" para atualizar as stakes.</span>
+              )}
             </div>
             <ResultsContent
               surebetPercentage={surebetPercentage}
