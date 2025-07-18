@@ -20,8 +20,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 // Estilos personalizados para o DatePicker
 const customStyles = {
-  input: "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm",
-  calendar: "!bg-white !border !border-gray-200 !rounded-lg !shadow-lg !p-4",
+  input: "w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring text-sm",
+  calendar: "!bg-card !border !border-input !rounded-lg !shadow-lg !p-4",
   header: "!flex !justify-between !items-center !mb-4",
   month: "!text-lg !font-semibold !text-gray-900",
   navButton: "!p-2 !hover:bg-gray-100 !rounded-full",
