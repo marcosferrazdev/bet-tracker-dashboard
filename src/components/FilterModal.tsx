@@ -221,17 +221,17 @@ const FilterModal: React.FC<FilterModalProps> = ({
     >
       <AlertDialogPortal>
         <AlertDialogOverlay className="bg-black/20" />
-        <AlertDialogContent className="rounded-xl max-w-md w-[95vw] sm:w-full mx-auto p-4">
+        <AlertDialogContent className="rounded-xl max-w-md w-[95vw] sm:w-full mx-auto p-4 bg-gray-800 border-0">
           <AlertDialogHeader>
-            <AlertDialogTitle>Filtrar Apostas</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">Filtrar Apostas</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               Selecione os critérios para filtrar suas apostas:
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-6 my-4">
             {/* Filtros de Resultado */}
             <div>
-              <h3 className="text-sm font-medium mb-2 text-card-foreground">Resultados</h3>
+              <h3 className="text-sm font-medium mb-2 text-white">Resultados</h3>
               <div className="flex flex-col gap-3">
                 {["GREEN", "RED", "REEMBOLSO", "Pendente"].map((status) => (
                   <div key={status} className="flex items-center space-x-2">
@@ -242,7 +242,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       id={status}
                       className="form-checkbox h-4 w-4 text-primary-600 rounded-full"
                     />
-                    <label htmlFor={status} className="text-sm cursor-pointer">
+                    <label htmlFor={status} className="text-sm cursor-pointer text-gray-200">
                       {status}
                     </label>
                   </div>
@@ -252,11 +252,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
             {/* Filtros de Data */}
             <div>
-              <h3 className="text-sm font-medium mb-2 text-card-foreground">Período</h3>
+              <h3 className="text-sm font-medium mb-2 text-white">Período</h3>
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label htmlFor="startDate" className="text-sm mb-1 block">
+                    <label htmlFor="startDate" className="text-sm mb-1 block text-gray-200">
                       Data Inicial
                     </label>
                     <DatePicker
@@ -284,7 +284,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     />
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="endDate" className="text-sm mb-1 block">
+                    <label htmlFor="endDate" className="text-sm mb-1 block text-gray-200">
                       Data Final
                     </label>
                     <DatePicker
