@@ -272,13 +272,13 @@ const BetForm: React.FC = () => {
                     />
                   </div>
                   <div className="relative flex-1">
-                    <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                    <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="time"
                       type="time"
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
-                      className={`pl-11 text-sm ${errors.time ? "border-danger-500" : ""}`}
+                      className={`pl-11 text-sm ${errors.time ? "border-danger" : ""}`}
                       style={{
                         WebkitAppearance: "none",
                         MozAppearance: "none",
@@ -297,10 +297,10 @@ const BetForm: React.FC = () => {
                   </div>
                 </div>
                 {errors.time && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {errors.time}
-                  </p>
+                                  <p className="text-danger text-sm flex items-center mt-1">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  {errors.time}
+                </p>
                 )}
               </div>
               <div className="space-y-2">
@@ -313,7 +313,7 @@ const BetForm: React.FC = () => {
                   error={errors.tipster}
                 />
                 {errors.tipster && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
+                  <p className="text-danger text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
                     {errors.tipster}
                   </p>
@@ -330,7 +330,7 @@ const BetForm: React.FC = () => {
                     error={errors.competition}
                   />
                   {errors.competition && (
-                    <p className="text-danger-500 text-sm flex items-center mt-1">
+                    <p className="text-danger text-sm flex items-center mt-1">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       {errors.competition}
                     </p>
@@ -378,7 +378,7 @@ const BetForm: React.FC = () => {
                           error={errors[`competition${index}`]}
                         />
                         {errors[`competition${index}`] && (
-                          <p className="text-danger-500 text-sm flex items-center mt-1">
+                          <p className="text-danger text-sm flex items-center mt-1">
                             <AlertCircle className="h-3 w-3 mr-1" />
                             {errors[`competition${index}`]}
                           </p>
@@ -398,7 +398,7 @@ const BetForm: React.FC = () => {
                           error={errors[`homeTeam${index}`]}
                         />
                         {errors[`homeTeam${index}`] && (
-                          <p className="text-danger-500 text-sm flex items-center mt-1">
+                          <p className="text-danger text-sm flex items-center mt-1">
                             <AlertCircle className="h-3 w-3 mr-1" />
                             {errors[`homeTeam${index}`]}
                           </p>
@@ -418,7 +418,7 @@ const BetForm: React.FC = () => {
                           error={errors[`awayTeam${index}`]}
                         />
                         {errors[`awayTeam${index}`] && (
-                          <p className="text-danger-500 text-sm flex items-center mt-1">
+                          <p className="text-danger text-sm flex items-center mt-1">
                             <AlertCircle className="h-3 w-3 mr-1" />
                             {errors[`awayTeam${index}`]}
                           </p>
@@ -464,7 +464,7 @@ const BetForm: React.FC = () => {
                       error={errors.homeTeam0}
                     />
                     {errors.homeTeam0 && (
-                      <p className="text-danger-500 text-sm flex items-center mt-1">
+                      <p className="text-danger text-sm flex items-center mt-1">
                         <AlertCircle className="h-3 w-3 mr-1" />
                         {errors.homeTeam0}
                       </p>
@@ -482,7 +482,7 @@ const BetForm: React.FC = () => {
                       error={errors.awayTeam0}
                     />
                     {errors.awayTeam0 && (
-                      <p className="text-danger-500 text-sm flex items-center mt-1">
+                      <p className="text-danger text-sm flex items-center mt-1">
                         <AlertCircle className="h-3 w-3 mr-1" />
                         {errors.awayTeam0}
                       </p>
@@ -500,7 +500,7 @@ const BetForm: React.FC = () => {
                   error={errors.market}
                 />
                 {errors.market && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
+                  <p className="text-danger text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
                     {errors.market}
                   </p>
@@ -516,7 +516,7 @@ const BetForm: React.FC = () => {
                   error={errors.bookmaker}
                 />
                 {errors.bookmaker && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
+                  <p className="text-danger text-sm flex items-center mt-1">
                     <AlertCircle className="h-3 w-3 mr-1" />
                     {errors.bookmaker}
                   </p>
@@ -528,14 +528,14 @@ const BetForm: React.FC = () => {
                   id="entry"
                   value={entry}
                   onChange={(e) => setEntry(e.target.value)}
-                  className={errors.entry ? "border-danger-500" : ""}
+                  className={errors.entry ? "border-danger" : ""}
                 />
-                {errors.entry && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {errors.entry}
-                  </p>
-                )}
+                                  {errors.entry && (
+                    <p className="text-danger text-sm flex items-center mt-1">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {errors.entry}
+                    </p>
+                  )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="odds">Odds</Label>
@@ -546,14 +546,14 @@ const BetForm: React.FC = () => {
                   min="1"
                   value={odds || ""}
                   onChange={(e) => setOdds(parseFloat(e.target.value) || 0)}
-                  className={errors.odds ? "border-danger-500" : ""}
+                  className={errors.odds ? "border-danger" : ""}
                 />
-                {errors.odds && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {errors.odds}
-                  </p>
-                )}
+                                  {errors.odds && (
+                    <p className="text-danger text-sm flex items-center mt-1">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {errors.odds}
+                    </p>
+                  )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stake">Valor da aposta (R$)</Label>
@@ -564,17 +564,17 @@ const BetForm: React.FC = () => {
                   min="0"
                   value={stake || ""}
                   onChange={(e) => setStake(parseFloat(e.target.value) || 0)}
-                  className={errors.stake ? "border-danger-500" : ""}
+                  className={errors.stake ? "border-danger" : ""}
                 />
-                {errors.stake && (
-                  <p className="text-danger-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {errors.stake}
+                                  {errors.stake && (
+                    <p className="text-danger text-sm flex items-center mt-1">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {errors.stake}
+                    </p>
+                  )}
+                                  <p className="text-sm text-muted-foreground">
+                    {stakeUnits.toFixed(2)} unidades
                   </p>
-                )}
-                <p className="text-sm text-neutral-500">
-                  {stakeUnits.toFixed(2)} unidades
-                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="commission">Comissão (opcional)</Label>
