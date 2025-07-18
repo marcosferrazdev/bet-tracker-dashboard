@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
 import { BetProvider } from "@/context/BetContext";
 import { CompetitionProvider } from "@/context/CompetitionContext";
@@ -25,13 +26,14 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BetProvider>
-        <AuthProvider>
-          <CompetitionProvider>
-            <Toaster />
-            <Sonner />
-            <Router>
+    <ThemeProvider defaultTheme="system" storageKey="bet-tracker-theme">
+      <TooltipProvider>
+        <BetProvider>
+          <AuthProvider>
+            <CompetitionProvider>
+              <Toaster />
+              <Sonner />
+              <Router>
               <Routes>
                 {/* Auth routes */}
                 <Route path="/" element={
@@ -69,6 +71,7 @@ const App = () => (
         </AuthProvider>
       </BetProvider>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

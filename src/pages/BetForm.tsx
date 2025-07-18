@@ -363,7 +363,7 @@ const BetForm: React.FC = () => {
                       key={index}
                       className="space-y-2 border p-4 rounded-md"
                     >
-                      <h4 className="font-medium">Jogo {index + 1}</h4>
+                      <h4 className="font-medium text-card-foreground">Jogo {index + 1}</h4>
                       <div className="space-y-2">
                         <Label htmlFor={`competition${index}`}>
                           Competição
@@ -622,7 +622,7 @@ const BetForm: React.FC = () => {
                     : "bg-neutral-50 border-neutral-200 text-neutral-700"
                 }`}
               >
-                <h4 className="font-medium mb-2">Prévia do resultado</h4>
+                <h4 className="font-medium mb-2 text-card-foreground">Prévia do resultado</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm">Lucro (R$)</p>

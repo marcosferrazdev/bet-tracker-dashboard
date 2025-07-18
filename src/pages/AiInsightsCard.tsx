@@ -281,32 +281,32 @@ Minha pergunta: ${questionPrompt}
 
   // Componente de skeleton para carregamento
   const ResponseSkeleton = () => (
-    <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100 animate-pulse min-h-[200px]">
-      <div className="h-3 w-20 bg-neutral-200 rounded mb-3"></div>
+            <div className="mt-3 p-3 bg-card rounded-lg border border-border animate-pulse min-h-[200px]">
+      <div className="h-3 w-20 bg-muted rounded mb-3"></div>
       <div className="space-y-3">
-        <div className="h-2 bg-neutral-200 rounded w-full"></div>
-        <div className="h-2 bg-neutral-200 rounded w-5/6"></div>
-        <div className="h-2 bg-neutral-200 rounded w-4/6"></div>
-        <div className="h-2 bg-neutral-200 rounded w-full"></div>
-        <div className="h-2 bg-neutral-200 rounded w-3/4"></div>
-        <div className="h-2 bg-neutral-200 rounded w-5/6"></div>
-        <div className="h-2 bg-neutral-200 rounded w-full"></div>
-        <div className="h-2 bg-neutral-200 rounded w-2/3"></div>
-        <div className="h-2 bg-neutral-200 rounded w-3/4"></div>
-        <div className="h-2 bg-neutral-200 rounded w-4/5"></div>
+        <div className="h-2 bg-muted rounded w-full"></div>
+        <div className="h-2 bg-muted rounded w-5/6"></div>
+        <div className="h-2 bg-muted rounded w-4/6"></div>
+        <div className="h-2 bg-muted rounded w-full"></div>
+        <div className="h-2 bg-muted rounded w-3/4"></div>
+        <div className="h-2 bg-muted rounded w-5/6"></div>
+        <div className="h-2 bg-muted rounded w-full"></div>
+        <div className="h-2 bg-muted rounded w-2/3"></div>
+        <div className="h-2 bg-muted rounded w-3/4"></div>
+        <div className="h-2 bg-muted rounded w-4/5"></div>
       </div>
     </div>
   );
 
   return (
-    <div className="border border-neutral-100 rounded-lg p-4 bg-neutral-50">
+    <div className="border border-border rounded-lg p-4 bg-muted">
       <div className="flex items-center gap-2 mb-2">
         <BrainCircuit className="h-5 w-5 text-primary" />
-        <h3 className="font-medium">Consultor de IA</h3>
+        <h3 className="font-medium text-card-foreground">Consultor de IA</h3>
       </div>
       
       <textarea
-        className="w-full p-3 border rounded-md mb-2 text-sm bg-white"
+                      className="w-full p-3 border rounded-md mb-2 text-sm bg-background"
         rows={2}
         placeholder="Pergunte sobre estratégias de apostas, análise de desempenho..."
         value={userPrompt}
@@ -338,9 +338,9 @@ Minha pergunta: ${questionPrompt}
       {loading ? (
         <ResponseSkeleton />
       ) : aiResponse ? (
-        <div className="mt-3 bg-white rounded-lg border border-neutral-100">
-          <div className="flex justify-between items-center p-3 pb-2 border-b border-neutral-100">
-            <p className="text-sm text-neutral-500">Resposta:</p>
+        <div className="mt-3 bg-card rounded-lg border border-border">
+          <div className="flex justify-between items-center p-3 pb-2 border-b border-border">
+            <p className="text-sm text-muted-foreground">Resposta:</p>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -348,7 +348,7 @@ Minha pergunta: ${questionPrompt}
               className="h-7 w-7 p-0"
               title="Limpar resposta"
             >
-              <RotateCcw className="h-4 w-4 text-neutral-500" />
+              <RotateCcw className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>
           <div className="text-sm whitespace-pre-line max-h-60 overflow-y-auto p-3 pt-2">
@@ -356,21 +356,21 @@ Minha pergunta: ${questionPrompt}
           </div>
         </div>
       ) : !error && (
-        <div className="mt-3 p-4 bg-white rounded-lg border border-primary-50">
+        <div className="mt-3 p-4 bg-card rounded-lg border border-border">
           <div className="flex items-center gap-2 mb-2 text-primary">
             <BrainCircuit className="h-5 w-5" />
-            <h4 className="font-medium">Como posso ajudar você?</h4>
+            <h4 className="font-medium text-card-foreground">Como posso ajudar você?</h4>
           </div>
-          <p className="text-sm text-neutral-600 mb-3">
+          <p className="text-sm text-muted-foreground mb-3">
             Tenho acesso a todos os dados das suas apostas e posso analisar seu desempenho, 
             identificar padrões e oferecer insights personalizados para melhorar seus resultados.
           </p>
           <div className="space-y-2 mb-3">
-            <p className="text-sm font-medium text-neutral-500">Experimente perguntar:</p>
+            <p className="text-sm font-medium text-muted-foreground">Experimente perguntar:</p>
             {exampleQuestions.map((question, index) => (
               <div 
                 key={index}
-                className="flex items-center gap-2 text-sm p-2 rounded-md hover:bg-neutral-50 hover:text-primary transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-sm p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
                 onClick={() => handleSuggestionClick(question)}
               >
                 <ArrowRight className="h-3 w-3 text-primary" />
@@ -378,7 +378,7 @@ Minha pergunta: ${questionPrompt}
               </div>
             ))}
           </div>
-          <div className="text-xs text-neutral-400 flex items-center gap-1 mt-2">
+          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
             <Globe className="h-3 w-3" />
             <span>Observação: Não consigo acessar informações da internet ou dados em tempo real.</span>
           </div>

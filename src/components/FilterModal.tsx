@@ -46,9 +46,11 @@ const globalStyles = `
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
     width: 100% !important;
     max-width: 320px !important;
+    background-color: hsl(var(--card)) !important;
+    color: hsl(var(--card-foreground)) !important;
   }
   .react-datepicker__header {
-    background-color: white !important;
+    background-color: hsl(var(--card)) !important;
     border-bottom: none !important;
     padding-top: 0 !important;
   }
@@ -72,7 +74,7 @@ const globalStyles = `
     padding: 0 !important;
   }
   .react-datepicker__day-name {
-    color: #6B7280 !important;
+    color: hsl(var(--muted-foreground)) !important;
     width: 2rem !important;
     margin: 0 !important;
     font-weight: 500 !important;
@@ -89,37 +91,39 @@ const globalStyles = `
     justify-content: center !important;
   }
   .react-datepicker__day:hover {
-    background-color: #F3F4F6 !important;
-    color: #111827 !important;
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
   }
   .react-datepicker__day--selected {
-    background-color: #3B82F6 !important;
-    color: white !important;
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
   }
   .react-datepicker__day--selected:hover {
-    background-color: #2563EB !important;
+    background-color: hsl(var(--primary)) !important;
+    opacity: 0.9 !important;
   }
   .react-datepicker__day--keyboard-selected {
-    background-color: #EFF6FF !important;
-    color: #3B82F6 !important;
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
   }
   .react-datepicker__day--outside-month {
-    color: #9CA3AF !important;
+    color: hsl(var(--muted-foreground)) !important;
   }
   .react-datepicker__day--disabled {
-    color: #D1D5DB !important;
+    color: hsl(var(--muted-foreground)) !important;
+    opacity: 0.5 !important;
     cursor: not-allowed !important;
   }
   .react-datepicker__navigation {
     top: 0.5rem !important;
   }
   .react-datepicker__navigation-icon::before {
-    border-color: #6B7280 !important;
+    border-color: hsl(var(--muted-foreground)) !important;
   }
   .react-datepicker__current-month {
     font-size: 1rem !important;
     font-weight: 600 !important;
-    color: #111827 !important;
+    color: hsl(var(--card-foreground)) !important;
     text-align: center !important;
     width: 100% !important;
   }
@@ -227,7 +231,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
           <div className="flex flex-col gap-6 my-4">
             {/* Filtros de Resultado */}
             <div>
-              <h3 className="text-sm font-medium mb-2">Resultados</h3>
+              <h3 className="text-sm font-medium mb-2 text-card-foreground">Resultados</h3>
               <div className="flex flex-col gap-3">
                 {["GREEN", "RED", "REEMBOLSO", "Pendente"].map((status) => (
                   <div key={status} className="flex items-center space-x-2">
@@ -248,7 +252,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
             {/* Filtros de Data */}
             <div>
-              <h3 className="text-sm font-medium mb-2">Período</h3>
+              <h3 className="text-sm font-medium mb-2 text-card-foreground">Período</h3>
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-1">

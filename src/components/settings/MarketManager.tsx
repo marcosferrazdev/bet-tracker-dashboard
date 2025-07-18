@@ -87,7 +87,7 @@ const MarketManager: React.FC = () => {
         </form>
 
         <div className="mt-6">
-          <h3 className="font-medium mb-3">Mercados Cadastrados</h3>
+          <h3 className="font-medium mb-3 text-card-foreground">Mercados Cadastrados</h3>
           {markets.length === 0 ? (
             <p className="text-muted-foreground">Nenhum mercado cadastrado</p>
           ) : (

@@ -38,6 +38,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import { ModeToggle } from "./ui/mode-toggle";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -121,17 +122,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen bg-neutral-50 overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar (desktop) */}
       <aside
         className={`
-          hidden md:flex flex-col bg-white shadow-sm border-r
+          hidden md:flex flex-col bg-card shadow-sm border-r border-border
           transition-all duration-300
           ${collapsed ? "w-16" : "w-64"}
         `}
       >
         {/* Topo do sidebar */}
-        <div className="flex items-center justify-between py-2 px-4 border-b">
+        <div className="flex items-center justify-between py-2 px-4 border-b border-border">
           {!collapsed && (
             <div className="flex items-center">
               <img src="/logo.png" alt="Logo" className="h-28 w-64" />
@@ -139,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-neutral-500 hover:text-neutral-700"
+            className="text-muted-foreground hover:text-foreground"
           >
             {collapsed ? (
               <ChevronRight className="ml-2 h-6 w-6" />
@@ -162,14 +163,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   ${collapsed ? "w-10 h-10 justify-center p-2" : "px-3 py-2"}
                   ${
                     isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-neutral-700 hover:bg-neutral-100"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-foreground hover:bg-accent/50"
                   }
                 `}
               >
                 {React.cloneElement(link.icon, {
                   className: `h-5 w-5 ${
-                    isActive ? "text-blue-600" : "text-neutral-700"
+                    isActive ? "text-accent-foreground" : "text-foreground"
                   }`,
                 })}
 
@@ -182,7 +183,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         {/* Informações do usuário e logout */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t border-border">
           {!collapsed ? (
             <div className="flex flex-col space-y-3">
               <div className="flex items-center space-x-3">
@@ -205,15 +206,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </TooltipProvider>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLogoutModalOpen(true)}
-                className="flex items-center w-full"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </Button>
+              <div className="flex items-center space-x-2">
+                <ModeToggle />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLogoutModalOpen(true)}
+                  className="flex items-center flex-1"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sair
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-3">
@@ -221,9 +225,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback>{getUserInitials()}</AvatarFallback>
               </Avatar>
+              <ModeToggle />
               <button
                 onClick={() => setLogoutModalOpen(true)}
-                className="text-neutral-500 hover:text-neutral-700"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="h-5 w-5" />
               </button>
@@ -242,7 +247,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </main>
 
       {/* Menu mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="safe-area-bottom grid grid-cols-5 gap-0.5 px-1">
           {links.slice(0, 4).map((link) => (
             <Link
@@ -253,14 +258,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <div className="flex flex-col items-center">
                 {React.cloneElement(link.icon, {
-                  className: `h-5 w-5 ${location.pathname === link.path ? "text-blue-600" : "text-neutral-600"}`,
+                  className: `h-5 w-5 ${location.pathname === link.path ? "text-primary" : "text-muted-foreground"}`,
                 })}
                 <span className="text-[0.65rem] font-medium mt-0.5 text-center leading-tight line-clamp-1">
                   {link.name}
                 </span>
-                {location.pathname === link.path && (
-                  <div className="absolute inset-x-3 -top-px h-0.5 bg-blue-600 rounded-full" />
-                )}
+                                  {location.pathname === link.path && (
+                    <div className="absolute inset-x-3 -top-px h-0.5 bg-primary rounded-full" />
+                  )}
               </div>
             </Link>
           ))}
@@ -271,7 +276,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex flex-col items-center justify-center py-1.5 px-0.5 relative w-full h-full text-neutral-600 hover:text-neutral-900"
+                  className="flex flex-col items-center justify-center py-1.5 px-0.5 relative w-full h-full text-muted-foreground hover:text-foreground"
                 >
                   <Settings className="h-5 w-5" />
                   <span className="text-[0.65rem] font-medium mt-0.5">Mais</span>
@@ -319,7 +324,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmLogout}
-              className="bg-danger-500 hover:bg-danger-600 text-white"
+              className="bg-danger hover:bg-danger/90 text-danger-foreground"
             >
               Sair
             </AlertDialogAction>

@@ -155,7 +155,7 @@ const BookmarkerManager: React.FC = () => {
               )}
             </div>
             {error && (
-              <p className="text-danger-500 text-sm flex items-center mt-1">
+              <p className="text-danger text-sm flex items-center mt-1">
                 <AlertCircle className="h-3 w-3 mr-1" />
                 {error}
               </p>
@@ -177,9 +177,9 @@ const BookmarkerManager: React.FC = () => {
             {filteredBookmakers.slice(0, visibleCount).map((bookmaker) => (
               <div
                 key={bookmaker.id}
-                className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-muted rounded-lg"
               >
-                <span>{bookmaker.name}</span>
+                <span className="text-card-foreground">{bookmaker.name}</span>
                 <div className="flex space-x-2">
                   <Button
                     variant="ghost"
