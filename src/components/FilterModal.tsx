@@ -44,7 +44,7 @@ const globalStyles = `
     font-family: inherit !important;
     border: none !important;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
-    width: 100% !important;
+    width: auto !important;
     max-width: 320px !important;
     background-color: hsl(var(--card)) !important;
     color: hsl(var(--card-foreground)) !important;
@@ -74,7 +74,7 @@ const globalStyles = `
     padding: 0 !important;
   }
   .react-datepicker__day-name {
-    color: hsl(var(--muted-foreground)) !important;
+    color: hsl(var(--card-foreground)) !important;
     width: 2rem !important;
     margin: 0 !important;
     font-weight: 500 !important;
@@ -89,6 +89,7 @@ const globalStyles = `
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    color: hsl(var(--card-foreground)) !important;
   }
   .react-datepicker__day:hover {
     background-color: hsl(var(--accent)) !important;
@@ -118,7 +119,7 @@ const globalStyles = `
     top: 0.5rem !important;
   }
   .react-datepicker__navigation-icon::before {
-    border-color: hsl(var(--muted-foreground)) !important;
+    border-color: hsl(var(--card-foreground)) !important;
   }
   .react-datepicker__current-month {
     font-size: 1rem !important;
@@ -126,6 +127,18 @@ const globalStyles = `
     color: hsl(var(--card-foreground)) !important;
     text-align: center !important;
     width: 100% !important;
+  }
+  .react-datepicker-popper {
+    z-index: 999 !important;
+  }
+  .react-datepicker__portal {
+    z-index: 999 !important;
+  }
+  .react-datepicker__portal .react-datepicker {
+    z-index: 999 !important;
+  }
+  .react-datepicker__triangle {
+    display: none !important;
   }
 `;
 
@@ -167,6 +180,13 @@ const FilterModal: React.FC<FilterModalProps> = ({
     const styleElement = document.createElement('style');
     styleElement.textContent = globalStyles;
     document.head.appendChild(styleElement);
+
+    // Cria o portal para o DatePicker se não existir
+    if (!document.getElementById('datepicker-root')) {
+      const portalDiv = document.createElement('div');
+      portalDiv.id = 'datepicker-root';
+      document.body.appendChild(portalDiv);
+    }
 
     return () => {
       document.body.style.removeProperty('pointer-events');
@@ -255,7 +275,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
               <h3 className="text-sm font-medium mb-2 text-white">Período</h3>
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="flex-1">
+                  <div className="flex-1 relative">
                     <label htmlFor="startDate" className="text-sm mb-1 block text-gray-200">
                       Data Inicial
                     </label>
@@ -270,20 +290,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       dayClassName={() => customStyles.day}
                       weekDayClassName={() => customStyles.weekday}
                       highlightDates={tempEndDate ? [{ "react-datepicker__day--highlighted": [tempEndDate] }] : []}
-                      popperClassName="!z-50"
+                      popperClassName="!z-[60]"
                       popperPlacement="bottom-start"
-                      popperModifiers={[
-                        {
-                          name: "offset",
-                          options: {
-                            offset: [0, 8],
-                          },
-                          fn: () => ({ x: 0, y: 8 }),
-                        },
-                      ]}
+                      shouldCloseOnSelect
                     />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 relative">
                     <label htmlFor="endDate" className="text-sm mb-1 block text-gray-200">
                       Data Final
                     </label>
@@ -299,17 +311,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       dayClassName={() => customStyles.day}
                       weekDayClassName={() => customStyles.weekday}
                       highlightDates={tempStartDate ? [{ "react-datepicker__day--highlighted": [tempStartDate] }] : []}
-                      popperClassName="!z-50"
+                      popperClassName="!z-[60]"
                       popperPlacement="bottom-start"
-                      popperModifiers={[
-                        {
-                          name: "offset",
-                          options: {
-                            offset: [0, 8],
-                          },
-                          fn: () => ({ x: 0, y: 8 }),
-                        },
-                      ]}
+                      shouldCloseOnSelect
                     />
                   </div>
                 </div>
