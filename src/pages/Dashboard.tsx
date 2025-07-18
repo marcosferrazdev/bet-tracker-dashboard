@@ -217,46 +217,46 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Gráfico de Desempenho Diário */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-100 mb-8">
-        <h2 className="text-lg font-medium mb-4">Desempenho Diário</h2>
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">
+        <h2 className="text-lg font-medium mb-4 text-card-foreground">Desempenho Diário</h2>
         <div className="h-80">
           <Bar data={dailyChartData} options={dailyChartOptions} />
         </div>
       </div>
 
       {/* Gráfico de Desempenho Mensal */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-100 mb-8">
-        <h2 className="text-lg font-medium mb-4">Desempenho Mensal</h2>
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">
+        <h2 className="text-lg font-medium mb-4 text-card-foreground">Desempenho Mensal</h2>
         <div className="h-80">
           <Bar data={barChartData} options={barChartOptions} />
         </div>
       </div>
 
       {/* Resumo de Apostas */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-100 mb-8">
-        <h2 className="text-lg font-medium mb-4">Resumo de Apostas</h2>
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">
+        <h2 className="text-lg font-medium mb-4 text-card-foreground">Resumo de Apostas</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="flex flex-col">
-            <span className="text-neutral-500 text-sm">Ganhas</span>
-            <span className="text-success-600 font-semibold text-xl">
+            <span className="text-muted-foreground text-sm">Ganhas</span>
+            <span className="text-success font-semibold text-xl">
               {stats.wonBets}
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-neutral-500 text-sm">Perdidas</span>
-            <span className="text-danger-600 font-semibold text-xl">
+            <span className="text-muted-foreground text-sm">Perdidas</span>
+            <span className="text-danger font-semibold text-xl">
               {stats.lostBets}
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-neutral-500 text-sm">Reembolsadas</span>
-            <span className="text-neutral-600 font-semibold text-xl">
+            <span className="text-muted-foreground text-sm">Reembolsadas</span>
+            <span className="text-neutral font-semibold text-xl">
               {stats.refundedBets}
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-neutral-500 text-sm">Pendentes</span>
-            <span className="text-neutral-600 font-semibold text-xl">
+            <span className="text-muted-foreground text-sm">Pendentes</span>
+            <span className="text-neutral font-semibold text-xl">
               {stats.pendingBets}
             </span>
           </div>

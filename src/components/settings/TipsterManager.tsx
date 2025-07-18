@@ -87,7 +87,7 @@ const TipsterManager: React.FC = () => {
         </form>
 
         <div className="mt-6">
-          <h3 className="font-medium mb-3">Tipsters Cadastrados</h3>
+          <h3 className="font-medium mb-3 text-card-foreground">Tipsters Cadastrados</h3>
           {tipsters.length === 0 ? (
             <p className="text-muted-foreground">Nenhum tipster cadastrado</p>
           ) : (

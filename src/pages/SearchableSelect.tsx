@@ -24,23 +24,23 @@ const customStyles: StylesConfig<OptionType, false> = {
     ...provided,
     minHeight: "2.5rem", // 40px
     border: "1px solid",
-    borderColor: state.isFocused ? "#6366F1" : "#d1d5db", // azul se focado, cinza (#d1d5db) se não
-    boxShadow: state.isFocused ? "0 0 0 1px #6366F1" : "none",
+    borderColor: state.isFocused ? "hsl(var(--primary))" : "hsl(var(--border))",
+    boxShadow: state.isFocused ? "0 0 0 1px hsl(var(--primary))" : "none",
     borderRadius: "0.375rem", // rounded-md
     fontSize: "0.875rem", // text-sm
-    backgroundColor: "white",
-    color: "#374151", // gray-700
+    backgroundColor: "hsl(var(--background))",
+    color: "hsl(var(--foreground))",
     "&:hover": {
-      borderColor: state.isFocused ? "#6366F1" : "#d1d5db", // mantém cinza se não focado
+      borderColor: state.isFocused ? "hsl(var(--primary))" : "hsl(var(--border))",
     },
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "#374151",
+    color: "hsl(var(--foreground))",
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: "#6b7280", // gray-500
+    color: "hsl(var(--muted-foreground))",
   }),
   menu: (provided) => ({
     ...provided,
@@ -48,11 +48,13 @@ const customStyles: StylesConfig<OptionType, false> = {
     marginTop: "0.25rem",
     boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
     zIndex: 9999,
+    backgroundColor: "hsl(var(--popover))",
+    border: "1px solid hsl(var(--border))",
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isFocused ? "#e5e7eb" : "white",
-    color: state.isFocused ? "#111827" : "#374151",
+    backgroundColor: state.isFocused ? "hsl(var(--accent))" : "hsl(var(--popover))",
+    color: state.isFocused ? "hsl(var(--accent-foreground))" : "hsl(var(--popover-foreground))",
     padding: "0.5rem 1rem",
     fontSize: "0.75rem", // diminui a fonte das opções
     cursor: "pointer",

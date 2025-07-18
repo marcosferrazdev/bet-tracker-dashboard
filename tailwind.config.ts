@@ -67,7 +67,8 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				success: {
-					DEFAULT: '#10b981',
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))',
 					50: '#f0fdf4',
 					100: '#dcfce7',
 					200: '#bbf7d0',
@@ -81,7 +82,8 @@ export default {
 					950: '#052e16',
 				},
 				danger: {
-					DEFAULT: '#ef4444',
+					DEFAULT: 'hsl(var(--danger))',
+					foreground: 'hsl(var(--danger-foreground))',
 					50: '#fef2f2',
 					100: '#fee2e2',
 					200: '#fecaca',
@@ -95,7 +97,8 @@ export default {
 					950: '#450a0a',
 				},
 				neutral: {
-					DEFAULT: '#6b7280',
+					DEFAULT: 'hsl(var(--neutral))',
+					foreground: 'hsl(var(--neutral-foreground))',
 					50: '#f9fafb',
 					100: '#f3f4f6',
 					200: '#e5e7eb',

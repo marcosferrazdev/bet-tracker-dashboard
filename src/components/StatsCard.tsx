@@ -14,11 +14,11 @@ interface StatsCardProps {
 
 const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, className = '' }) => {
   return (
-    <div className={`bg-white rounded-xl p-6 shadow-sm border border-neutral-100 animate-slide-up card-hover ${className}`}>
+    <div className={`bg-card rounded-xl p-6 shadow-sm border border-border animate-slide-up card-hover ${className}`}>
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-sm font-medium text-neutral-500">{title}</h3>
-          <p className="text-2xl font-semibold mt-1">{value}</p>
+                      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+            <p className="text-2xl font-semibold mt-1 text-card-foreground">{value}</p>
           
           {trend && (
             <div className="flex items-center mt-1">

@@ -158,7 +158,7 @@ const TeamManager: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
 
-          <h3 className="font-medium my-3">Times Cadastrados</h3>
+                      <h3 className="font-medium my-3 text-card-foreground">Times Cadastrados</h3>
           {filteredTeams.length === 0 ? (
             <p className="text-muted-foreground">Nenhum time encontrado</p>
           ) : (

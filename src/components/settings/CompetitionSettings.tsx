@@ -100,7 +100,7 @@ export const CompetitionSettings: React.FC = () => {
       <div className="mt-6 space-y-4">
         <div className="flex items-center space-x-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar competições..."
               value={searchTerm}
@@ -114,7 +114,7 @@ export const CompetitionSettings: React.FC = () => {
           {filteredCompetitions.map((competition) => (
             <div
               key={competition.id}
-              className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+              className="flex items-center justify-between p-3 bg-muted rounded-lg"
             >
               {editingId === competition.id ? (
                 <div className="flex items-center gap-2 flex-1">
@@ -145,7 +145,7 @@ export const CompetitionSettings: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <span className="text-sm">{competition.name}</span>
+                  <span className="text-sm text-card-foreground">{competition.name}</span>
                   <div className="flex items-center gap-1">
                     <Button
                       size="icon"
@@ -159,7 +159,7 @@ export const CompetitionSettings: React.FC = () => {
                       size="icon"
                       variant="ghost"
                       onClick={() => setDeleteId(competition.id)}
-                      className="h-8 w-8 text-red-600 hover:text-red-700"
+                      className="h-8 w-8 text-danger hover:text-danger"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -169,7 +169,7 @@ export const CompetitionSettings: React.FC = () => {
             </div>
           ))}
           {filteredCompetitions.length === 0 && (
-            <div className="p-3 text-center text-sm text-neutral-500">
+            <div className="p-3 text-center text-sm text-muted-foreground">
               Nenhuma competição encontrada
             </div>
           )}
@@ -191,7 +191,7 @@ export const CompetitionSettings: React.FC = () => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleDelete(deleteId!)}
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="bg-danger hover:bg-danger/90 text-danger-foreground"
             >
               Excluir
             </AlertDialogAction>

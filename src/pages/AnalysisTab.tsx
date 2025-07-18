@@ -354,7 +354,7 @@ const AnalysisTab: React.FC = () => {
   const getProfitColorClass = (profit: number) => {
     if (profit > 0) return "text-green-600";
     if (profit < 0) return "text-red-600";
-    return "text-neutral-600";
+            return "text-muted-foreground";
   };
 
   const handleExportData = () => {
@@ -467,27 +467,27 @@ const AnalysisTab: React.FC = () => {
         {/* Gráfico de Pizza - Distribuição de Apostas */}
         <Card className="p-6 overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
-            <PieChart className="h-5 w-5 text-neutral-500" />
-            <h2 className="text-lg font-medium">Distribuição de Apostas</h2>
+            <PieChart className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-medium text-card-foreground">Distribuição de Apostas</h2>
           </div>
           
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium mb-2">Por Resultado</h3>
+              <h3 className="text-sm font-medium mb-2 text-card-foreground">Por Resultado</h3>
               <div className="h-48">
                 <Pie data={betDistributionData} options={{ plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } } } }} />
               </div>
             </div>
             
             <div>
-              <h3 className="text-sm font-medium mb-2">Por Mercado (Top 5)</h3>
+              <h3 className="text-sm font-medium mb-2 text-card-foreground">Por Mercado (Top 5)</h3>
               <div className="h-48">
                 <Pie data={marketDistributionData} options={{ plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } } } }} />
               </div>
             </div>
             
             <div>
-              <h3 className="text-sm font-medium mb-2">Por Casa de Apostas (Top 5)</h3>
+              <h3 className="text-sm font-medium mb-2 text-card-foreground">Por Casa de Apostas (Top 5)</h3>
               <div className="h-48">
                 <Pie data={bookmakerDistributionData} options={{ plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } } } }} />
               </div>
@@ -497,27 +497,27 @@ const AnalysisTab: React.FC = () => {
 
         {/* Métricas Adicionais */}
         <Card className="p-6 col-span-2 mt-6 lg:mt-0">
-          <h2 className="text-lg font-medium mb-4">Métricas do Período</h2>
+          <h2 className="text-lg font-medium mb-4 text-card-foreground">Métricas do Período</h2>
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="p-4 bg-neutral-50 rounded-lg">
-              <p className="text-sm text-neutral-500">Volume Apostado</p>
-              <p className="text-xl font-semibold mt-1">{formatCurrency(filteredData.totalStake)}</p>
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">Volume Apostado</p>
+              <p className="text-xl font-semibold mt-1 text-card-foreground">{formatCurrency(filteredData.totalStake)}</p>
             </div>
-            <div className="p-4 bg-neutral-50 rounded-lg">
-              <p className="text-sm text-neutral-500">Média Diária</p>
-              <p className="text-xl font-semibold mt-1">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">Média Diária</p>
+              <p className="text-xl font-semibold mt-1 text-card-foreground">
                 {formatCurrency(filteredData.totalProfit / parseInt(selectedPeriod))}
               </p>
             </div>
-            <div className="p-4 bg-neutral-50 rounded-lg">
-              <p className="text-sm text-neutral-500">Maior Lucro</p>
-              <p className="text-xl font-semibold mt-1 text-success-600">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">Maior Lucro</p>
+              <p className="text-xl font-semibold mt-1 text-success">
                 {formatCurrency(Math.max(...Object.values(filteredData.dailyProfits)))}
               </p>
             </div>
-            <div className="p-4 bg-neutral-50 rounded-lg">
-              <p className="text-sm text-neutral-500">Maior Prejuízo</p>
-              <p className="text-xl font-semibold mt-1 text-danger-600">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">Maior Prejuízo</p>
+              <p className="text-xl font-semibold mt-1 text-danger">
                 {formatCurrency(Math.min(...Object.values(filteredData.dailyProfits)))}
               </p>
             </div>
@@ -526,9 +526,9 @@ const AnalysisTab: React.FC = () => {
           <AiInsightsCard />
         </Card>
       </div>      {/* Gráfico de Desempenho Diário */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-100 mb-8">
-        <h2 className="text-lg font-medium mb-4 flex items-center">
-          <BarChart2 className="h-5 w-5 mr-2 text-neutral-500" />
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">
+        <h2 className="text-lg font-medium mb-4 flex items-center text-card-foreground">
+          <BarChart2 className="h-5 w-5 mr-2 text-muted-foreground" />
           Desempenho Diário
         </h2>
         <div className="h-80">

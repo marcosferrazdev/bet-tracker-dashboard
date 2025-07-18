@@ -317,9 +317,9 @@ const SurebetCalculator: React.FC = () => {
               {bet.stake > 0 && (
                 <div className="space-y-2 p-4 bg-muted rounded-lg mt-4">
                   <Label>Stake Recomendada</Label>
-                  <p className="text-lg font-semibold">R$ {bet.stake.toFixed(2)}</p>
+                  <p className="text-lg font-semibold text-card-foreground">R$ {bet.stake.toFixed(2)}</p>
                   <Label>Retorno Potencial</Label>
-                  <p className="text-lg font-semibold text-green-600">
+                  <p className="text-lg font-semibold text-success">
                     R$ {(bet.stake * bet.odds * (1 - bet.commission / 100)).toFixed(2)}
                   </p>
                 </div>

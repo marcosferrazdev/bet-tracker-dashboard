@@ -381,7 +381,7 @@ const BetList: React.FC = () => {
             <span className="font-medium">
               {game.homeTeam} x {game.awayTeam}
             </span>
-            <span className="text-sm text-neutral-500">
+            <span className="text-sm text-muted-foreground">
               {"competition" in game
                 ? game.competition
                 : "Competição não especificada"}
@@ -393,9 +393,9 @@ const BetList: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Cabeçalho fixo */}
-      <div className="sticky top-0 z-10 bg-neutral-50">
+      <div className="sticky top-0 z-10 bg-background">
         <PageHeader
           title="Apostas"
           subtitle="Gerencie suas apostas"
@@ -406,7 +406,7 @@ const BetList: React.FC = () => {
         />
         <div className="flex items-center justify-between px-4 pb-4 border-b gap-4">
           <div className="relative w-full sm:w-60 md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               placeholder="Pesquisar apostas..."
               className="pl-10 pr-10 w-full"
@@ -417,7 +417,7 @@ const BetList: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                 onClick={() => setSearchTerm("")}
               >
                 <span className="text-xl leading-none">×</span>
@@ -435,7 +435,7 @@ const BetList: React.FC = () => {
                 <Filter className="h-4 w-4" />
               </Button>
               {(selectedResults.length < 4 || (startDate && endDate)) && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full" />
               )}
             </div>
             <Button
@@ -453,7 +453,7 @@ const BetList: React.FC = () => {
             <Link to="/nova-aposta" state={{ viewMode }}>
               <Button
                 size="icon"
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 <PlusCircle className="h-4 w-4" />
               </Button>
@@ -465,15 +465,15 @@ const BetList: React.FC = () => {
       {/* Conteúdo principal */}
       <div className="flex-1 px-4 py-4">
         {sortedBets.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-neutral-100">
-            <h3 className="text-lg font-medium text-neutral-800 mb-2">
+          <div className="bg-card rounded-xl p-12 text-center shadow-sm border border-border">
+            <h3 className="text-lg font-medium text-card-foreground mb-2">
               Nenhuma aposta encontrada
             </h3>
-            <p className="text-neutral-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Comece adicionando sua primeira aposta ou ajuste os filtros.
             </p>
             <Link to="/nova-aposta" state={{ viewMode}}>
-              <Button className="bg-blue-500 hover:bg-blue-600">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Adicionar Aposta
               </Button>
@@ -482,7 +482,7 @@ const BetList: React.FC = () => {
         ) : (
           <>
             {viewMode === "table" && (
-              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 flex flex-col">
+              <div className="bg-card rounded-xl shadow-sm border border-border flex flex-col">
                 <div className="md:max-h-[calc(100vh-250px)] overflow-auto flex-1">
                   <TableComponent>
                     <TableHeader>
@@ -508,7 +508,7 @@ const BetList: React.FC = () => {
                             animate={{ 
                               opacity: 1, 
                               y: 0,
-                              backgroundColor: lastDuplicatedBetId === bet.id ? "#f0f9ff" : "white",
+                              backgroundColor: lastDuplicatedBetId === bet.id ? "hsl(var(--accent))" : "hsl(var(--card))",
                               transition: {
                                 backgroundColor: { duration: 0.3 }
                               }
@@ -551,7 +551,7 @@ const BetList: React.FC = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="w-full justify-start text-danger-500"
+                                    className="w-full justify-start text-danger"
                                     onClick={() => handleDeleteClick(bet.id)}
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" /> Excluir
@@ -566,7 +566,7 @@ const BetList: React.FC = () => {
                             <TableCell>
                               <div className="flex flex-col">
                                 <span>{bet.entry}</span>
-                                <span className="text-xs text-neutral-500">
+                                <span className="text-xs text-muted-foreground">
                                   {bet.market}
                                 </span>
                               </div>
@@ -633,7 +633,7 @@ const BetList: React.FC = () => {
                   </TableComponent>
                 </div>
                 {totalPages > 1 && (
-                  <div className="border-t p-4 flex justify-center items-center bg-white">
+                  <div className="border-t p-4 flex justify-center items-center bg-card">
                     <Button
                       variant="outline"
                       size="sm"
@@ -659,7 +659,7 @@ const BetList: React.FC = () => {
             )}
 
             {viewMode === "card" && (
-              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 mb-6">
+              <div className="bg-card rounded-xl shadow-sm border border-border mb-6">
                 <div className="p-4 space-y-4 md:max-h-[calc(100vh-250px)] overflow-auto">
                   <AnimatePresence mode="wait">
                     {currentItems.map((bet) => (
@@ -670,20 +670,20 @@ const BetList: React.FC = () => {
                         animate={{ 
                           opacity: 1, 
                           y: 0,
-                          backgroundColor: lastDuplicatedBetId === bet.id ? "#f0f9ff" : "white",
+                          backgroundColor: lastDuplicatedBetId === bet.id ? "hsl(var(--accent))" : "hsl(var(--card))",
                           transition: {
                             backgroundColor: { duration: 0.3 }
                           }
                         }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4"
+                        className="bg-card rounded-xl shadow-sm border border-border p-4"
                       >
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="font-medium">
                               {formatDate(bet.date)}
                             </div>
-                            <div className="text-sm text-neutral-500">
+                            <div className="text-sm text-muted-foreground">
                               {bet.bookmaker}
                             </div>
                           </div>
@@ -722,7 +722,7 @@ const BetList: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="w-full justify-start text-danger-500 text-sm py-2"
+                                className="w-full justify-start text-danger text-sm py-2"
                                 onClick={() => handleDeleteClick(bet.id)}
                               >
                                 <Trash2 className="h-4 w-4 mr-2" /> Excluir
@@ -733,7 +733,7 @@ const BetList: React.FC = () => {
                         <div className="mt-2">{renderGameDetails(bet)}</div>
                         <div className="mt-2">
                           <span className="font-medium">{bet.entry}</span>
-                          <span className="text-xs text-neutral-500 ml-2">
+                          <span className="text-xs text-muted-foreground ml-2">
                             {bet.market}
                           </span>
                         </div>
@@ -810,7 +810,7 @@ const BetList: React.FC = () => {
                   </AnimatePresence>
                 </div>
                 {totalPages > 1 && (
-                  <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-neutral-50">
+                  <div className="md:sticky md:bottom-0 md:left-0 md:right-0 md:z-10 border-t p-4 flex justify-center items-center bg-transparent md:bg-background">
                     <Button
                       variant="outline"
                       size="sm"
@@ -872,7 +872,7 @@ const BetList: React.FC = () => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-danger-500 hover:bg-danger-600 text-white"
+              className="bg-danger hover:bg-danger/90 text-danger-foreground"
             >
               Excluir
             </AlertDialogAction>
