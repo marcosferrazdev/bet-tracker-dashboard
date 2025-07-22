@@ -30,15 +30,18 @@ import {
     ChevronRight,
     CircleDollarSign,
     LogOut,
+    Moon,
     PieChart,
     PlusCircle,
-    Settings
+    Settings,
+    Sun
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./ui/mode-toggle";
+import { useTheme } from "./ui/theme-provider";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -48,6 +51,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [collapsed, setCollapsed] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -119,6 +123,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     
     // Retorna as iniciais do primeiro e último nome
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  // Função para obter nome do tema atual
+  const getThemeName = () => {
+    switch (theme) {
+      case "light": return "Claro";
+      case "dark": return "Escuro";
+      case "system": return "Sistema";
+      default: return "Sistema";
+    }
   };
 
   return (
@@ -288,7 +302,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <Link 
                       to={link.path}
                       className={`flex items-center space-x-2 ${
-                        location.pathname === link.path ? "text-blue-600" : ""
+                        location.pathname === link.path ? "text-primary" : ""
                       }`}
                     >
                       {React.cloneElement(link.icon, {
@@ -299,7 +313,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setLogoutModalOpen(true)} className="text-danger-500">
+                <DropdownMenuItem onClick={() => setTheme("light")} className={theme === "light" ? "bg-accent" : ""}>
+                  <Sun className="h-4 w-4 mr-2" />
+                  <span>Claro</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")} className={theme === "dark" ? "bg-accent" : ""}>
+                  <Moon className="h-4 w-4 mr-2" />
+                  <span>Escuro</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")} className={theme === "system" ? "bg-accent" : ""}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  <span>Sistema</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLogoutModalOpen(true)} className="text-danger">
                   <LogOut className="h-4 w-4 mr-2" />
                   <span>Sair</span>
                 </DropdownMenuItem>
