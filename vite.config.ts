@@ -12,10 +12,6 @@ dotenv.config();
 const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-// Debug das variáveis
-console.log('🔑 STRIPE_SECRET_KEY carregada:', stripeSecretKey ? 'SIM' : 'NÃO');
-console.log('🔑 OPENAI_API_KEY carregada:', apiKey ? 'SIM' : 'NÃO');
-
 // Plugin personalizado para adicionar a API do ChatGPT e Stripe
 function apiPlugin() {
   return {
