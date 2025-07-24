@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
 import { BetProvider } from "@/context/BetContext";
 import { CompetitionProvider } from "@/context/CompetitionContext";
+import { SubscriptionProvider } from "@/context/SubscriptionContext";
 import BetForm from "@/pages/BetForm";
 import BetList from "@/pages/BetList";
 import Dashboard from "@/pages/Dashboard";
@@ -31,6 +32,7 @@ const App = () => (
         <BetProvider>
           <AuthProvider>
             <CompetitionProvider>
+              <SubscriptionProvider>
               <Toaster />
               <Sonner />
               <Router>
@@ -67,6 +69,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Router>
+              </SubscriptionProvider>
           </CompetitionProvider>
         </AuthProvider>
       </BetProvider>
