@@ -27,6 +27,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/react-datepicker": "^6.2.0",
+    "@types/stripe": "^8.0.416",
     "chart.js": "^4.4.8",
     "chartjs-plugin-zoom": "^2.2.0",
     "class-variance-authority": "^0.7.0",

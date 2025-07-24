@@ -1,8 +1,20 @@
 {
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/create-checkout-session.ts": {
+      "maxDuration": 30
+    },
+    "api/webhook/stripe.ts": {
+      "maxDuration": 30
+    }
+  }
 }
