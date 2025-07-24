@@ -16,5 +16,11 @@
     "api/webhook/stripe.ts": {
       "maxDuration": 30
     }
+  },
+  "env": {
+    "STRIPE_SECRET_KEY": "@stripe-secret-key",
+    "STRIPE_WEBHOOK_SECRET": "@stripe-webhook-secret",
+    "VITE_SUPABASE_URL": "@supabase-url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key"
   }
 }

@@ -24,6 +24,10 @@ dist-ssr
 .env.development.local
 .env.production.local
 
+# Configurações com chaves secretas
+*CONFIG.md
+*STRIPE*.md
+
 # Pastas e arquivos de IDE/Editor
 .vscode/*
 !.vscode/extensions.json

@@ -1,11 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import Stripe from 'stripe';
+const Stripe = require('stripe');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-06-30.basil',
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -19,11 +18,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{
-        price: priceId || 'price_1RoRiwBicdRm3CCSd04BDS7Y',
+        price: priceId || 'price_1RoRiwBicdRm3CCSd04BDS7Y', // Price ID de produção
         quantity: 1,
       }],
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/configuracoes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/configuracoes`,
+      success_url: 'https://www.betracker.com.br/configuracoes?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://www.betracker.com.br/configuracoes',
       metadata: {
         user_id: userId || '',
       },
@@ -34,10 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       url: session.url,
       sessionId: session.id
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ Erro ao criar checkout session:', error);
     res.status(500).json({ 
       error: `Erro ao criar sessão de checkout: ${error.message}`
     });
   }
-} 
+}; 
