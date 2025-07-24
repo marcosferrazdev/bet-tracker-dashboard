@@ -31,49 +31,49 @@ const App = () => (
       <TooltipProvider>
         <BetProvider>
           <AuthProvider>
-            <CompetitionProvider>
-              <SubscriptionProvider>
-              <Toaster />
-              <Sonner />
-              <Router>
-              <Routes>
-                {/* Auth routes */}
-                <Route path="/" element={
-                  <AuthLayout>
-                    <Outlet />
-                  </AuthLayout>
-                }>
-                  <Route path="login" element={<Login />} />
-                  <Route path="register" element={<Register />} />
-                  <Route path="recuperar-senha" element={<ResetPassword />} />
-                  <Route path="nova-senha" element={<NewPassword />} />
-                </Route>
-                
-                {/* Protected routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route element={
-                    <Layout>
+            <SubscriptionProvider>
+              <CompetitionProvider>
+                <Toaster />
+                <Sonner />
+                <Router>
+                <Routes>
+                  {/* Auth routes */}
+                  <Route path="/" element={
+                    <AuthLayout>
                       <Outlet />
-                    </Layout>
+                    </AuthLayout>
                   }>
-                    <Route index element={<Dashboard />} />
-                    <Route path="apostas" element={<BetList />} />
-                    <Route path="nova-aposta" element={<BetForm />} />
-                    <Route path="editar-aposta/:id" element={<BetForm />} />
-                    <Route path="analise" element={<AnalysisTab />} />
-                    <Route path="calculadora-surebet" element={<SurebetCalculator />} />
-                    <Route path="configuracoes" element={<Settings />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="register" element={<Register />} />
+                    <Route path="recuperar-senha" element={<ResetPassword />} />
+                    <Route path="nova-senha" element={<NewPassword />} />
                   </Route>
-                </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Router>
-              </SubscriptionProvider>
-          </CompetitionProvider>
-        </AuthProvider>
-      </BetProvider>
-    </TooltipProvider>
+                  
+                  {/* Protected routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={
+                      <Layout>
+                        <Outlet />
+                      </Layout>
+                    }>
+                      <Route index element={<Dashboard />} />
+                      <Route path="apostas" element={<BetList />} />
+                      <Route path="nova-aposta" element={<BetForm />} />
+                      <Route path="editar-aposta/:id" element={<BetForm />} />
+                      <Route path="analise" element={<AnalysisTab />} />
+                      <Route path="calculadora-surebet" element={<SurebetCalculator />} />
+                      <Route path="configuracoes" element={<Settings />} />
+                    </Route>
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Router>
+              </CompetitionProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </BetProvider>
+      </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

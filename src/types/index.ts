@@ -87,18 +87,17 @@ export interface SelectOption {
   label: string;
 }
 
-// Tipos para sistema de assinatura
-export type SubscriptionStatus = 'active' | 'canceled' | 'inactive' | 'past_due' | 'unpaid';
+export type SubscriptionStatus = 'active' | 'inactive' | 'canceled' | 'past_due' | 'trialing';
 export type PlanType = 'free' | 'premium';
 
 export interface UserPlan {
   id: string;
   user_id: string;
   plan_type: PlanType;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
   subscription_status: SubscriptionStatus;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
-  current_period_end: string | null;
+  current_period_end?: string;
   created_at: string;
   updated_at: string;
 }
@@ -107,28 +106,31 @@ export interface Subscription {
   id: string;
   user_id: string;
   stripe_subscription_id: string;
+  stripe_customer_id: string;
   status: SubscriptionStatus;
   current_period_start: string;
   current_period_end: string;
+  plan_id: string;
+  cancel_at_period_end: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export interface PlanLimits {
-  maxBets: number | null;
-  hasAI: boolean;
-  hasUnlimitedBets: boolean;
+  maxBets: number | null; // null = unlimited
+  hasAIAnalysis: boolean;
+  hasCalculator: boolean;
 }
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free: {
     maxBets: 60,
-    hasAI: false,
-    hasUnlimitedBets: false,
+    hasAIAnalysis: false,
+    hasCalculator: true,
   },
   premium: {
-    maxBets: null, // null = ilimitado
-    hasAI: true,
-    hasUnlimitedBets: true,
+    maxBets: null, // unlimited
+    hasAIAnalysis: true,
+    hasCalculator: true,
   },
 };

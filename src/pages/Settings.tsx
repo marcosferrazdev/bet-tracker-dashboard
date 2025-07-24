@@ -1,5 +1,6 @@
 import PageHeader from '@/components/PageHeader';
 import MarketManager from '@/components/settings/MarketManager';
+import SubscriptionManager from '@/components/settings/SubscriptionManager';
 import TipsterManager from '@/components/settings/TipsterManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -120,6 +121,7 @@ const Settings: React.FC = () => {
       <Tabs defaultValue="general" className="mb-8">
         <TabsList className="mb-6 flex flex-wrap gap-2">
           <TabsTrigger value="general">Geral</TabsTrigger>
+          <TabsTrigger value="subscription">Assinatura</TabsTrigger>
           <TabsTrigger value="tipsters">Tipsters</TabsTrigger>
           <TabsTrigger value="markets">Mercados</TabsTrigger>
           <TabsTrigger value="teams">Times</TabsTrigger>
@@ -161,6 +163,10 @@ const Settings: React.FC = () => {
               <Button onClick={saveUnitValue}>Salvar</Button>
             </CardFooter>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="subscription">
+          <SubscriptionManager />
         </TabsContent>
         
         <TabsContent value="tipsters">

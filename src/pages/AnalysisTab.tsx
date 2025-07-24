@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useBets } from "@/context/BetContext";
+import { useSubscription } from "@/context/SubscriptionContext";
 import { formatCurrency } from "@/lib/bet-utils";
 import { Bet } from "@/types";
 import {
@@ -44,7 +45,8 @@ import {
   PieChart,
   Download,
   BarChart2,
-  CircleDollarSign
+  CircleDollarSign,
+  BrainCircuit
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { Bar, Pie } from "react-chartjs-2";
@@ -88,6 +90,7 @@ interface SortConfig {
 
 const AnalysisTab: React.FC = () => {
   const { bets, dailyStats } = useBets();
+  const { isPremium, upgradeRequired, planLimits } = useSubscription();
   const [groupBy, setGroupBy] = useState<string>("homeTeam");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: "key", direction: "asc" });
   const [selectedPeriod, setSelectedPeriod] = useState("30");
@@ -523,7 +526,28 @@ const AnalysisTab: React.FC = () => {
             </div>
           </div>
           
+          {planLimits.hasAIAnalysis ? (
           <AiInsightsCard />
+          ) : (
+            <div className="border border-border rounded-lg p-6 bg-muted/50">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <BrainCircuit className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Consultor de IA Premium</h3>
+                  <p className="text-sm text-muted-foreground">Análise avançada com inteligência artificial</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Obtenha insights personalizados sobre suas apostas, análise de padrões, 
+                identificação de estratégias mais rentáveis e sugestões para melhorar seus resultados.
+              </p>
+              <Button onClick={upgradeRequired} className="w-full">
+                Atualizar para Premium
+              </Button>
+            </div>
+          )}
         </Card>
       </div>      {/* Gráfico de Desempenho Diário */}
       <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">

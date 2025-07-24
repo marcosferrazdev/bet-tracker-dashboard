@@ -28,6 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useBets } from "@/context/BetContext";
+import { useSubscription } from "@/context/SubscriptionContext";
 import {
   formatCurrency,
   formatDate,
@@ -64,6 +65,7 @@ const normalizeText = (text: string) => {
 
 const BetList: React.FC = () => {
   const { bets, deleteBet, updateBet, addBet, unitValue } = useBets();
+  const { canCreateBet, upgradeRequired, planLimits, isPremium } = useSubscription();
   const location = useLocation();
   const initialViewMode = location.state?.viewMode || "table";
   const [viewMode, setViewMode] = useState<"table" | "card">(initialViewMode);
@@ -398,7 +400,11 @@ const BetList: React.FC = () => {
       <div className="sticky top-0 z-10 bg-background">
         <PageHeader
           title="Apostas"
-          subtitle="Gerencie suas apostas"
+          subtitle={
+            !isPremium && planLimits.maxBets !== null
+              ? `Gerencie suas apostas (${bets.length}/${planLimits.maxBets} utilizadas)`
+              : "Gerencie suas apostas"
+          }
           breadcrumbs={[
             { label: "Dashboard", href: "/" },
             { label: "Apostas" },
@@ -450,6 +456,7 @@ const BetList: React.FC = () => {
                 <Table className="h-4 w-4" />
               )}
             </Button>
+            {canCreateBet(bets.length) ? (
             <Link to="/nova-aposta" state={{ viewMode }}>
               <Button
                 size="icon"
@@ -458,6 +465,15 @@ const BetList: React.FC = () => {
                 <PlusCircle className="h-4 w-4" />
               </Button>
             </Link>
+            ) : (
+              <Button
+                size="icon"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={upgradeRequired}
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -472,12 +488,22 @@ const BetList: React.FC = () => {
             <p className="text-muted-foreground mb-6">
               Comece adicionando sua primeira aposta ou ajuste os filtros.
             </p>
+            {canCreateBet(bets.length) ? (
             <Link to="/nova-aposta" state={{ viewMode}}>
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Adicionar Aposta
               </Button>
             </Link>
+            ) : (
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={upgradeRequired}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Adicionar Aposta
+              </Button>
+            )}
           </div>
         ) : (
           <>
