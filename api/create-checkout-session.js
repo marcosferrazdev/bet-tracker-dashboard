@@ -1,6 +1,6 @@
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   // Verificar método HTTP
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
