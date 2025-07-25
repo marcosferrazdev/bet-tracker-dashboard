@@ -69,7 +69,7 @@ export function LoginForm({ onLogin, onGoogleLogin, onRegister }: LoginFormProps
       <div className="absolute top-4 right-4">
         <ModeToggle />
       </div>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md mt-16">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
             {isRegistering ? 'Criar conta' : 'Bem-vindo de volta'}
