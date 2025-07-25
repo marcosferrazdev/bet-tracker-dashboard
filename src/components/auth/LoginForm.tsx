@@ -4,6 +4,7 @@ import { SpinnerIcon, GoogleIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { ModeToggle } from '@/components/ui/mode-toggle';
 import { useState } from 'react';
 
 interface LoginFormProps {
@@ -64,7 +65,10 @@ export function LoginForm({ onLogin, onGoogleLogin, onRegister }: LoginFormProps
   };
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+    <div className="container flex h-screen w-screen flex-col items-center justify-center bg-background">
+      <div className="absolute top-4 right-4">
+        <ModeToggle />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
