@@ -834,7 +834,7 @@ const BetList: React.FC = () => {
                           </div>
 
                           {/* CENTRO: Partida + Entrada */}
-                          <div className="flex flex-col items-start justify-center flex-1 my-2">
+                          <div className="flex flex-col items-start justify-center flex-1 my-2 pr-8">
                             <div className={`flex items-center gap-2 text-base font-semibold ${
                               isDark ? "text-card-foreground" : "text-[#171717]"
                             }`}>
