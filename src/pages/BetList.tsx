@@ -835,7 +835,7 @@ const BetList: React.FC = () => {
 
                           {/* CENTRO: Partida + Entrada */}
                           <div className="flex flex-col items-start justify-center flex-1 my-2 pr-8">
-                            <div className={`flex items-center gap-2 text-base font-semibold ${
+                            <div className={`flex items-center gap-2 text-sm font-semibold ${
                               isDark ? "text-card-foreground" : "text-[#171717]"
                             }`}>
                               {/* Substitua pelo ícone centralizado depois */}
