@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Icons } from '@/components/ui/icons';
+import { SpinnerIcon, GoogleIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
@@ -127,7 +127,7 @@ export function LoginForm({ onLogin, onGoogleLogin, onRegister }: LoginFormProps
             </div>
             <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               {isRegistering ? 'Criar conta' : 'Entrar'}
             </Button>
@@ -152,9 +152,9 @@ export function LoginForm({ onLogin, onGoogleLogin, onRegister }: LoginFormProps
             className="w-full"
           >
             {isLoading ? (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Icons.google className="mr-2 h-4 w-4" />
+              <GoogleIcon className="mr-2 h-4 w-4" />
             )}
             Google
           </Button>
