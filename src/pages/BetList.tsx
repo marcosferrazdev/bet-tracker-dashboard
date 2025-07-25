@@ -790,7 +790,7 @@ const BetList: React.FC = () => {
                           </Popover>
 
                           {/* TOPO: Tags */}
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <div className="flex flex-wrap items-center gap-2 mb-2 pr-16">
                             {/* Data + Hora */}
                             <span className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
                               isDark 
@@ -798,10 +798,15 @@ const BetList: React.FC = () => {
                                 : "bg-[#CCC7C7] text-[#171717]"
                             }`}>
                               <CalendarIcon className="w-2.5 h-2.5" /> {formatDateOnly(bet.date)}
+                              {formatTimeOnly(bet.date) !== "--:--" && (
+                                <>
                               <div className="mx-0.5"></div>
                               <ClockIcon className="w-2.5 h-2.5" /> {formatTimeOnly(bet.date)}
+                              </>
+                              )}
                             </span>
                             {/* Competição */}
+                            {bet.competition && bet.competition.trim() !== "" && (
                             <span className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
                               isDark 
                                 ? "bg-[#CCC7C7] text-[#171717]" 
@@ -809,6 +814,7 @@ const BetList: React.FC = () => {
                             }`}>
                               <CupIcon className="w-2.5 h-2.5" /> {bet.competition}
                             </span>
+                            )}
                             {/* Casa de aposta */}
                             <span className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
                               isDark 
@@ -844,7 +850,7 @@ const BetList: React.FC = () => {
                           </div>
 
                           {/* BASE: Tags de Odd, Valor, Lucro */}
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <div className="flex flex-wrap items-center gap-2 mt-2 pr-16">
                             <span className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
                               isDark 
                                 ? "bg-[#CCC7C7] text-[#171717]" 
