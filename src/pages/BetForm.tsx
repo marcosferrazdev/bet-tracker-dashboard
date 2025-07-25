@@ -77,7 +77,7 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const initialViewMode = location.state?.viewMode || "table";
+  const initialViewMode = location.state?.viewMode || "card";
 
   useEffect(() => {
     if (!isEditing && tipsters.length === 1 && !tipster) {
