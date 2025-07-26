@@ -10,6 +10,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DatePickerProps {
   date: Date;
@@ -19,6 +20,7 @@ interface DatePickerProps {
 const DatePicker: React.FC<DatePickerProps> = ({ date, onDateChange }) => {
   // Estado controlado para abrir/fechar o popover
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -28,22 +30,33 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, onDateChange }) => {
     }
   };
 
+  const formatDate = (date: Date) => {
+    if (isMobile) {
+      // Formato mais compacto para mobile
+      return format(date, "dd/MM/yyyy", { locale: ptBR });
+    }
+    // Formato completo para desktop
+    return format(date, "PPP", { locale: ptBR });
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal min-h-[40px] px-3 py-2",
             !date && "text-muted-foreground"
           )}
           onClick={() => setOpen(true)}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP", { locale: ptBR }) : "Selecione uma data"}
+          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="truncate">
+            {date ? formatDate(date) : "Selecione uma data"}
+          </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align="start" side="bottom" sideOffset={4}>
         <Calendar
           mode="single"
           selected={date}

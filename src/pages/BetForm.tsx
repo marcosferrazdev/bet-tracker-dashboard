@@ -269,16 +269,16 @@ const BetForm: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-1">
                 <Label htmlFor="date">Data</Label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
+                <div className="flex flex-col gap-2">
+                  <div className="relative">
                     <DatePicker
                       date={date}
                       onDateChange={(newDate) => setDate(newDate)}
                     />
                   </div>
-                  <div className="relative flex-1">
+                  <div className="relative">
                     <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="time"
@@ -304,10 +304,10 @@ const BetForm: React.FC = () => {
                   </div>
                 </div>
                 {errors.time && (
-                                  <p className="text-danger text-sm flex items-center mt-1">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  {errors.time}
-                </p>
+                  <p className="text-danger text-sm flex items-center mt-1">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.time}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
@@ -326,24 +326,6 @@ const BetForm: React.FC = () => {
                   </p>
                 )}
               </div>
-              {type !== "Múltipla" && type !== "Bingo Múltipla" && (
-                <div className="space-y-2">
-                  <Label htmlFor="competition">Competição</Label>
-                  <SearchableSelect
-                    value={competition}
-                    onValueChange={setCompetition}
-                    options={competitions}
-                    placeholder="Selecione a competição"
-                    error={errors.competition}
-                  />
-                  {errors.competition && (
-                    <p className="text-danger text-sm flex items-center mt-1">
-                      <AlertCircle className="h-3 w-3 mr-1" />
-                      {errors.competition}
-                    </p>
-                  )}
-                </div>
-              )}
               <div className="space-y-2">
                 <Label htmlFor="type">Tipo</Label>
                 <Select
@@ -363,93 +345,113 @@ const BetForm: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
+              {type !== "Múltipla" && type !== "Bingo Múltipla" && (
+                <div className="space-y-2">
+                  <Label htmlFor="competition">Competição</Label>
+                  <SearchableSelect
+                    value={competition}
+                    onValueChange={setCompetition}
+                    options={competitions}
+                    placeholder="Selecione a competição"
+                    error={errors.competition}
+                  />
+                  {errors.competition && (
+                    <p className="text-danger text-sm flex items-center mt-1">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {errors.competition}
+                    </p>
+                  )}
+                </div>
+              )}
               {type === "Múltipla" ? (
                 <div className="col-span-1 md:col-span-3 space-y-4">
                   {games.map((game, index) => (
                     <div
                       key={index}
-                      className="space-y-2 border p-4 rounded-md"
+                      className="space-y-4 border p-4 rounded-md"
                     >
                       <h4 className="font-medium text-card-foreground">Jogo {index + 1}</h4>
-                      <div className="space-y-2">
-                        <Label htmlFor={`competition${index}`}>
-                          Competição
-                        </Label>
-                        <SearchableSelect
-                          value={game.competition}
-                          onValueChange={(value) =>
-                            handleGameChange(index, "competition", value)
-                          }
-                          options={competitions}
-                          placeholder="Selecione a competição"
-                          error={errors[`competition${index}`]}
-                        />
-                        {errors[`competition${index}`] && (
-                          <p className="text-danger text-sm flex items-center mt-1">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            {errors[`competition${index}`]}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`homeTeam${index}`}>
-                          Time Mandante
-                        </Label>
-                        <SearchableSelect
-                          value={game.homeTeam}
-                          onValueChange={(value) =>
-                            handleGameChange(index, "homeTeam", value)
-                          }
-                          options={teams}
-                          placeholder="Selecione o time mandante"
-                          error={errors[`homeTeam${index}`]}
-                        />
-                        {errors[`homeTeam${index}`] && (
-                          <p className="text-danger text-sm flex items-center mt-1">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            {errors[`homeTeam${index}`]}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`awayTeam${index}`}>
-                          Time Visitante
-                        </Label>
-                        <SearchableSelect
-                          value={game.awayTeam}
-                          onValueChange={(value) =>
-                            handleGameChange(index, "awayTeam", value)
-                          }
-                          options={teams}
-                          placeholder="Selecione o time visitante"
-                          error={errors[`awayTeam${index}`]}
-                        />
-                        {errors[`awayTeam${index}`] && (
-                          <p className="text-danger text-sm flex items-center mt-1">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            {errors[`awayTeam${index}`]}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`entry${index}`}>
-                          Entrada
-                        </Label>
-                        <Input
-                          id={`entry${index}`}
-                          value={game.entry}
-                          onChange={(e) =>
-                            handleGameChange(index, "entry", e.target.value)
-                          }
-                          placeholder="Ex: Over 2.5 gols, Handicap +1, etc."
-                          className={errors[`entry${index}`] ? "border-danger" : ""}
-                        />
-                        {errors[`entry${index}`] && (
-                          <p className="text-danger text-sm flex items-center mt-1">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            {errors[`entry${index}`]}
-                          </p>
-                        )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`competition${index}`}>
+                            Competição
+                          </Label>
+                          <SearchableSelect
+                            value={game.competition}
+                            onValueChange={(value) =>
+                              handleGameChange(index, "competition", value)
+                            }
+                            options={competitions}
+                            placeholder="Selecione a competição"
+                            error={errors[`competition${index}`]}
+                          />
+                          {errors[`competition${index}`] && (
+                            <p className="text-danger text-sm flex items-center mt-1">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              {errors[`competition${index}`]}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`homeTeam${index}`}>
+                            Time Mandante
+                          </Label>
+                          <SearchableSelect
+                            value={game.homeTeam}
+                            onValueChange={(value) =>
+                              handleGameChange(index, "homeTeam", value)
+                            }
+                            options={teams}
+                            placeholder="Selecione o time mandante"
+                            error={errors[`homeTeam${index}`]}
+                          />
+                          {errors[`homeTeam${index}`] && (
+                            <p className="text-danger text-sm flex items-center mt-1">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              {errors[`homeTeam${index}`]}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`awayTeam${index}`}>
+                            Time Visitante
+                          </Label>
+                          <SearchableSelect
+                            value={game.awayTeam}
+                            onValueChange={(value) =>
+                              handleGameChange(index, "awayTeam", value)
+                            }
+                            options={teams}
+                            placeholder="Selecione o time visitante"
+                            error={errors[`awayTeam${index}`]}
+                          />
+                          {errors[`awayTeam${index}`] && (
+                            <p className="text-danger text-sm flex items-center mt-1">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              {errors[`awayTeam${index}`]}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`entry${index}`}>
+                            Entrada
+                          </Label>
+                          <Input
+                            id={`entry${index}`}
+                            value={game.entry}
+                            onChange={(e) =>
+                              handleGameChange(index, "entry", e.target.value)
+                            }
+                            placeholder="Ex: Over 2.5 gols, Handicap +1, etc."
+                            className={errors[`entry${index}`] ? "border-danger" : ""}
+                          />
+                          {errors[`entry${index}`] && (
+                            <p className="text-danger text-sm flex items-center mt-1">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              {errors[`entry${index}`]}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -478,7 +480,7 @@ const BetForm: React.FC = () => {
                   />
                 </div>
               ) : (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
                   <div className="space-y-2">
                     <Label htmlFor="homeTeam">Time Mandante</Label>
                     <SearchableSelect
@@ -515,7 +517,7 @@ const BetForm: React.FC = () => {
                       </p>
                     )}
                   </div>
-                </>
+                </div>
               )}
               <div className="space-y-2">
                 <Label htmlFor="market">Mercado</Label>
@@ -564,62 +566,64 @@ const BetForm: React.FC = () => {
                     </p>
                   )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="odds">Odds</Label>
-                <Input
-                  id="odds"
-                  type="number"
-                  step="0.0001"
-                  min="1"
-                  value={odds || ""}
-                  onChange={(e) => setOdds(parseFloat(e.target.value) || 0)}
-                  className={errors.odds ? "border-danger" : ""}
-                />
-                                  {errors.odds && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:col-span-3">
+                <div className="space-y-2">
+                  <Label htmlFor="odds">Odds</Label>
+                  <Input
+                    id="odds"
+                    type="number"
+                    step="0.0001"
+                    min="1"
+                    value={odds || ""}
+                    onChange={(e) => setOdds(parseFloat(e.target.value) || 0)}
+                    className={errors.odds ? "border-danger" : ""}
+                  />
+                  {errors.odds && (
                     <p className="text-danger text-sm flex items-center mt-1">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       {errors.odds}
                     </p>
                   )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stake">Valor da aposta (R$)</Label>
-                <Input
-                  id="stake"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={stake || ""}
-                  onChange={(e) => setStake(parseFloat(e.target.value) || 0)}
-                  className={errors.stake ? "border-danger" : ""}
-                />
-                                  {errors.stake && (
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="stake">Valor da aposta (R$)</Label>
+                  <Input
+                    id="stake"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={stake || ""}
+                    onChange={(e) => setStake(parseFloat(e.target.value) || 0)}
+                    className={errors.stake ? "border-danger" : ""}
+                  />
+                  {errors.stake && (
                     <p className="text-danger text-sm flex items-center mt-1">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       {errors.stake}
                     </p>
                   )}
-                                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {stakeUnits.toFixed(2)} unidades
                   </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="commission">Comissão (opcional)</Label>
+                  <Input
+                    id="commission"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={commission !== undefined ? commission : ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCommission(
+                        value === "" ? undefined : parseFloat(value) || 0
+                      );
+                    }}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="commission">Comissão (opcional)</Label>
-                <Input
-                  id="commission"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={commission !== undefined ? commission : ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCommission(
-                      value === "" ? undefined : parseFloat(value) || 0
-                    );
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-1">
                 <Label htmlFor="result">Resultado</Label>
                 <Select
                   value={result || "PENDING"}
@@ -669,17 +673,18 @@ const BetForm: React.FC = () => {
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex flex-col sm:flex-row gap-4 sm:justify-between">
             <Button
               variant="outline"
               type="button"
               onClick={() =>
                 navigate("/apostas", { state: { viewMode: initialViewMode } })
               }
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="w-full sm:w-auto">
               {isEditing ? "Atualizar Aposta" : "Adicionar Aposta"}
             </Button>
           </CardFooter>
