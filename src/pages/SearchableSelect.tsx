@@ -13,6 +13,7 @@ interface SearchableSelectProps {
   options: OptionItem[];
   placeholder?: string;
   error?: string;
+  onMenuOpenChange?: (isOpen: boolean) => void;
 }
 
 interface OptionType {
@@ -87,6 +88,9 @@ const getCustomStyles = (hasError: boolean, isDark: boolean): StylesConfig<Optio
       zIndex: 9999,
       backgroundColor: colors.popover,
       border: `1px solid ${colors.border}`,
+      position: "fixed",
+      width: "var(--radix-select-trigger-width, auto)",
+      maxWidth: "calc(100vw - 2rem)",
     }),
     menuList: (provided) => ({
       ...provided,
@@ -113,6 +117,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   options,
   placeholder = "Selecione...",
   error,
+  onMenuOpenChange,
 }) => {
   const { theme } = useTheme();
   
@@ -141,6 +146,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         styles={getCustomStyles(!!error, isDark)}
         isSearchable
         classNamePrefix="react-select"
+        menuPosition="fixed"
+        menuPlacement="auto"
+        maxMenuHeight={200}
+        onMenuOpen={() => onMenuOpenChange?.(true)}
+        onMenuClose={() => onMenuOpenChange?.(false)}
       />
       {error && <p className="text-danger text-sm mt-1">{error}</p>}
     </div>

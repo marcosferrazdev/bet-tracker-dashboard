@@ -27,6 +27,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import SearchableSelect from "./SearchableSelect";
 import { useCompetitions } from "@/context/CompetitionContext";
+import { useScrollClose } from "@/hooks/use-scroll-close";
 
 interface Game {
   competition: string;
@@ -78,7 +79,17 @@ const BetForm: React.FC = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Estados para controlar abertura dos selects
+  const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
+  const [isResultSelectOpen, setIsResultSelectOpen] = useState(false);
+  const [openSearchableSelects, setOpenSearchableSelects] = useState<Set<string>>(new Set());
+
   const initialViewMode = location.state?.viewMode || "card";
+
+  // Usar o hook para fechar selects durante scroll
+  useScrollClose(isTypeSelectOpen, () => setIsTypeSelectOpen(false));
+  useScrollClose(isResultSelectOpen, () => setIsResultSelectOpen(false));
+  useScrollClose(openSearchableSelects.size > 0, () => setOpenSearchableSelects(new Set()));
 
   useEffect(() => {
     if (!isEditing && tipsters.length === 1 && !tipster) {
@@ -247,6 +258,18 @@ const BetForm: React.FC = () => {
     return betType === "Bingo Múltipla" || betType === "Múltipla";
   };
 
+  const handleSearchableSelectOpen = (id: string, isOpen: boolean) => {
+    setOpenSearchableSelects(prev => {
+      const newSet = new Set(prev);
+      if (isOpen) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <div>
       <PageHeader
@@ -318,6 +341,7 @@ const BetForm: React.FC = () => {
                   options={tipsters}
                   placeholder="Selecione o tipster"
                   error={errors.tipster}
+                  onMenuOpenChange={(isOpen) => handleSearchableSelectOpen('tipster', isOpen)}
                 />
                 {errors.tipster && (
                   <p className="text-danger text-sm flex items-center mt-1">
@@ -331,11 +355,19 @@ const BetForm: React.FC = () => {
                 <Select
                   value={type}
                   onValueChange={(value) => setType(value as "Pré" | "Live" | "Múltipla" | "Bingo Múltipla")}
+                  open={isTypeSelectOpen}
+                  onOpenChange={setIsTypeSelectOpen}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent 
+                    position="popper" 
+                    side="bottom" 
+                    align="start"
+                    sideOffset={4}
+                    className="w-[var(--radix-select-trigger-width)]"
+                  >
                     <SelectItem value="Pré">Pré</SelectItem>
                     <SelectItem value="Live">Live</SelectItem>
                     <SelectItem value="Múltipla">Múltipla</SelectItem>
@@ -354,6 +386,7 @@ const BetForm: React.FC = () => {
                     options={competitions}
                     placeholder="Selecione a competição"
                     error={errors.competition}
+                    onMenuOpenChange={(isOpen) => handleSearchableSelectOpen('competition', isOpen)}
                   />
                   {errors.competition && (
                     <p className="text-danger text-sm flex items-center mt-1">
@@ -384,6 +417,7 @@ const BetForm: React.FC = () => {
                             options={competitions}
                             placeholder="Selecione a competição"
                             error={errors[`competition${index}`]}
+                            onMenuOpenChange={(isOpen) => handleSearchableSelectOpen(`competition${index}`, isOpen)}
                           />
                           {errors[`competition${index}`] && (
                             <p className="text-danger text-sm flex items-center mt-1">
@@ -404,6 +438,7 @@ const BetForm: React.FC = () => {
                             options={teams}
                             placeholder="Selecione o time mandante"
                             error={errors[`homeTeam${index}`]}
+                            onMenuOpenChange={(isOpen) => handleSearchableSelectOpen(`homeTeam${index}`, isOpen)}
                           />
                           {errors[`homeTeam${index}`] && (
                             <p className="text-danger text-sm flex items-center mt-1">
@@ -424,6 +459,7 @@ const BetForm: React.FC = () => {
                             options={teams}
                             placeholder="Selecione o time visitante"
                             error={errors[`awayTeam${index}`]}
+                            onMenuOpenChange={(isOpen) => handleSearchableSelectOpen(`awayTeam${index}`, isOpen)}
                           />
                           {errors[`awayTeam${index}`] && (
                             <p className="text-danger text-sm flex items-center mt-1">
@@ -491,6 +527,7 @@ const BetForm: React.FC = () => {
                       options={teams}
                       placeholder="Selecione o time mandante"
                       error={errors.homeTeam0}
+                      onMenuOpenChange={(isOpen) => handleSearchableSelectOpen('homeTeam0', isOpen)}
                     />
                     {errors.homeTeam0 && (
                       <p className="text-danger text-sm flex items-center mt-1">
@@ -509,6 +546,7 @@ const BetForm: React.FC = () => {
                       options={teams}
                       placeholder="Selecione o time visitante"
                       error={errors.awayTeam0}
+                      onMenuOpenChange={(isOpen) => handleSearchableSelectOpen('awayTeam0', isOpen)}
                     />
                     {errors.awayTeam0 && (
                       <p className="text-danger text-sm flex items-center mt-1">
@@ -527,6 +565,7 @@ const BetForm: React.FC = () => {
                   options={markets}
                   placeholder="Selecione o mercado"
                   error={errors.market}
+                  onMenuOpenChange={(isOpen) => handleSearchableSelectOpen('market', isOpen)}
                 />
                 {errors.market && (
                   <p className="text-danger text-sm flex items-center mt-1">
@@ -543,6 +582,7 @@ const BetForm: React.FC = () => {
                   options={bookmakers}
                   placeholder="Selecione a casa de apostas"
                   error={errors.bookmaker}
+                  onMenuOpenChange={(isOpen) => handleSearchableSelectOpen('bookmaker', isOpen)}
                 />
                 {errors.bookmaker && (
                   <p className="text-danger text-sm flex items-center mt-1">
@@ -630,11 +670,19 @@ const BetForm: React.FC = () => {
                   onValueChange={(value) =>
                     setResult(value === "PENDING" ? null : (value as BetResult))
                   }
+                  open={isResultSelectOpen}
+                  onOpenChange={setIsResultSelectOpen}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o resultado" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent 
+                    position="popper" 
+                    side="bottom" 
+                    align="start"
+                    sideOffset={4}
+                    className="w-[var(--radix-select-trigger-width)]"
+                  >
                     <SelectItem value="PENDING">Pendente</SelectItem>
                     <SelectItem value="GREEN">GREEN</SelectItem>
                     <SelectItem value="RED">RED</SelectItem>
