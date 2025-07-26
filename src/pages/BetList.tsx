@@ -427,6 +427,31 @@ const BetList: React.FC = () => {
     );
   };
 
+  // Renderiza as entradas na coluna mercado
+  const renderMarketEntries = (bet: Bet) => {
+    const games = [
+      {
+        entry: bet.entry,
+      },
+      ...(bet.comboGames || []),
+    ];
+
+    return (
+      <div className="flex flex-col space-y-1">
+        {games.map((game, index) => (
+          <div key={index} className="flex flex-col">
+            <span className="text-sm font-medium">
+              {game.entry || "Entrada não especificada"}
+            </span>
+          </div>
+        ))}
+        <span className="text-xs text-muted-foreground mt-1">
+          {bet.market}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Cabeçalho fixo */}
@@ -623,12 +648,7 @@ const BetList: React.FC = () => {
                             </TableCell>
                             <TableCell>{renderGameDetails(bet)}</TableCell>
                             <TableCell>
-                              <div className="flex flex-col">
-                                <span>{bet.entry}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {bet.market}
-                                </span>
-                              </div>
+                              {renderMarketEntries(bet)}
                             </TableCell>
                             <TableCell>{bet.odds.toFixed(2)}</TableCell>
                             <TableCell>{formatCurrency(bet.stake)}</TableCell>
