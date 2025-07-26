@@ -3,6 +3,12 @@ import StatsCard from "@/components/StatsCard";
 import { useBets } from "@/context/BetContext";
 import { formatCurrency } from "@/lib/bet-utils";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   BarChart2,
   CircleDollarSign,
   PercentCircle,
@@ -20,12 +26,12 @@ import {
   Legend,
   LinearScale,
   Title,
-  Tooltip,
+  Tooltip as ChartTooltip,
   TooltipItem,
 } from "chart.js"; // Importando tipos adicionais
 import DailyProfit from "./DailyProfit";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
 
 const Dashboard: React.FC = () => {
   const { stats, dailyStats, monthlyStats, isLoading } = useBets();
@@ -188,26 +194,26 @@ const Dashboard: React.FC = () => {
       />
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         <StatsCard
           title="Lucro Total"
           value={formatCurrency(stats.profitCurrency)}
-          icon={<CircleDollarSign className="h-6 w-6" />}
+          icon={<CircleDollarSign className="h-5 w-5 sm:h-6 sm:w-6" />}
         />
         <StatsCard
           title="ROI"
           value={`${stats.roi}%`}
-          icon={<PercentCircle className="h-6 w-6" />}
+          icon={<PercentCircle className="h-5 w-5 sm:h-6 sm:w-6" />}
         />
         <StatsCard
           title="Taxa de Acerto"
           value={`${stats.hitRate}%`}
-          icon={<TrendingUp className="h-6 w-6" />}
+          icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
         />
         <StatsCard
           title="Total de Apostas"
           value={stats.totalBets}
-          icon={<BarChart2 className="h-6 w-6" />}
+          icon={<BarChart2 className="h-5 w-5 sm:h-6 sm:w-6" />}
         />
       </div>
 
@@ -233,34 +239,64 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Resumo de Apostas */}
-      <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-8">
+      <div className="bg-card rounded-xl p-4 sm:p-6 shadow-sm border border-border mb-8">
         <h2 className="text-lg font-medium mb-4 text-card-foreground">Resumo de Apostas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-sm">Ganhas</span>
-            <span className="text-success font-semibold text-xl">
-              {stats.wonBets}
-            </span>
+        <TooltipProvider>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs sm:text-sm">Ganhas</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-success font-semibold text-lg sm:text-xl truncate">
+                    {stats.wonBets}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{stats.wonBets} apostas ganhas</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs sm:text-sm">Perdidas</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-danger font-semibold text-lg sm:text-xl truncate">
+                    {stats.lostBets}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{stats.lostBets} apostas perdidas</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs sm:text-sm">Reembolsadas</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-neutral font-semibold text-lg sm:text-xl truncate">
+                    {stats.refundedBets}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{stats.refundedBets} apostas reembolsadas</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-muted-foreground text-xs sm:text-sm">Pendentes</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-neutral font-semibold text-lg sm:text-xl truncate">
+                    {stats.pendingBets}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{stats.pendingBets} apostas pendentes</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-sm">Perdidas</span>
-            <span className="text-danger font-semibold text-xl">
-              {stats.lostBets}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-sm">Reembolsadas</span>
-            <span className="text-neutral font-semibold text-xl">
-              {stats.refundedBets}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-muted-foreground text-sm">Pendentes</span>
-            <span className="text-neutral font-semibold text-xl">
-              {stats.pendingBets}
-            </span>
-          </div>
-        </div>
+        </TooltipProvider>
       </div>
     </div>
   );
