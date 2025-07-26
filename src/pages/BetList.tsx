@@ -833,20 +833,39 @@ const BetList: React.FC = () => {
                             </span>
                           </div>
 
-                          {/* CENTRO: Partida + Entrada */}
+                          {/* CENTRO: Partidas + Entradas */}
                           <div className="flex flex-col items-start justify-center flex-1 my-2 pr-8">
-                            <div className={`flex items-center gap-2 text-sm font-semibold ${
-                              isDark ? "text-card-foreground" : "text-[#171717]"
-                            }`}>
-                              {/* Substitua pelo ícone centralizado depois */}
-                              {/* <SoccerIcon className="w-5 h-5" /> */}
-                              {bet.homeTeam} x {bet.awayTeam}
-                            </div>
-                            <div className={`text-base font-extrabold mt-1 ${
-                              isDark ? "text-card-foreground" : "text-[#171717]"
-                            }`}>
-                              {bet.entry}
-                            </div>
+                            {/* Jogos da aposta múltipla */}
+                            {(() => {
+                              const games = [
+                                {
+                                  competition: bet.competition,
+                                  homeTeam: bet.homeTeam,
+                                  awayTeam: bet.awayTeam,
+                                  entry: bet.entry,
+                                },
+                                ...(bet.comboGames || []),
+                              ];
+                              
+                              return (
+                                <div className="space-y-2 w-full">
+                                  {games.map((game, index) => (
+                                    <div key={index} className="flex flex-col">
+                                      <div className={`flex items-center gap-2 text-sm font-semibold ${
+                                        isDark ? "text-card-foreground" : "text-[#171717]"
+                                      }`}>
+                                        {game.homeTeam} x {game.awayTeam}
+                                      </div>
+                                      <div className={`text-base font-extrabold mt-1 ${
+                                        isDark ? "text-card-foreground" : "text-[#171717]"
+                                      }`}>
+                                        {game.entry || "Entrada não especificada"}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {/* BASE: Tags de Odd, Valor, Lucro */}

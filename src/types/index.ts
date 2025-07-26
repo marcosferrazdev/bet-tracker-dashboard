@@ -22,7 +22,7 @@ export interface Bet {
   profitCurrency: number;
   profitUnits: number;
   userId?: string;
-  comboGames?: { homeTeam: string; awayTeam: string; competition: string }[];
+  comboGames?: { homeTeam: string; awayTeam: string; competition: string; entry: string }[];
 }
 
 export interface DashboardStats {

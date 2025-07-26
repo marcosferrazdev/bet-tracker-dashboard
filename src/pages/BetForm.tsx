@@ -32,6 +32,7 @@ interface Game {
   competition: string;
   homeTeam: string;
   awayTeam: string;
+  entry: string;
 }
 
 const BetForm: React.FC = () => {
@@ -59,7 +60,7 @@ const BetForm: React.FC = () => {
   const [competition, setCompetition] = useState("");
   const [type, setType] = useState<"Pré" | "Live" | "Múltipla" | "Bingo Múltipla">("Pré");
   const [games, setGames] = useState<Game[]>([
-    { competition: "", homeTeam: "", awayTeam: "" },
+    { competition: "", homeTeam: "", awayTeam: "", entry: "" },
   ]);
   const [market, setMarket] = useState("");
   const [bookmaker, setBookmaker] = useState("");
@@ -112,11 +113,13 @@ const BetForm: React.FC = () => {
               competition: betToEdit.competition,
               homeTeam: betToEdit.homeTeam,
               awayTeam: betToEdit.awayTeam,
+              entry: betToEdit.entry,
             },
             ...betToEdit.comboGames.map((game) => ({
               competition: game.competition || "",
               homeTeam: game.homeTeam,
               awayTeam: game.awayTeam,
+              entry: game.entry || "",
             })),
           ]);
           setCompetition("");
@@ -126,6 +129,7 @@ const BetForm: React.FC = () => {
               competition: betToEdit.competition,
               homeTeam: betToEdit.homeTeam,
               awayTeam: betToEdit.awayTeam,
+              entry: betToEdit.entry,
             },
           ]);
           setCompetition(betToEdit.competition);
@@ -157,11 +161,13 @@ const BetForm: React.FC = () => {
           newErrors[`homeTeam${index}`] = `Time mandante do Jogo ${index + 1} é obrigatório`;
         if (!game.awayTeam)
           newErrors[`awayTeam${index}`] = `Time visitante do Jogo ${index + 1} é obrigatório`;
+        if (!game.entry)
+          newErrors[`entry${index}`] = `Entrada do Jogo ${index + 1} é obrigatória`;
       });
     }
     if (!market) newErrors.market = "Mercado é obrigatório";
     if (!bookmaker) newErrors.bookmaker = "Casa de apostas é obrigatória";
-    if (!entry) newErrors.entry = "Entrada é obrigatória";
+    if (type !== "Múltipla" && !entry) newErrors.entry = "Entrada é obrigatória";
     if (!odds) newErrors.odds = "Odd é obrigatória";
     if (odds < 1) newErrors.odds = "Odd deve ser maior que 1";
     if (!stake) newErrors.stake = "Valor da aposta é obrigatório";
@@ -174,12 +180,12 @@ const BetForm: React.FC = () => {
   };
 
   const handleAddGame = () => {
-    setGames([...games, { competition: "", homeTeam: "", awayTeam: "" }]);
+    setGames([...games, { competition: "", homeTeam: "", awayTeam: "", entry: "" }]);
   };
 
   const handleGameChange = (
     index: number,
-    field: "competition" | "homeTeam" | "awayTeam",
+    field: "competition" | "homeTeam" | "awayTeam" | "entry",
     value: string
   ) => {
     const updatedGames = games.map((game, i) =>
@@ -209,7 +215,7 @@ const BetForm: React.FC = () => {
       awayTeam: games[0].awayTeam,
       market,
       bookmaker,
-      entry,
+      entry: type === "Múltipla" ? games[0].entry : entry,
       odds,
       stake,
       unitValue,
@@ -224,6 +230,7 @@ const BetForm: React.FC = () => {
               competition: game.competition,
               homeTeam: game.homeTeam,
               awayTeam: game.awayTeam,
+              entry: game.entry,
             })),
           }
         : {}),
@@ -421,6 +428,26 @@ const BetForm: React.FC = () => {
                           <p className="text-danger text-sm flex items-center mt-1">
                             <AlertCircle className="h-3 w-3 mr-1" />
                             {errors[`awayTeam${index}`]}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`entry${index}`}>
+                          Entrada
+                        </Label>
+                        <Input
+                          id={`entry${index}`}
+                          value={game.entry}
+                          onChange={(e) =>
+                            handleGameChange(index, "entry", e.target.value)
+                          }
+                          placeholder="Ex: Over 2.5 gols, Handicap +1, etc."
+                          className={errors[`entry${index}`] ? "border-danger" : ""}
+                        />
+                        {errors[`entry${index}`] && (
+                          <p className="text-danger text-sm flex items-center mt-1">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            {errors[`entry${index}`]}
                           </p>
                         )}
                       </div>

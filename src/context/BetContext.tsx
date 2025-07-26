@@ -49,6 +49,7 @@ interface SupabaseComboGame {
   competition: string;
   home_team: string;
   away_team: string;
+  entry: string;
   user_id: string;
 }
 
@@ -204,6 +205,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
             competition: combo.competition,
             homeTeam: combo.home_team,
             awayTeam: combo.away_team,
+            entry: combo.entry,
           }));
 
         return {
@@ -944,6 +946,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
           competition: game.competition,
           home_team: game.homeTeam,
           away_team: game.awayTeam,
+          entry: game.entry,
           user_id: user.id, // Adiciona user_id do usuário autenticado
         }));
         const { error: comboError } = await supabase
@@ -1012,6 +1015,7 @@ export const BetProvider: React.FC<{ children: React.ReactNode }> = ({
           competition: game.competition,
           home_team: game.homeTeam,
           away_team: game.awayTeam,
+          entry: game.entry,
           user_id: user.id, // Adiciona user_id do usuário autenticado
         }));
         const { error: comboError } = await supabase
