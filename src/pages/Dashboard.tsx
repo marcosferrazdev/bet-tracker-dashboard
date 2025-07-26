@@ -194,26 +194,26 @@ const Dashboard: React.FC = () => {
       />
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
         <StatsCard
           title="Lucro Total"
           value={formatCurrency(stats.profitCurrency)}
-          icon={<CircleDollarSign className="h-5 w-5 sm:h-6 sm:w-6" />}
+          icon={<CircleDollarSign className="h-6 w-6 sm:h-7 sm:w-7" />}
         />
         <StatsCard
           title="ROI"
           value={`${stats.roi}%`}
-          icon={<PercentCircle className="h-5 w-5 sm:h-6 sm:w-6" />}
+          icon={<PercentCircle className="h-6 w-6 sm:h-7 sm:w-7" />}
         />
         <StatsCard
           title="Taxa de Acerto"
           value={`${stats.hitRate}%`}
-          icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
+          icon={<TrendingUp className="h-6 w-6 sm:h-7 sm:w-7" />}
         />
         <StatsCard
           title="Total de Apostas"
           value={stats.totalBets}
-          icon={<BarChart2 className="h-5 w-5 sm:h-6 sm:w-6" />}
+          icon={<BarChart2 className="h-6 w-6 sm:h-7 sm:w-7" />}
         />
       </div>
 

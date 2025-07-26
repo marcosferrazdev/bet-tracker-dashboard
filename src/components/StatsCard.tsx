@@ -37,22 +37,22 @@ const TruncatedText: React.FC<{ text: string; className?: string }> = ({ text, c
 const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, className = '' }) => {
   return (
     <TooltipProvider>
-      <div className={`bg-card rounded-xl p-4 sm:p-6 shadow-sm border border-border animate-slide-up card-hover ${className}`}>
-        <div className="flex justify-between items-start sm:items-center gap-3">
+      <div className={`bg-card rounded-xl p-5 sm:p-6 shadow-sm border border-border animate-slide-up card-hover ${className}`}>
+        <div className="flex justify-between items-start sm:items-center gap-4">
           <div className="flex-1 min-w-0">
             <TruncatedText 
               text={title} 
-              className="text-xs sm:text-sm font-medium text-muted-foreground"
+              className="text-sm sm:text-base font-medium text-muted-foreground"
             />
             <TruncatedText 
               text={String(value)} 
-              className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 text-card-foreground"
+              className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-2 text-card-foreground"
             />
             
             {trend && (
-              <div className="flex items-center mt-1">
+              <div className="flex items-center mt-2">
                 <span 
-                  className={`text-xs ${
+                  className={`text-sm ${
                     trend.isPositive ? 'text-success-600' : 'text-danger-600'
                   }`}
                 >
@@ -63,7 +63,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, classN
           </div>
           
           {icon && (
-            <div className="flex-shrink-0 p-2 sm:p-3 rounded-full bg-blue-50 text-blue-600">
+            <div className="flex-shrink-0 p-3 sm:p-4 rounded-full bg-blue-50 text-blue-600">
               {icon}
             </div>
           )}
